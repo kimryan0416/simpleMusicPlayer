@@ -148,7 +148,7 @@
 				$composer = htmlentities(trim($composer));
 			$lyrics = "";
 
-			if ($medium == 0) {
+			if ($medium == 0 || $medium == 2) {
 				if ($dynamic_lyrics_toggle == 1) {
 					$previous_time = "[59:59.999]";
 					$previous_style = "";

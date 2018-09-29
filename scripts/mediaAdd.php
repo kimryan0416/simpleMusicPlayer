@@ -7,7 +7,17 @@
 	$media_types = array(
         // audio
 		'mp3' => 'audio/mpeg',
+		'm4a' => 'audio/mp4',
+		// video
+		'mp4' => 'video/mp4'
+	);
+
+	$audio_types = array(
+		'mp3' => 'audio/mpeg',
 		'm4a' => 'audio/mp4'
+	);
+	$video_types = array(
+		'mp4' => 'video/mp4'
 	);
 
 	$upload_dir = 'media/uploads/';
@@ -41,6 +51,13 @@
 			$path_parts = pathinfo($file);
 			$filename = htmlspecialchars($path_parts["filename"]);
 			$extension = pathinfo(basename($file), PATHINFO_EXTENSION);
+			$extensionType = 0;
+
+			if ( array_key_exists($extension, $video_types) ) {
+				$extensionType = 2;
+			} else {
+				$extensionType = 0;
+			}
 
 			if ( !array_key_exists($extension, $media_types) ) {
 				// This error means the file is an image but is not a jpg or png, so the uploader has to choose another icon
@@ -145,6 +162,8 @@
 				$lyrics = $song_info["lyrics"][0];
 			} else if ( isset($song_info["unsynchronized_lyric"]) ) {
 				$lyrics = $song_info["unsynchronized_lyric"][0];
+			} else if ($extensionType == 2) {
+				$lyrics = "";
 			} else {
 				$lyrics = "No Lyrics Provided";
 			}
@@ -157,7 +176,7 @@
 
 
 		
-			$query = "INSERT INTO music (filename, extension, title, artist, composer, lyrics, comment, duration, start_padding, end_padding) VALUES (\"".myUrlEncode($filename)."\", \"".$extension."\", \"".$title."\", \"".$artist."\", \"".$composer."\", \"".$lyrics."\", \"".$comment."\", \"".$thisFileInfo["playtime_string"]."\", 0, ".convertToMilliseconds($thisFileInfo["playtime_string"]).");";
+			$query = "INSERT INTO music (filename, extension, title, artist, composer, lyrics, comment, duration, medium, start_padding, end_padding) VALUES (\"".myUrlEncode($filename)."\", \"".$extension."\", \"".$title."\", \"".$artist."\", \"".$composer."\", \"".$lyrics."\", \"".$comment."\", \"".$thisFileInfo["playtime_string"]."\", ".$extensionType.", 0, ".convertToMilliseconds($thisFileInfo["playtime_string"]).");";
 			if (!$db->query($query)) {
 				$arrayToSend["success"] = false;
 				$arrayToSend["message"] = "Unable to insert into database: " . $title . " | " . $db->error;

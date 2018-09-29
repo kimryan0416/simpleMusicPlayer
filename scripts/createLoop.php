@@ -13,7 +13,7 @@
 	if ($shuffle == 1) {
 		$query .= " ORDER BY RAND()";
 	} else {
-		$query .= " ORDER BY T2.title";
+		$query .= " ORDER BY T2.title, T2.medium ASC";
 	}
 
 	if (!$request = $db->query($query)) {

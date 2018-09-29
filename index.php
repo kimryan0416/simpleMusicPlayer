@@ -162,6 +162,9 @@
 					<div id="video_embed_container">
 						<div id="video_embed_inner_container">
 							<div id="video_embed"></div>
+							<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdateVideo(this);">
+								Your browser does not support the audio element.
+							</video>
 							<div id="video_title_and_artist">
 								<div id="video_title_and_artist_inner_container">
 									<div id="video_title_container"><h1 id="video_title"></h1></div>
