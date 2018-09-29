@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Test</title>
+	</head>
+	<body>
+		<h1>Test Audio</h1>
+		<button onclick="runSim();">Click to Load Audio</button>
+
+		<button onclick="playSim();">Click to Play Audio</button>
+	</body>
+	<script>
+		var thisURL = "media/Kagamine%20Rin_Len/Equationx__.m4a";
+
+		//window.addEventListener('load', init, false);
+
+		var dogBarkingBuffer = null;
+		// Fix up prefixing
+		window.AudioContext = window.AudioContext || window.webkitAudioContext;
+		var context = new AudioContext();
+	
+		function loadDogSound(url) {
+			var request = new XMLHttpRequest();
+			request.open('GET', thisURL, true);
+			request.responseType = 'arraybuffer';
+			// Decode asynchronously
+			request.onload = function() {
+				context.decodeAudioData(request.response, function(buffer) {
+					dogBarkingBuffer = buffer;
+					playSim(buffer);
+				});
+				//playSim(dogBarkingBuffer);
+			}
+  			request.send();
+		}
+		
+		function playSound(buffer) {
+			var source = context.createBufferSource(); // creates a sound source
+			source.buffer = buffer;                    // tell the source which sound to play
+			source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+			source.start(0);                           // play the source now
+			// note: on older systems, may have to use deprecated noteOn(time);
+		}
+
+		function runSim() {
+			loadDogSound(thisURL);
+			playSound(dogBarkingBuffer);
+		}
+
+		function playSim(buff) {
+			if (buff != null) playSound(buff);
+			else alert("Load the audio first");
+		}
+
+	</script>
+</html>
