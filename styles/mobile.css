@@ -15,6 +15,7 @@ html, body {
 	height:100%;
 	width:100%;
 	font-family: Arial;
+	background-color:black;
 }
 #content {
 	position:relative;
@@ -36,6 +37,7 @@ html, body {
 }
 #content #media_container {
 	left:-100%;
+	background-color:white;
 }
 #content #media_container.selected {
 	left:0%;
@@ -57,7 +59,6 @@ html, body {
 	width:100%;
 	height:69px;
 	line-height: 69px;
-	border-bottom:1px solid black;
 	text-align: center;
 	z-index: 3;
 }
@@ -74,10 +75,10 @@ html, body {
 	top:20px;
 	height:30px;
 	line-height: 30px;
-	width:80px;
+	width:50px;
 	font-size:12px;
 	border:1px solid rgb(230,230,230);
-	background-color:lightblue;
+	background-color:rgba(0,0,0,0.1);
 }
 .header .header_forward_button {
 	position:absolute;
@@ -113,6 +114,7 @@ html, body {
 
 #media_header {
 	background-color:white;
+	border-bottom:1px solid black;
 }
 #media_header #open_player.opened {
 	display:block;
@@ -216,7 +218,6 @@ html, body {
 
 
 #player_header {
-	background-color: black;
 	color:white;
 }
 #player_container {
@@ -231,7 +232,6 @@ html, body {
 	height:100%;
 	padding-left:20px;
 	padding-right:20px;
-	padding-top:70px;
 	box-sizing: border-box;
 	text-align: center;
 	overflow:hidden;
@@ -240,9 +240,12 @@ html, body {
 	position:relative;
 	display:block;
 	width:100%;
-	height:300px;
+	min-height:300px;
+	height:100%;
+	/*
 	margin-top:20px;
 	margin-bottom:20px;
+	*/
 	overflow:hidden;
 }
 #player_art_and_lyrics #player_lyrics {
@@ -457,6 +460,11 @@ input[type=range]:focus::-ms-fill-upper {
 	padding:0;
 }
 
+@media only screen and (max-width: 750px) {
+	#player_controls {
+		display:none;
+	}
+}
 
 @media only screen and (max-width: 600px) {
 
@@ -492,6 +500,9 @@ input[type=range]:focus::-ms-fill-upper {
 	}
 	#player_artist_container {
 		margin-bottom:15px;
+	}
+	#player_controls {
+		display:block;
 	}
 	#time_container, #controls_container, #extras_container {
 		display:block;

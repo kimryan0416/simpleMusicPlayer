@@ -11,7 +11,9 @@
 			$id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 			$upload_dir = 'art/';
 
-			foreach($_FILES as $file) {
+			$file = end($_FILES);
+
+			//foreach($_FILES as $file) {
 				$ext = pathinfo(basename($file["name"]), PATHINFO_EXTENSION);	// grab the extension of the file we are using
 						
 				$target_file =  $upload_dir . $id . "." . $ext;
@@ -78,7 +80,7 @@
 			   		closeFile($arrayToSend, false);
 			   		return;
 				} 
-			}
+			//}
 		} else {
 			// if we don't have to change the current icon (because we either canceled the edit or we didn't upload a new one)
 			$arrayToSend["success"] = true;

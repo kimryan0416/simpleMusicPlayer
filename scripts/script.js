@@ -1,4 +1,4 @@
-var database = [], queue = [];
+//var database = [];
 
 /* Youtube Setup - If no online connection detected, then all youtube embedded entries are not available */
 var onlineConnection = false;
@@ -7,39 +7,13 @@ function onYouTubeIframeAPIReady() {
 	onlineConnection = true;
 }
 
-/*
-// currentSong = current song ID
-// currentAlbum = current Album ID
-// currentAlbumArtist = current Album Artist ID
-// currentMediaType = audio(0), video(1), or YouTube Embed(2) - default = -1
-*/
-var currentSong = -1, currentAlbum = -1, currentAlbumArtist = -1, currentMediaType = -1;
-
-/*
-// paused = if the current media is paused - applies only to audio and video (not YouTube Embed)
-// loop = loop media boolean (1 = true, 0 = false)
-// shuffle = shuffle media boolean (1 = true, 0 = false)
-// dynamic_lyrics_toggle = should lyrics dynamically follow media? - applies only to audio and video (not YouTube Embed)
-*/
-var paused = true, loop = 1, shuffle = 0, dynamic_lyrics_toggle = false;
-
-/*
-// globalPlayer = reference to either audio player or video player - UNUSED RIGHT NOW
-// audio_player = object containing all 
-*/
 var globalPlayer, audio_player, video_player, editForm, editAlbumArtForm, embedForm, iconEdit, iconEditSet = 0, left_close = false;
-
-
-
-var dynamic_lyrics_starting_times;
-var current_time = "-3599999", current_time_index = -1, current_medium = -1;
 var screenHeight = window.innerHeight;
-var lyricsHeight, scrollToLyrics = true, lockLyricScroll = false;
-/*var source;*/
 var search_element, search_options_element, search_text, search_option, searching_boolean = true, search_matches = [];
 var loopStagesDefault = ["assets/repeat_0.png", "assets/repeat_1.png", "assets/repeat_all.png"];
 var loopStagesWhite = ["assets/repeat_0_white.png", "assets/repeat_1_white.png", "assets/repeat_all_white.png"];
-var shuffleStages = ["assets/shuffle_0_white.png", "assets/shuffle_1_white.png"];
+var shuffleStagesDefault = ["assets/shuffle_0.png", "assets/shuffle_1.png"];
+var shuffleStagesWhite = ["assets/shuffle_0_white.png", "assets/shuffle_1_white.png"];
 var edit_form_options = ["details", "lyrics", "art"];
 
 function readableDuration(milliseconds) {
@@ -59,82 +33,57 @@ function readableDuration(milliseconds) {
 function milliseconds(seconds) {return Math.floor(seconds*1000); }
 function revertFromMilliseconds(millisec) {	return millisec / 1000;	}
 
-function onTimeUpdate(track) {
-	var curMillisec = milliseconds(track.currentTime);
-	var curTime = readableDuration(curMillisec);
-	if (curMillisec > audio_player.end_padding) {
-		nextAudio();
-		return;
+function onTimeUpdate(track, embedTime = null) {
+	var curMillisec, curTime;
+	if (globalPlayer.currentMediaType == 1) curMillisec = embedTime * 1000;
+	else curMillisec = milliseconds(track.currentTime);
+	curTime = readableDuration(curMillisec);
+	console.log(globalPlayer.endPadding)
+	if (curMillisec > globalPlayer.endPadding) {
+		console.log(curMillisec + " | " + globalPlayer.endPadding);
+		return nextMedia();
 	}
-	audio_player.curTime.text(curTime);
-	audio_player.time_slider.val(curMillisec);
-
-	if (dynamic_lyrics_toggle && scrollToLyrics) {
-		if (current_time_index == -1) {
+	globalPlayer.currentPlayer.timeDisplay.text(curTime);
+	if (globalPlayer.currentMediaType == 1 && !globalPlayer.currentPlayer.lock_time_slider) globalPlayer.currentPlayer.timeSlider.val(curMillisec);
+	else globalPlayer.currentPlayer.timeSlider.val(curMillisec);
+	if (globalPlayer.dynamic_lyrics_toggle && globalPlayer.scrollToLyrics) {
+		if (globalPlayer.current_time_index == -1) {
 			$(".lyric_segment.selected").removeClass("selected");
-			for (var i = dynamic_lyrics_starting_times.length - 1; i >= 0; i--) {
-				if ( curMillisec >= dynamic_lyrics_starting_times[i] ) {
-					current_time_index = i;
-					current_time = dynamic_lyrics_starting_times[i];
+			for (var i = globalPlayer.dynamic_lyrics_starting_times.length - 1; i >= 0; i--) {
+				if ( curMillisec >= globalPlayer.dynamic_lyrics_starting_times[i] ) {
+					globalPlayer.current_time_index = i;
+					globalPlayer.current_time = globalPlayer.dynamic_lyrics_starting_times[i];
 					break;
 				} else {
-					current_time_index = -1;
-					current_time = "-3599999";
+					globalPlayer.current_time_index = -1;
+					globalPlayer.current_time = "-3599999";
 				}
 			}
 		} else {
-			if ( curMillisec > dynamic_lyrics_starting_times[current_time_index+1] ) {
+			if ( (curMillisec > globalPlayer.dynamic_lyrics_starting_times[globalPlayer.current_time_index+1]) || (curMillisec < globalPlayer.dynamic_lyrics_starting_times[globalPlayer.current_time_index]) ) {
 				$(".lyric_segment.selected").removeClass("selected");
-				current_time_index++;
-				current_time = dynamic_lyrics_starting_times[current_time_index];
-			}
-		}
-
-		if ( !$(".lyric_segment_"+current_time).hasClass("selected") ) {
-			$(".lyric_segment_"+current_time).addClass("selected");
-			var elmnt = document.querySelector(".lyric_segment_"+current_time);
-			if (elmnt != null) {
-				document.getElementById("player_lyrics").scrollTo({
-				    'behavior': 'smooth',
-					'top': elmnt.offsetTop - (lyricsHeight/2) + (elmnt.offsetHeight/2)
-				});	
-			}
-		}
-	}
-}
-
-function onTimeUpdateVideo(track) {
-	var curMillisec = milliseconds(track.currentTime);
-	var curTime = readableDuration(curMillisec);
-	if (curMillisec > video_player.end_padding) {
-		nextAudio();
-		return;
-	}
-	video_player.timeDisplay.text(curTime);
-	video_player.time_slider.val((track.currentTime / track.duration) * 100);
-
-	if (dynamic_lyrics_toggle && scrollToLyrics) {
-		if (current_time_index == -1) {
-			video_player.lyrics.find(".selected").removeClass("selected");
-			for (var i = dynamic_lyrics_starting_times.length - 1; i >= 0; i--) {
-				if ( curMillisec >= dynamic_lyrics_starting_times[i] ) {
-					current_time_index = i;
-					current_time = dynamic_lyrics_starting_times[i];
-					break;
+				if (globalPlayer.currentMediaType == 0) {
+					globalPlayer.current_time_index++;
+					globalPlayer.current_time = globalPlayer.dynamic_lyrics_starting_times[globalPlayer.current_time_index];
 				} else {
-					current_time_index = -1;
-					current_time = "-3599999";
+					globalPlayer.current_time_index = -1;
+					globalPlayer.current_time = "-3599999";
 				}
 			}
-		} else {
-			if ( (curMillisec > dynamic_lyrics_starting_times[current_time_index+1]) || (curMillisec < dynamic_lyrics_starting_times[current_time_index]) ) {
-				video_player.lyrics.find(".selected").removeClass("selected");
-				current_time_index = -1;
-				current_time = "-3599999";
-			}
 		}
 
-		if ( !$(".lyric_segment_"+current_time).hasClass("selected") ) $("#video_lyrics_inner_container .lyric_segment_"+current_time).addClass("selected");
+		if ( !$(".lyric_segment_"+globalPlayer.current_time).hasClass("selected") ) {
+			globalPlayer.currentPlayer.lyrics.find(".lyric_segment_"+globalPlayer.current_time).addClass("selected");
+			if (globalPlayer.currentMediaType == 0) {
+				var elmnt = document.querySelector(".lyric_segment_"+globalPlayer.current_time);
+				if (elmnt != null) {
+					document.getElementById("player_lyrics").scrollTo({
+					    'behavior': 'smooth',
+						'top': elmnt.offsetTop - (globalPlayer.lyricsHeight/2) + (elmnt.offsetHeight/2)
+					});	
+				}
+			}
+		}
 	}
 }
 
@@ -178,11 +127,9 @@ function updatePart(song_id) {
 }
 
 function openMedia(id, newQueue = false) {
-	console.log(id);
-	var data = database[id];
+	var data = globalPlayer.database[id];
 	preparePlayer(data);
-	if (data.medium == 0) prepareAudio(data);
-	else if (data.medium == 2) prepareLocalVideo(data);
+	if (data.medium == 0 || data.medium == 2) prepareLocalMedia(data);
 	if (newQueue) loadQueue();
 }
 
@@ -205,13 +152,11 @@ function getAllMedia(updateCurrentPlayer = false, print = true, scrollTo = -1) {
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('ERRORS @ Getting All Media: ' + errorThrown);
 		location.reload(true);
-	}).always(function() {	
-		$("#left_content").show();
-	});
+	}).always(function() {	$("#left_content").show();	});
 }
 function setDatabaseInScript(raw) {
-	database = raw;
-	console.log(database);
+	globalPlayer.database = raw;
+	console.log(globalPlayer.database);
 }
 
 
@@ -276,12 +221,12 @@ function printMedia(sortedDatabase, updateCurrentPlayer = false, scrollTo = -1) 
 		    'behavior': 'smooth',
 		    'top': elmnt.offsetTop - (screenHeight/2) + (elmnt.offsetHeight/2)
 		});
-		$(document.getElementById("song_"+currentSong)).addClass("selected");
+		$(document.getElementById("song_"+globalPlayer.currentSong)).addClass("selected");
 		if (updateCurrentPlayer) updateCurrent();
 	}
 }
 function updateCurrent() {
-	var data = "id="+currentSong;
+	var data = "id="+globalPlayer.currentSong;
 	$.ajax({
 		url: "scripts/getMediaInfo.php", 
 		data: data, 
@@ -290,41 +235,41 @@ function updateCurrent() {
 	}).done(function(response) {
 		if (response.success) {
 			var arr = response.info;
-			if (current_medium == 2) {
-				video_player.start_padding = arr['start_padding'];
-				video_player.end_padding = arr['end_padding'];
+			if (globalPlayer.currentMediaType == 2) {
+				globalPlayer.startPadding = arr['start_padding'];
+				globalPlayer.endPadding = arr['end_padding'];
 				video_player.lyrics.empty();
 				if (response.info.dynamic_lyrics_toggle == 1) {
 					video_player.lyrics.html(arr["lyrics"]);
-					dynamic_lyrics_toggle = true;
-					dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
-					lockLyricScroll = false;
-					if (video_player.autoscroll.hasClass("locked")) video_player.autoscroll.removeClass("locked");
-					if (scrollToLyrics) {
-						if (!video_player.autoscroll.hasClass("active")) video_player.autoscroll.addClass("active");
+					globalPlayer.dynamic_lyrics_toggle = true;
+					globalPlayer.dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
+					globalPlayer.lockLyricScroll = false;
+					if (video_player.autoscrollButton.hasClass("locked")) video_player.autoscrollButton.removeClass("locked");
+					if (globalPlayer.scrollToLyrics) {
+						if (!video_player.autoscrollButton.hasClass("active")) video_player.autoscrollButton.addClass("active");
 					} else {
-						if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
+						if (video_player.autoscrollButton.hasClass("active")) video_player.autoscrollButton.removeClass("active");
 					}
 				}
-			} else if (current_medium == 1) {
+			} 
+			else if (globalPlayer.currentMediaType == 1) {
 				video_player.lyrics.empty();
 				if (response.info.dynamic_lyrics_toggle == 1) {
 					video_player.lyrics.html(arr["lyrics"]);
-					dynamic_lyrics_toggle = true;
-					dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
-					lockLyricScroll = false;
-					if (video_player.autoscroll.hasClass("locked")) video_player.autoscroll.removeClass("locked");
-					if (scrollToLyrics) {
-						if (!video_player.autoscroll.hasClass("active")) video_player.autoscroll.addClass("active");
+					globalPlayer.dynamic_lyrics_toggle = true;
+					globalPlayer.dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
+					globalPlayer.lockLyricScroll = false;
+					if (video_player.autoscrollButton.hasClass("locked")) video_player.autoscrollButton.removeClass("locked");
+					if (globalPlayer.scrollToLyrics) {
+						if (!video_player.autoscrollButton.hasClass("active")) video_player.autoscrollButton.addClass("active");
 					} else {
-						if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
+						if (video_player.autoscrollButton.hasClass("active")) video_player.autoscrollButton.removeClass("active");
 					}
 				}
-			} else {
-				preparePlayer(arr);
-			}
+			} 
+			else preparePlayer(arr);
 			$("#left_content").find(".song[data-id='"+arr["id"]+"']").addClass("selected");
-			if (loop == 2) createLoop(currentAlbum, currentSong, currentAlbumArtist, shuffle);
+			if (loop == 2) createLoop(globalPlayer.currentAlbum, globalPlayer.currentSong, globalPlayer.currentAlbumArtist, globalPlayer.shuffle);
 		} 
 		else alert(response.message);
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -352,12 +297,9 @@ function getImageArt(id) {
 			img = "default";
 		}
 		saveMediaArt(id, img);
-	}).fail(function(jqXHR, textStatus, errorThrown) {	
-		alert('ERRORS: ' + textStatus);
-	});
+	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS: ' + textStatus);	});
 }
 function showLyrics() {	audio_player.player_and_lyrics.toggleClass("showLyrics");	}
-
 
 function saveMediaArt(id, img) {
 	var data = "id="+id+"&img="+encodeURI(img);
@@ -368,9 +310,7 @@ function saveMediaArt(id, img) {
 		dataType: 'html'
 	}).done(function(response) {
 		if (!response.success) alert(response.message);	
-	}).fail(function(jqXHR, textStatus, errorThrown) {	
-		alert('ERRORS @ Saving Media Art: ' + errorThrown);
-	});
+	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Saving Media Art: ' + errorThrown);	});
 }
 
 function createLoop(albumId, songId, albumArtistId, shuffle) {
@@ -383,32 +323,30 @@ function createLoop(albumId, songId, albumArtistId, shuffle) {
 	}).done(function(response) {
 		if (response.success) addToLoop(response.loop);
 		else alert("Ajax returned error: " + response.message);
-	}).fail(function(jqXHR, textStatus, errorThrown) {	
-		alert('ERRORS @ CREATING LOOP: ' + errorThrown);
-	});
+	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ CREATING LOOP: ' + errorThrown);	});
 }
 function addToLoop(arr) {
+	globalPlayer.queue.length = 0;
 	if (arr.length > 0) {
-		var ind = arr.indexOf(parseInt(currentSong));
-		for (var i = ind; i < arr.length; i++) {
-			queue.push(arr[i]);
+		var ind = arr.indexOf(parseInt(globalPlayer.currentSong));
+		for (var i = ind; i < arr.length; i++) {	
+			globalPlayer.queue.push(arr[i]);		
 		}
-		if (ind != 0) {
-			for (var k = 0; k < ind; k++) {
-				queue.push(arr[k]);
-			}
+		if (ind != 0) {	for (var k = 0; k < ind; k++) {	
+			globalPlayer.queue.push(arr[k]);	}	
 		}
 	}
-	console.log(queue);
+	console.log(globalPlayer.queue);
 }
 
 function loadQueue() {
-	queue = [];
-	if (loop == 2) {
-		createLoop(currentAlbum, currentSong, currentAlbumArtist, shuffle);
+	if (globalPlayer.loop == 2) {
+		createLoop(globalPlayer.currentAlbum, globalPlayer.currentSong, globalPlayer.currentAlbumArtist, globalPlayer.shuffle);
 	}
-	else queue.push(currentSong);
-	console.log(queue);
+	else {
+		globalPlayer.queue = [globalPlayer.currentSong];
+		console.log(globalPlayer.queue);
+	}
 }
 
 
@@ -417,44 +355,24 @@ function loadQueue() {
 /*  ------  */
 
 function preparePlayer(arr) {
-	console.log(arr);
-	currentSong = arr["id"];
-	console.log(currentSong);
-	currentAlbum = arr["album_id"];
-	current_time_index = -1;
-	current_time = "-3599999";
-	current_medium = parseInt(arr["medium"]);
-	abortVideo();
-	abortAudio();
-	abortLocalVideo();
-	currentAlbumArtist = arr["album_artist_id"];
-	audio_player.background.attr("src", arr["art"]+"#"+ new Date().getTime());
-	if (current_medium == 1) {
-		audio_player.music.addClass("closed");
+	abortMedia();
+	globalPlayer.currentPlayer = null;
+
+	globalPlayer.currentSong = arr["id"];
+	globalPlayer.currentAlbum = arr["album_id"];
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	globalPlayer.currentMediaType = parseInt(arr["medium"]);
+	globalPlayer.currentAlbumArtist = arr["album_artist_id"];
+	globalPlayer.background.attr("src", arr["art"]+"#"+ new Date().getTime());
+
+	if (globalPlayer.currentMediaType == 1) {
+		audio_player.container.addClass("closed");
 		video_player.container.removeClass("closed");
-		video_player.title.html(arr["title"]);
-		video_player.artist.html(arr["artist"]);
-		if (arr["dynamic_lyrics_toggle"] == 0) {
-			video_player.lyrics.empty();
-			dynamic_lyrics_toggle = false;
-			dynamic_lyrics_starting_times = null;
-			lockLyricScroll = true;
-			if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
-			if (!video_player.autoscroll.hasClass("locked")) video_player.autoscroll.addClass("locked");
-		} else {
-			video_player.lyrics.html(arr["lyrics"]);
-			dynamic_lyrics_toggle = true;
-			dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
-			lockLyricScroll = false;
-			if (video_player.autoscroll.hasClass("locked")) video_player.autoscroll.removeClass("locked");
-			if (scrollToLyrics) {
-				if (!video_player.autoscroll.hasClass("active")) video_player.autoscroll.addClass("active");
-			} else {
-				if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
-			}
-		}
-		var setLoopForVideo = (loop == 1) ? 1 : 0;
-		video_player.player = new YT.Player('video_embed', {
+		globalPlayer.currentPlayer = video_player;
+		globalPlayer.currentPlayer.title.html(arr["title"]);
+		var setLoopForVideo = (globalPlayer.loop == 1) ? 1 : 0;
+		globalPlayer.currentPlayer.player = new YT.Player('video_embed', {
 			width: 600,
 			height: 400,
 			videoId: arr['url'],
@@ -465,439 +383,323 @@ function preparePlayer(arr) {
 			events: {
 				onReady: initialize_video,
 				onStateChange: function(e) {
-					if (e.data === YT.PlayerState.ENDED && loop == 1) video_player.player.playVideo(); 
+					if (e.data === YT.PlayerState.ENDED) {
+						if (globalPlayer.loop == 1) globalPlayer.currentPlayer.player.playVideo();
+						else nextMedia();
+					}
 				}
 			}
 		});
-	} else if (current_medium == 2) {
-		audio_player.music.addClass("closed");
+	} else if (globalPlayer.currentMediaType == 2) {
+		audio_player.container.addClass("closed");
 		video_player.container.removeClass("closed");
-		video_player.title.html(arr["title"]);
-		video_player.artist.html(arr["artist"]);
-		video_player.start_padding = arr["start_padding"];
-		video_player.end_padding = arr["end_padding"];
-		if (arr["dynamic_lyrics_toggle"] == 0) {
-			video_player.lyrics.empty();
-			dynamic_lyrics_toggle = false;
-			dynamic_lyrics_starting_times = null;
-			lockLyricScroll = true;
-			if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
-			if (!video_player.autoscroll.hasClass("locked")) video_player.autoscroll.addClass("locked");
-		} else {
-			video_player.lyrics.html(arr["lyrics"]);
-			dynamic_lyrics_toggle = true;
-			dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
-			lockLyricScroll = false;
-			if (video_player.autoscroll.hasClass("locked")) video_player.autoscroll.removeClass("locked");
-			if (scrollToLyrics) {
-				if (!video_player.autoscroll.hasClass("active")) video_player.autoscroll.addClass("active");
-			} else {
-				if (video_player.autoscroll.hasClass("active")) video_player.autoscroll.removeClass("active");
-			}
-		}
+		globalPlayer.currentPlayer = video_player;
+		globalPlayer.currentPlayer.title.html(arr["title"]);
+		globalPlayer.currentPlayer.title.removeClass("smallerTitle");
+		volumeAdjust(globalPlayer.volume);
 	} else {
 		video_player.container.addClass("closed");
-		audio_player.music.removeClass("closed");
+		audio_player.container.removeClass("closed");
+		globalPlayer.currentPlayer = audio_player;
 		if (arr["art"] == null) getImageArt(arr["id"]);
 		else {
-			audio_player.art.attr("src", arr["art"]+"#"+ new Date().getTime());
-			audio_player.background.attr("src", arr["art"]+"#"+ new Date().getTime());
+			globalPlayer.currentPlayer.art.attr("src", arr["art"]+"#"+ new Date().getTime());
+			globalPlayer.background.attr("src", arr["art"]+"#"+ new Date().getTime());
 		}
-		audio_player.title.removeClass("smallerTitle");
-		audio_player.title.html(arr["title"]);
-		if (audio_player.title.height() > 100) player.title.addClass("smallerTitle");
-		audio_player.artist.html(arr["artist"]);
-		if (audio_player.canPlay == true) {
-			audio_player.lyrics.html(arr["lyrics"]);
-			lyricsHeight = audio_player.lyrics.height();
-		} 
-		else audio_player.lyrics.html("<span class='lyric_segment noText'></span><span class='lyric_segment'>Loading Audio...</span><span class='lyric_segment noText'></span>");
-		audio_player.start_padding = arr["start_padding"];
-		audio_player.end_padding = arr["end_padding"];
-		if (arr["dynamic_lyrics_toggle"] == 0) {
-			dynamic_lyrics_toggle = false;
-			dynamic_lyrics_starting_times = null;
-			lockLyricScroll = true;
-			if (audio_player.autoscroll.hasClass("active")) audio_player.autoscroll.removeClass("active");
-			if (!audio_player.autoscroll.hasClass("locked")) audio_player.autoscroll.addClass("locked");
+		globalPlayer.currentPlayer.title.html(arr["title"]);
+		if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
+		volumeAdjust(globalPlayer.volume);
+	}
+
+	globalPlayer.currentPlayer.artist.html(arr["artist"]);
+	globalPlayer.currentPlayer.lyrics.html("");
+	globalPlayer.startPadding = arr["start_padding"];
+	globalPlayer.endPadding = arr["end_padding"];
+
+	if (arr["dynamic_lyrics_toggle"] == 0) {
+		globalPlayer.dynamic_lyrics_toggle = false;
+		globalPlayer.dynamic_lyrics_starting_times = null;
+		globalPlayer.lockLyricScroll = true;
+		if (globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.removeClass("active");
+		if (!globalPlayer.currentPlayer.autoscrollButton.hasClass("locked")) globalPlayer.currentPlayer.autoscrollButton.addClass("locked");
+	} else {
+		globalPlayer.dynamic_lyrics_toggle = true;
+		globalPlayer.dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
+		globalPlayer.lockLyricScroll = false;
+		if (globalPlayer.currentPlayer.autoscrollButton.hasClass("locked")) globalPlayer.currentPlayer.autoscrollButton.removeClass("locked");
+		if (globalPlayer.scrollToLyrics) {
+			if (!globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.addClass("active");
 		} else {
-			dynamic_lyrics_toggle = true;
-			dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
-			lockLyricScroll = false;
-			if (audio_player.autoscroll.hasClass("locked")) audio_player.autoscroll.removeClass("locked");
-			if (scrollToLyrics) {
-				if (!audio_player.autoscroll.hasClass("active")) audio_player.autoscroll.addClass("active");
-			} else {
-				if (audio_player.autoscroll.hasClass("active")) audio_player.autoscroll.removeClass("active");
+			if (globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.removeClass("active");
+		}
+
+		if (globalPlayer.currentMediaType == 1 || globalPlayer.currentMediaType == 2) {
+			globalPlayer.currentPlayer.lyrics.html(arr["lyrics"]);
+		} else {
+			if (globalPlayer.canPlay == true) {
+				globalPlayer.currentPlayer.lyrics.html(arr["lyrics"]);
+				globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.height();
+			} 
+			else {
+				globalPlayer.currentPlayer.lyrics.html("<span class='lyric_segment noText'></span><span class='lyric_segment'>Loading Audio...</span><span class='lyric_segment noText'></span>");
+				globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.height();
 			}
+
 		}
 	}
+	
+	if (globalPlayer.currentMediaType == 1 || globalPlayer.currentMediaType == 2) {
+		globalPlayer.currentPlayer.shuffleImage.attr("src", shuffleStagesWhite[globalPlayer.shuffle]);
+		globalPlayer.currentPlayer.loopImage.attr("src",loopStagesWhite[globalPlayer.loop]);
+	} else {
+		globalPlayer.currentPlayer.shuffleImage.attr("src", shuffleStagesDefault[globalPlayer.shuffle]);
+		globalPlayer.currentPlayer.loopImage.attr("src",loopStagesDefault[globalPlayer.loop]);
+	}
+
 }
 function resetPlayerAfterEdit() {
-	/*
-	abortAudio();
-	abortVideo();
-	abortLocalVideo();
-	*/
-	audio_player.music.removeClass("closed");
-	audio_player.art.attr("src", "assets/default_album_art.jpg");
-	audio_player.background.attr("src", "assets/default_album_art.jpg");
-	audio_player.title.removeClass("smallerTitle");
-	audio_player.title.html("Choose a Song");
-	audio_player.artist.html("Artist");
-	audio_player.lyrics.html("<span class='lyric_segment noText'></span><span class='lyric_segment'><i>Lyrics go Here</i></span><span class='lyric_segment'></span>");
-	audio_player.duration.text("--:--");
-	audio_player.curTime.text("--:--");
-	audio_player.time_slider.val(0);
-	audio_player.play.removeClass("hiddenControl");
-	audio_player.pause.addClass("hiddenControl");
-	currentSong = -1;
-	currentAlbumArtist = -1;
-	currentAlbum = -1;
-	queue = [];
-	dynamic_lyrics_toggle = false;
-	dynamic_lyrics_starting_times = null;
-	audio_player.canPlay = false;
-	current_time_index = -1;
-	current_time = "-3599999";
-	current_medium = -1;
-	audio_player.start_padding = 0;
-	audio_player.end_padding = 3599999;
-	video_player.start_padding = 0;
-	video_player.end_padding = 3599999;
-	video_player.play_button.removeClass("hiddenControl");
-	video_player.pause_button.addClass("hiddenControl");
-	video_player.duration.text("--:--");
-	video_player.timeDisplay.text("--:--");
-	video_player.time_slider.val(0);
-	video_player.container.addClass("closed");
+	globalPlayer.background.attr("src", "assets/default_album_art.jpg");
 
+	globalPlayer.currentPlayer.title.removeClass("smallerTitle");
+	globalPlayer.currentPlayer.title.html("Choose a Song");
+	globalPlayer.currentPlayer.artist.html("Artist");
+	globalPlayer.currentPlayer.lyrics.empty();
+	globalPlayer.currentPlayer.durationDisplay.text("--:--");
+	globalPlayer.currentPlayer.timeDisplay.text("--:--");
+	globalPlayer.currentPlayer.timeSlider.val(0);
+	globalPlayer.currentPlayer.playButton.removeClass("hiddenControl");
+	globalPlayer.currentPlayer.pauseButton.addClass("hiddenControl");
+
+	globalPlayer.currentSong = -1;
+	globalPlayer.currentAlbumArtist = -1;
+	globalPlayer.currentAlbum = -1;
+	globalPlayer.dynamic_lyrics_toggle = false;
+	globalPlayer.dynamic_lyrics_starting_times = null;
+	globalPlayer.canPlay = false;
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	globalPlayer.currentMediaType = -1;
+	globalPlayer.startPadding = 0;
+	globalPlayer.endPadding = 3599999;	
+	globalPlayer.queue.length = 0;
+
+	if (globalPlayer.currentMediaType == 0) {
+		globalPlayer.currentPlayer.container.removeClass("closed");
+		globalPlayer.currentPlayer.art.attr("src", "assets/default_album_art.jpg");
+		globalPlayer.currentPlayer.lyrics.html("<span class='lyric_segment noText'></span><span class='lyric_segment'><i>Lyrics go Here</i></span><span class='lyric_segment'></span>");
+	} else {
+		globalPlayer.currentPlayer.container.addClass("closed");
+		audio_player.playButton.removeClass("hiddenControl");
+		audio_player.pauseButton.addClass("hiddenControl");
+	}
 }
 
-function prepareAudio(arr) {
-	$(audio_player.audio).attr("src", arr["url"]);
-	audio_player.duration.html(arr["duration"]);
-	loadAudio(arr["id"], arr["url"], arr["lyrics"]);
-	if (milliseconds($(audio_player.audio).prop("currentTime")) < audio_player.start_padding ) $(audio_player.audio).prop("currentTime", revertFromMilliseconds(audio_player.start_padding));
-	audio_player.time_slider.attr("max", audio_player.end_padding);
-    audio_player.time_slider.val(milliseconds($(audio_player.audio).prop("currentTime")));
-    audio_player.time_slider.val(audio_player.start_padding);
+function prepareLocalMedia(arr) {
+	$(globalPlayer.currentPlayer.html).attr("src", arr["url"]);
+	globalPlayer.currentPlayer.durationDisplay.html(arr["duration"]);
+	loadLocalMedia(arr["id"], arr["url"], arr["lyrics"]);
+	if (milliseconds($(globalPlayer.currentPlayer.html).prop("currentTime")) < globalPlayer.startPadding ) $(globalPlayer.html).prop("currentTime", revertFromMilliseconds(globalPlayer.startPadding));
+	globalPlayer.currentPlayer.timeSlider.attr("max", globalPlayer.endPadding);
+    globalPlayer.currentPlayer.timeSlider.val(milliseconds($(globalPlayer.currentPlayer.html).prop("currentTime")));
+    globalPlayer.currentPlayer.timeSlider.val(globalPlayer.startPadding);
 }
 
-function prepareLocalVideo(arr) {
-	$(video_player.local).attr("src", arr["url"]);
-	video_player.duration.html(arr["duration"]);
-	loadLocalVideo(arr["id"], arr["url"], arr["lyrics"]);
-	if (milliseconds($(video_player.local).prop("currentTime")) < video_player.start_padding ) $(video_player.local).prop("currentTime", revertFromMilliseconds(video_player.start_padding));
-    video_player.time_slider.val(video_player.start_padding);
+function abortMedia() {
+	pauseMedia();
+	if (globalPlayer.currentMediaType == 1) {
+		clearInterval(globalPlayer.currentPlayer.embedTimeUpdateInterval);
+		globalPlayer.currentPlayer.embedTimeUpdateInterval = null;
+		globalPlayer.currentPlayer.player.a.remove();
+		globalPlayer.currentPlayer.player = null;
+		$("#video_embed_inner_container").find("#video_embed").remove();
+		$("#video_embed_inner_container").append("<div id='video_embed'></div>");
+	}
+	else {
+		$(globalPlayer.currentPlayer.html).bind('abort');
+		$(globalPlayer.currentPlayer.html).trigger('abort');
+		$(globalPlayer.currentPlayer.html).attr("src", "");
+	}
+	globalPlayer.currentPlayer.pauseButton.addClass("hiddenControl");
+	globalPlayer.currentPlayer.playButton.removeClass("hiddenControl");
+	globalPlayer.paused = true;
+	globalPlayer.dynamic_lyrics_starting_times = null;
+	globalPlayer.canPlay = false;
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	globalPlayer.startPadding = 0;
+	globalPlayer.endPadding = 3599999;	
 }
 
-function abortAudio(id) {
-	pauseAudio();
-	$(audio_player.audio).bind('abort');
-	$(audio_player.audio).trigger('abort');
-	$(audio_player.audio).attr("src", "");
-	paused = true;
-}
-function abortLocalVideo(id) {
-	pauseLocalVideo();
-	$(video_player.local).bind('abort');
-	$(video_player.local).trigger('abort');
-	$(video_player.local).attr('src','');
-	paused = true;
-}
-
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-var context = new AudioContext();
-
-function loadAudio(id, url, lyrics){
-	/* Forces audio to load into the player, as well as make the time slider for the song appear - used usually prior to starting a song */
-	$(audio_player.audio).bind("load");
-	$(audio_player.audio).trigger('load');
-	audio_player.audio.oncanplay = function() {
-    	if (!audio_player.canPlay) {
-    		audio_player.lyrics.html("");
-			audio_player.lyrics.html(lyrics);
-	    	lyricsHeight = audio_player.lyrics.height();
-			audio_player.canPlay = true;
+function loadLocalMedia(id, url, lyrics){
+	$(globalPlayer.currentPlayer.html).bind("load");
+	$(globalPlayer.currentPlayer.html).trigger('load');
+	globalPlayer.currentPlayer.html.oncanplay = function() {
+    	if (!globalPlayer.canPlay) {
+			globalPlayer.currentPlayer.lyrics.html(lyrics);
+			if (globalPlayer.currentMediaType == 0) globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.height();
+			globalPlayer.canPlay = true;
     	}
     }
 }
 
-function loadLocalVideo(id, url, lyrics) {
-	$(video_player.local).bind('load');
-	$(video_player.local).trigger('load');
-	video_player.local.oncanplay = function() {
-		if (!video_player.canPlay) {
-			video_player.lyrics.html('');
-			video_player.lyrics.html(lyrics);
-			video_player.canPlay = true;
-		}
+function startMedia(time) {
+	if(globalPlayer.currentMediaType == 1) globalPlayer.currentPlayer.player.playVideo();
+	else $(globalPlayer.currentPlayer.html).trigger('play');
+	if (globalPlayer.paused) {
+		globalPlayer.currentPlayer.playButton.addClass("hiddenControl");
+		globalPlayer.currentPlayer.pauseButton.removeClass("hiddenControl");
+		globalPlayer.paused = false;
 	}
 }
 
-function trackCurrentTime() {	console.log(this.currentTime);	}
-
-function setSource(buffer) {
-	source = context.createBufferSource(); /* creates a sound source */
-	source.buffer = buffer;                /* tell the source which sound to play */
-	source.connect(context.destination);   /* connect the source to the context's destination (the speakers) */
+function pauseMedia(){
+	if(globalPlayer.currentMediaType == 1 && globalPlayer.currentPlayer.player.pauseVideo() != null ) globalPlayer.currentPlayer.player.pauseVideo();
+	else $(globalPlayer.currentPlayer.html).trigger('pause');
+	globalPlayer.currentPlayer.pauseButton.addClass("hiddenControl");
+	globalPlayer.currentPlayer.playButton.removeClass("hiddenControl");
+	globalPlayer.paused = true;
 }
 
-function startAudio(time) {
-	/* Starts the audio, also causes the pause button to appear and the start button to disappear */
-	$(audio_player.audio).trigger('play');
-	/* source.start(time);   */
-	if (paused) {
-		audio_player.play.addClass("hiddenControl");
-		audio_player.pause.removeClass("hiddenControl");
-		paused = false;
-	}
-}
 
-function startLocalVideo(time) {
-	$(video_player.local).trigger('play');
-	if (paused) {
-		video_player.play_button.addClass("hiddenControl");
-		video_player.pause_button.removeClass("hiddenControl");
-		paused = false;
-	}
-}
-
-function pauseAudio(){
-	/*
-	Opposite of startAudio()
-	//var now = source.currentTime;
-	//source.stop(now);
-	*/
-	$(audio_player.audio).trigger('pause');
-	audio_player.pause.addClass("hiddenControl");
-	audio_player.play.removeClass("hiddenControl");
-	paused = true;
-}
-
-function pauseLocalVideo() {
-	$(video_player.local).trigger('pause');
-	if (!paused) {
-		video_player.pause_button.addClass("hiddenControl");
-		video_player.play_button.removeClass("hiddenControl");
-		paused = true;
-	}
-}
-
-function forwardAudio(){
-	/* Causes the song to advance by 5 seconds, also adjusts the time slider appropriately */
-	pauseAudio();
-	$(audio_player.audio).prop("currentTime", $(audio_player.audio).prop("currentTime")+5);
-	audio_player.time_slider.val( milliseconds($(audio_player.audio).prop("currentTime")) );
-	current_time_index = -1;
-	current_time = "-3599999";
-	if (milliseconds($(audio_player.audio).prop("currentTime")) > audio_player.end_padding) nextAudio();
-	else startAudio();
-}
-
-function forwardLocalVideo() {
-	pauseLocalVideo();
-	$(video_player.local).prop('currentTime', $(video_player.local).prop('currentTime')+5);
-	video_player.time_slider.val( ($(video_player.local).prop('currentTime') / $(video_player.local).prop('duration')) * 100 );
-	current_time_index = -1;
-	current_time = "-3599999";
-	if ( $(video_player.local).prop('currentTime') > video_player.end_padding ) nextAudio();
-	else startLocalVideo();
-}
-
-function backwardAudio(){
-	/* Same as forwardAudio(), except moves back 5 seconds */
-	pauseAudio();
-	$(audio_player.audio).prop("currentTime",$(audio_player.audio).prop("currentTime")-5);
-	audio_player.time_slider.val( milliseconds($(audio_player.audio).prop("currentTime")) );
-	current_time_index = -1;
-	current_time = "-3599999";
-	if (milliseconds($(audio_player.audio).prop("currentTime")) < audio_player.start_padding) previousAudio();
-	else startAudio();
-}
-
-function backwardLocalVideo() {
-	pauseLocalVideo();
-	$(video_player.local).prop('currentTime', $(video_player.local).prop('currentTime')-5);
-	video_player.time_slider.val( ( $(video_player.local).prop('currentTime') / $(video_player.local).prop('duration')) * 100 );
-	current_time_index = -1;
-	current_time = "-3599999";
-	if ( $(video_player.local).prop('currentTime') < video_player.start_padding ) previousAudio();
-	else startLocalVideo();
-}
-
-function nextAudio() {
-	if (current_medium == 0) {
-		pauseAudio();
-		audio_player.canPlay = false;
-	} else if (current_medium == 2) {
-		pauseLocalVideo();
-		video_player.canPlay = false;
-	}
-	var savedId = queue[0];
-	current_time_index = -1;
-	current_time = "-3599999";
-	$("#left_content").find(".selected").removeClass("selected");
-	queue.shift();
-	if (loop == 0) {
-		if (current_medium == 1) {
-			video_player.pause_button.addClass("hiddenControl");
-			video_player.play_button.removeClass("hiddenControl");
-		} else if (current_medium == 2) {
-			video_player.pause_button.addClass("hiddenControl");
-			video_player.play_button.removeClass("hiddenControl");
-			paused = true;
-		} else {
-			audio_player.pause.addClass("hiddenControl");
-			audio_player.play.removeClass("hiddenControl");
-			paused = true;
-		}
-	} else if (loop == 1) {
-		queue.push(savedId);
-		if (current_medium == 1) {
-			video_player.player.seekTo(0);
-		} else if (current_medium == 2) {
-			$(video_player.local).prop('currentTime', revertFromMilliseconds(video_player.start_padding));
-			video_player.canPlay = true;
-			startLocalVideo();
-		} else {
-			$(audio_player.audio).prop("currentTime", revertFromMilliseconds(audio_player.start_padding));
-			audio_player.canPlay = true;
-			startAudio();
-		}
-		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
+function forwardMedia(){
+	pauseMedia();
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	var newTime;
+	if (globalPlayer.currentMediaType == 1) {
+		newTime = video_player.player.getCurrentTime() + 5;
+		globalPlayer.currentPlayer.player.seekTo(newTime);
+		globalPlayer.currentPlayer.timeSlider.val( milliseconds(newTime) );
 	} else {
-		if (queue.length == 0) openMedia(savedId);
-		else openMedia(queue[0]);
-		if (current_medium == 0) {
-			audio_player.start_padding = 0;
-			audio_player.end_padding = 3599999;
-			startAudio();
-		} else if (current_medium == 2) {
-			video_player.start_padding = 0;
-			video_player.end_padding = 3599999;
-			startLocalVideo();
+		newTime = $(globalPlayer.currentPlayer.html).prop("currentTime")+5;
+		$(globalPlayer.currentPlayer.html).prop("currentTime", newTime);
+		globalPlayer.currentPlayer.timeSlider.val( milliseconds(newTime) );
+	}
+	if (milliseconds(newTime) > globalPlayer.endPadding) nextMedia();
+	else startMedia();
+}
+
+function backwardMedia(){
+	pauseMedia();
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	var newTime;
+	if (globalPlayer.currentMediaType == 1) {
+		newTime = newTime = video_player.player.getCurrentTime() - 5
+		globalPlayer.currentPlayer.player.seekTo(newTime);
+		globalPlayer.currentPlayer.timeSlider.val( milliseconds(newTime) );
+	}
+	else {
+		newTime = $(globalPlayer.currentPlayer.html).prop("currentTime") - 5;
+		$(globalPlayer.currentPlayer.html).prop("currentTime",newTime);
+		globalPlayer.currentPlayer.timeSlider.val( milliseconds($(globalPlayer.currentPlayer.html).prop("currentTime")-5) );
+	}
+	if (milliseconds(newTime) < globalPlayer.startPadding) previousMedia();
+	else startMedia();
+}
+
+function nextMedia() {
+	globalPlayer.canPlay = false;
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	pauseMedia();
+	
+	var savedId = globalPlayer.queue[0];
+	$("#left_content").find(".selected").removeClass("selected");
+	globalPlayer.queue.shift();
+
+	if (globalPlayer.loop == 0) {
+		globalPlayer.currentPlayer.pauseButton.addClass("hiddenControl");
+		globalPlayer.currentPlayer.playButton.removeClass("hiddenControl");
+		globalPlayer.paused = true;
+	} else if (globalPlayer.loop == 1) {
+		globalPlayer.queue.push(savedId);
+		if (globalPlayer.currentMediaType == 1) {
+			globalPlayer.currentPlayer.player.seekTo(0);
+		} else {
+			$(globalPlayer.currentPlayer.html).prop('currentTime', revertFromMilliseconds(globalPlayer.startPadding));
+			globalPlayer.canPlay = true;
+			startMedia();
 		}
-		queue.push(savedId);
-		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
+		$("#left_content").find(".song[data-id='"+globalPlayer.queue[0]+"']").addClass("selected");
+	} else {
+		if (globalPlayer.queue.length == 0) openMedia(savedId);
+		else openMedia(globalPlayer.queue[0]);
+		if (globalPlayer.currentMediaType == 0 || globalPlayer.currentMediaType == 2) startMedia();
+		globalPlayer.queue.push(savedId);
+		$("#left_content").find(".song[data-id='"+globalPlayer.queue[0]+"']").addClass("selected");
 	}
 }
 
-function previousAudio() {
-	if (current_medium == 0) {
-		pauseAudio();
-		audio_player.canPlay = false;
-	} else if (current_medium == 2) {
-		pauseLocalVideo();
-		video_player.canPlay = false;
-	}
-	var savedId = queue[0];
-	current_time_index = -1;
-	current_time = "-3599999";
+function previousMedia() {
+	globalPlayer.canPlay = false;
+	globalPlayer.current_time_index = -1;
+	globalPlayer.current_time = "-3599999";
+	pauseMedia();
+
+	var savedId = globalPlayer.queue[0];
 	$("#left_content").find(".selected").removeClass("selected");
-	console.log(loop);
-	if (loop == 0) {
-		queue.shift();
-		if (current_medium == 1) {
-			video_player.pause_button.addClass("hiddenControl");
-			video_player.play_button.removeClass("hiddenControl");
-		} else if (current_medium == 2) {
-			video_player.pause_button.addClass("hiddenControl");
-			video_player.play_button.removeClass("hiddenControl");
-			paused = true;
+
+	if (globalPlayer.loop == 0) {
+		globalPlayer.queue.shift();
+		globalPlayer.currentPlayer.pauseButton.addClass("hiddenControl");
+		globalPlayer.currentPlayer.playButton.removeClass("hiddenControl");
+		globalPlayer.paused = true;
+	} else if (globalPlayer.loop == 1) {
+		globalPlayer.queue.shift();
+		globalPlayer.queue.push(savedId);
+		if (globalPlayer.currentMediaType == 1) {
+			globalPlayer.currentPlayer.player.seekTo(0);
 		} else {
-			audio_player.pause.addClass("hiddenControl");
-			audio_player.play.removeClass("hiddenControl");
-			paused = true;
+			timeAdjust(globalPlayer.startPadding);
+			globalPlayer.canPlay = true;
+			startMedia();
 		}
-	} else if (loop == 1) {
-		queue.shift();
-		queue.push(savedId);
-		if (current_medium == 1) {
-			video_player.player.seekTo(0);
-		} else if (current_medium == 2) {
-			timeAdjustLocalVideo(video_player.start_padding);
-			video_player.canPlay = true;
-			startLocalVideo();
-		} else {
-			timeAdjust(audio_player.start_padding);
-			audio_player.canPlay = true;
-			startAudio();
-		}
-		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
+		$("#left_content").find(".song[data-id='"+globalPlayer.queue[0]+"']").addClass("selected");
 	} else { // loop == 2, or all
-		savedId = queue[queue.length-1];
-		queue.splice(queue.length-1, 1);
+		savedId = globalPlayer.queue[globalPlayer.queue.length-1];
+		globalPlayer.queue.splice(globalPlayer.queue.length-1, 1);
 		openMedia(savedId);
-		if (current_medium == 0) {
-			audio_player.start_padding = 0;
-			audio_player.end_padding = 3599999;
-			startAudio();
-		} else if (current_medium == 2) {
-			video_player.start_padding = 0;
-			video_player.end_padding = 3599999;
-			startLocalVideo();
-		}
-		queue.unshift(savedId);
-		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
+		if (globalPlayer.currentMediaType == 0 || globalPlayer.currentMediaType == 2) startMedia();
+		globalPlayer.queue.unshift(savedId);
+		$("#left_content").find(".song[data-id='"+globalPlayer.queue[0]+"']").addClass("selected");
 	}
 }
 
 function timeAdjust(time) {
 	/* time is in milliseconds */
     /* Adjusts the current time of the audio - works in tandem with other functions, isn't called simply by clicking on an element */
-	pauseAudio();
-	if ( parseInt(time) < parseInt(audio_player.start_padding) ) time = audio_player.start_padding;
-	else if ( parseInt(time) > parseInt(audio_player.end_padding) ) time = audio_player.end_padding;
-    $(audio_player.audio).prop("currentTime", revertFromMilliseconds(time));
-    current_time_index = -1;
-    current_time = "-3599999";
-	startAudio();
+	pauseMedia();
+	var thisTime = time;
+
+	if ( parseInt(thisTime) < parseInt(globalPlayer.startPadding) ) thisTime = globalPlayer.startPadding;
+	else if ( parseInt(thisTime) > parseInt(globalPlayer.endPadding) ) thisTime = globalPlayer.endPadding;
+    $(globalPlayer.currentPlayer.html).prop("currentTime", revertFromMilliseconds(thisTime));
+    globalPlayer.current_time_index = -1;
+    globalPlayer.current_time = "-3599999";
+	startMedia();
 }
 
-function timeAdjustLocalVideo(time) {
-	pauseLocalVideo();
-	console.log(parseInt(time) + " | " + parseInt(video_player.start_padding) );
-
-	if ( parseInt(time) < parseInt(video_player.start_padding) ) time = video_player.start_padding;
-	else if ( parseInt(time) > parseInt(video_player.end_padding) ) time = video_player.end_padding;
-    $(video_player.local).prop("currentTime", revertFromMilliseconds(time));
-    current_time_index = -1;
-    current_time = "-3599999";
-	startLocalVideo();
-}
 
 function volumeAdjust(volume) {
-	audio_player.volume.val(volume);
-	// Based on the position of the volume slider, the volume of the player and the volume icon will change
-	if (volume == 0) 		audio_player.volume_image.attr("src", "assets/mute.png");
-	else if (volume < 33) 	audio_player.volume_image.attr("src", "assets/volume_1.png");
-	else if (volume < 66) 	audio_player.volume_image.attr("src", "assets/volume_2.png");
-	else 					audio_player.volume_image.attr("src", "assets/volume_3.png");
-	var vol = volume/100;
-    $(audio_player.audio).prop("volume",vol);
-}
-
-function volumeAdjustLocalVideo(volume) {
-	video_player.volume_slider.val(volume)
-	// Based on the position of the volume slider, the volume of the player and the volume icon will change
-	if (volume == 0) 		video_player.volume_image.attr("src", "assets/mute_white.png");
-	else if (volume < 33) 	video_player.volume_image.attr("src", "assets/volume_1_white.png");
-	else if (volume < 66) 	video_player.volume_image.attr("src", "assets/volume_2_white.png");
-	else 					video_player.volume_image.attr("src", "assets/volume_3_white.png");
-	var vol = volume/100;
-	$(video_player.local).prop('volume', vol);
+	globalPlayer.currentPlayer.volumeSlider.val(volume);
+	globalPlayer.volume = volume;
+	if (volume == 0) 		globalPlayer.currentPlayer.volumeImage.attr("src", "assets/mute.png");
+	else if (volume < 33) 	globalPlayer.currentPlayer.volumeImage.attr("src", "assets/volume_1.png");
+	else if (volume < 66) 	globalPlayer.currentPlayer.volumeImage.attr("src", "assets/volume_2.png");
+	else 					globalPlayer.currentPlayer.volumeImage.attr("src", "assets/volume_3.png");
+	if (globalPlayer.currentMediaType == 1) globalPlayer.currentPlayer.player.setVolume(volume);
+	else $(globalPlayer.currentPlayer.html).prop("volume", volume/100 );
 }
 
 function autoscrollToggle() {
-	if (!lockLyricScroll) {
-		if ( audio_player.autoscroll.hasClass("active") ) {
-			audio_player.autoscroll.removeClass("active");
+	if (!globalPlayer.lockLyricScroll) {
+		if ( audio_player.autoscrollButton.hasClass("active") ) {
+			audio_player.autoscrollButton.removeClass("active");
 			audio_player.lyrics.find(".selected").removeClass('selected');
 		} 
-		else audio_player.autoscroll.addClass("active");
-		scrollToLyrics = !scrollToLyrics;
+		else audio_player.autoscrollButton.addClass("active");
+		globalPlayer.scrollToLyrics = !globalPlayer.scrollToLyrics;
 	}
 }
 
@@ -958,23 +760,15 @@ function prepareEdit(arr) {
 		}
 		if ( !$("#edit_media_nav_art").hasClass("hidden") ) $("#edit_media_nav_art").addClass("hidden");
 	} else {
-		editForm.alternative_art_activator.show().text("Use other media's artwork");
-		editForm.art_display.removeClass("hidden");
-		editForm.art.removeClass("hidden");
-		editForm.art_edit.removeClass("hidden");
 		editForm.video_id_container.addClass("hidden");
-		if (arr.art != null) {
-			editForm.art_temp = arr.art +"#"+ new Date().getTime();
-			editForm.art_display.attr("src", editForm.art_temp);
-		}
 		editForm.padding_container.removeClass("hidden");
-		if ( $("#edit_media_nav_art").hasClass("hidden") )  $("#edit_media_nav_art").removeClass("hidden");
 		editForm.start_padding.val(arr.start_padding);
 		editForm.end_padding.val(arr.end_padding);
 		editForm.lyrics_types.removeClass("hidden");
 		editForm.dynamic_lyrics_radio.removeClass("hidden");
 		editForm.simple_lyrics_radio.removeClass("hidden");
 		if (arr.medium == 2) {
+			if ( !$("#edit_media_nav_art").hasClass("hidden") )  $("#edit_media_nav_art").addClass("hidden");
 			editForm.lyrics_types.addClass("hidden");
 			editForm.dynamic_lyrics_container.addClass("selected");
 			editForm.dynamic_lyrics_radio.prop("checked", true);
@@ -987,6 +781,14 @@ function prepareEdit(arr) {
 				}
 			}
 		} else {
+			editForm.alternative_art_activator.show().text("Use other media's artwork");
+			editForm.art_display.removeClass("hidden");
+			editForm.art.removeClass("hidden");
+			editForm.art_edit.removeClass("hidden");
+			if ( $("#edit_media_nav_art").hasClass("hidden") )  $("#edit_media_nav_art").removeClass("hidden");
+			if (arr.art != null) editForm.art_temp = arr.art +"#"+ new Date().getTime();
+			else editForm.art_temp = "assets/default_album_art.jpg";
+			editForm.art_display.attr("src", editForm.art_temp);
 			if (arr.dynamic_lyrics_toggle == 1) {
 				editForm.dynamic_lyrics_container.addClass("selected");
 				var seg = arr.lyrics;
@@ -1009,45 +811,26 @@ function prepareEdit(arr) {
 }
 function dynamicLyricSegmentForEdit(id, time = "", style = "", notext = true, text = "") {
 	var lyric_seg_html, inner_remove, inner_div, notext_div, notext_input, inner_textarea, numLines;
-	lyric_seg_html = $('<div/>', {
-		'id':'dynamic_lyrics_segment_'+id,	'class':'dynamic_lyrics_segment'
-	}).appendTo(editForm.dynamic_lyrics_inner_container);
-
-		$('<span/>', {
-			'class':'dynamic_lyrics_segment_remove',	'data-id':id
-		}).text("X").appendTo(lyric_seg_html);
-							
-		inner_div = $('<div/>', {
-			'class':'dynamic_lyrics_segment_settings'
-		}).appendTo(lyric_seg_html);
-
-			$('<input>', {
-				'class':'dynamic_lyrics_time',	'type':'text',	'name':'dynamic_lyrics_times['+id+']',	'placeholder':'Start Time',	'value':time
-			}).appendTo(inner_div);
-			editForm.dynamic_lyrics_prev_time = time;
-										
-			$('<input>', {
-				'class':'dynamic_lyrics_style',	'type':'text',	'name':'dynamic_lyrics_styles['+id+']',	'placeholder':'Color',	'value':style
-			}).appendTo(inner_div);
-
-			notext_div = $('<div/>', {
-				'class':'dynamic_lyrics_notext_container'
-			}).appendTo(inner_div);
-										
-				notext_input = $('<input>', {
-					'id':'dynamic_lyrics_notext_'+id,	'class':'dynamic_lyrics_notext',	'type':'checkbox',	'name':'dynamic_lyrics_notexts['+id+']'
-				}).appendTo(notext_div);
-				if ( notext ) notext_input.prop("checked", true);
+	lyric_seg_html = $('<div/>', {'id':'dynamic_lyrics_segment_'+id,	'class':'dynamic_lyrics_segment'}).appendTo(editForm.dynamic_lyrics_inner_container);
 	
-				$('<label/>', {	
-					'class':'dynamic_lyrics_notext_label',	'for':'dynamic_lyrics_notext_'+id
-				}).text("No Text").appendTo(notext_div);
+	$('<span/>', {'class':'dynamic_lyrics_segment_remove',	'data-id':id}).text("X").appendTo(lyric_seg_html);				
+	inner_div = $('<div/>', {'class':'dynamic_lyrics_segment_settings'}).appendTo(lyric_seg_html);
+	
+	$('<input>', {'class':'dynamic_lyrics_time',	'type':'text',	'name':'dynamic_lyrics_times['+id+']',	'placeholder':'Start Time',	'value':time}).appendTo(inner_div);
+	editForm.dynamic_lyrics_prev_time = time;							
+	
+	$('<input>', {'class':'dynamic_lyrics_style',	'type':'text',	'name':'dynamic_lyrics_styles['+id+']',	'placeholder':'Color',	'value':style}).appendTo(inner_div);
+
+	notext_div = $('<div/>', {'class':'dynamic_lyrics_notext_container'}).appendTo(inner_div);
 										
-				inner_textarea = $('<textarea/>', {	
-					'class':'dynamic_lyrics_edit',	'name':'dynamic_lyrics_edits['+id+']',	'placeholder':'Lyric Segment',	'rows':'1'	
-				}).html(text).appendTo(lyric_seg_html);
-				numLines = text.split("\r\n");
-				inner_textarea.height((13*numLines.length)+"px");
+	notext_input = $('<input>', {'id':'dynamic_lyrics_notext_'+id,	'class':'dynamic_lyrics_notext',	'type':'checkbox',	'name':'dynamic_lyrics_notexts['+id+']'}).appendTo(notext_div);
+	if ( notext ) notext_input.prop("checked", true);
+	
+	$('<label/>', {'class':'dynamic_lyrics_notext_label',	'for':'dynamic_lyrics_notext_'+id}).text("No Text").appendTo(notext_div);
+										
+	inner_textarea = $('<textarea/>', {'class':'dynamic_lyrics_edit',	'name':'dynamic_lyrics_edits['+id+']',	'placeholder':'Lyric Segment',	'rows':'1'}).html(text).appendTo(lyric_seg_html);
+	numLines = text.split("\r\n");
+	inner_textarea.height((13*numLines.length)+"px");
 }
 function removeLyricSegment(seg_id) {	editForm.dynamic_lyrics_container.find("#dynamic_lyrics_segment_"+seg_id).remove();	}
 function addLyricSegment() {
@@ -1061,7 +844,7 @@ function openEdit() {
 	editForm.close.addClass("opened");
 	editForm.form.addClass("opened");
 	editAlbumArtForm.form.removeClass("opened");
-	audio_player.container.addClass("right_opened");
+	globalPlayer.mainContainer.addClass("right_opened");
 	editForm.status = true;
 }
 function closeEdit() {
@@ -1069,7 +852,7 @@ function closeEdit() {
 	editForm.close.removeClass("opened");
 	editForm.form.removeClass("opened");
 	editAlbumArtForm.form.removeClass("opened");
-	audio_player.container.removeClass("right_opened");
+	globalPlayer.mainContainer.removeClass("right_opened");
 	editForm.status = false;
 	iconEdit = null
 	iconEditSet = 0;
@@ -1085,7 +868,6 @@ function auto_grow(element) {
     element.style.height = (element.scrollHeight)+"px";
 }
 function editIcon(event) {
-	console.log("Balls");
 	event.stopPropagation(); 	/* Stop stuff happening */
 	event.preventDefault(); 	/* Totally stop stuff happening */
 	/* Create a formdata object and add the files */
@@ -1118,11 +900,10 @@ function submitEdit(event, id, reload = 0, close = false, deleted = false) {
 		cache: false,
 		dataType: 'json'
 	}).done(function(response) {
-		console.log(response);
 		if (response.success) {
 			if (close) closeEdit();
 			var flag = false;
-			if (id == currentSong) {
+			if (id == globalPlayer.currentSong) {
 				if (reload == 1) resetPlayerAfterEdit();
 				else flag = true;
 			}
@@ -1130,9 +911,7 @@ function submitEdit(event, id, reload = 0, close = false, deleted = false) {
 			getAllMedia(flag, true, id);
 		} 
 		else alert('Error on Editing Media:\n' + response.message);
-	}).fail(function(jqXHR, textStatus, errorThrown) {	
-		alert('AJAX Error on Editing Media:\n' + textStatus);
-	});
+	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('AJAX Error on Editing Media:\n' + textStatus);	});
 }
 
 
@@ -1148,20 +927,15 @@ function startAlbumArtEdit(album_id) {
 		dataType: 'json'
 	});
 	$.when(grabAlbumArt, grabAllArt).then(function(thisArt, allArt) {
-		if ( thisArt[1] != "success" ) {
-			return alert("AJAX Error on Retrieving Album Art For Edit");
-		} else if ( allArt[1] != "success" ) {
-			return alert('AJAX errors w/ grabbing all art for album art edit');
-		}
+		if ( thisArt[1] != "success" ) return alert("AJAX Error on Retrieving Album Art For Edit");
+		else if ( allArt[1] != "success" ) return alert('AJAX errors w/ grabbing all art for album art edit');
 		editAlbumArtForm.temp = (thisArt[0]["art"] != null) ? thisArt[0]["art"] : 'assets/default_album_art.jpg';
 		editAlbumArtForm.display.attr("src", editAlbumArtForm.temp + "#" + new Date().getTime());
-
 		if ( editAlbumArtForm.array != allArt[0]["data"] ) {
 			editAlbumArtForm.array = allArt[0]["data"];
 			var alternative_html;
 			for (var index in allArt[0]["data"]) {
-				alternative_html = 
-				"<div class=\"alternate_art_container_for_album_art_edit\"><img class=\"alternate_art_preview\" src=\""+allArt[0]["data"][index]+"\" alt=\"\"><input type=\"radio\" class=\"alternate_art_radio\" id=\"alternate_art_for_album_art_edit_"+index+"\" name=\"alternate_art_for_album_art_edit\" value=\""+index+"\"><label for=\"alternate_art_for_album_art_edit_"+index+"\" class=\"alternate_art_label\" data-id=\""+index+"\"></label></div>";
+				alternative_html = "<div class=\"alternate_art_container_for_album_art_edit\"><img class=\"alternate_art_preview\" src=\""+allArt[0]["data"][index]+"\" alt=\"\"><input type=\"radio\" class=\"alternate_art_radio\" id=\"alternate_art_for_album_art_edit_"+index+"\" name=\"alternate_art_for_album_art_edit\" value=\""+index+"\"><label for=\"alternate_art_for_album_art_edit_"+index+"\" class=\"alternate_art_label\" data-id=\""+index+"\"></label></div>";
 				editAlbumArtForm.alternatives_container.append(alternative_html);
 			}
 		}
@@ -1177,7 +951,7 @@ function openAlbumArtEdit() {
 	editAlbumArtForm.close.addClass("opened");
 	editAlbumArtForm.form.addClass("opened");
 	editForm.form.removeClass("opened");
-	audio_player.container.addClass("right_opened");
+	globalPlayer.mainContainer.addClass("right_opened");
 	editAlbumArtForm.status = true;
 }
 /* closeAlbumArtEdit = closeEdit(), so no function is written for that */
@@ -1286,11 +1060,10 @@ function submitEmbed(event) {
 
 function search(text) {
 	search_matches = [];
-	for (var id in database) {
-		if ( database[id]["title"].toLowerCase().includes(text.toLowerCase()) ) search_matches.push(id);
+	for (var id in globalPlayer.database) {
+		if ( globalPlayer.database[id]["title"].toLowerCase().includes(text.toLowerCase()) ) search_matches.push(id);
 	}
-	if (search_matches.length > 0) return true;
-	else return false;
+	return search_matches.length > 0;
 }
 
 function populateAlternativeArtContainer() {
@@ -1313,52 +1086,24 @@ function populateAlternativeArtContainer() {
        		else $(this).text("No alternate album art available");
 		}
 		else alert(response.message);
-	}).fail(function(jqXHR, textStatus, errorThrown) {	
-		alert('ERRORS @ Adding New Media: ' + textStatus);
-	});
+	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Adding New Media: ' + textStatus);	});
 }
-
-
-
-
 
 function initialize_video() {
-	video_player.duration.text(formatTime( video_player.player.getDuration() ));
-	video_player.loop_image.attr("src", loopStagesWhite[loop]);
-	videoVolumeAdjust(video_player.volume_slider.val());
-	updateVideoTimerDisplay();
-	updateVideoProgressBar();
-	clearInterval(video_player.time_update_interval);
-	console.log("Video Initialized");
-	startThisVideo();
-	video_player.time_update_interval = setInterval(function () {
-        updateVideoTimerDisplay();
-        updateVideoProgressBar();
-        if (dynamic_lyrics_toggle && scrollToLyrics) {
-        	updateVideoLyricsDisplay();
-        }
+	globalPlayer.currentPlayer.durationDisplay.text(formatTime( globalPlayer.currentPlayer.player.getDuration() ));
+	globalPlayer.currentPlayer.loopImage.attr("src", loopStagesWhite[globalPlayer.loop]);
+	globalPlayer.currentPlayer.timeSlider.attr("max", milliseconds(globalPlayer.currentPlayer.player.getDuration()));
+	globalPlayer.currentPlayer.timeDisplay.text( readableDuration(globalPlayer.currentPlayer.player.getCurrentTime() * 1000) );
+	volumeAdjust(globalPlayer.volume);
+	globalPlayer.startPadding = ( globalPlayer.startPadding != null && globalPlayer.startPadding >= 0 ) ? globalPlayer.startPadding : 0;
+	globalPlayer.endPadding = ( globalPlayer.endPadding != null && globalPlayer.endPadding > 0 ) ? globalPlayer.endPadding : milliseconds(globalPlayer.currentPlayer.player.getDuration());
+	clearInterval(globalPlayer.currentPlayer.embedTimeUpdateInterval);
+	startMedia();
+	globalPlayer.currentPlayer.embedTimeUpdateInterval = setInterval(function () {
+        if (!globalPlayer.currentPlayer.lock_time_slider) onTimeUpdate(null, globalPlayer.currentPlayer.player.getCurrentTime())
     }, 100);
 }
-function abortVideo() {
-	video_player.title.text("");
-	video_player.artist.text("");
-	video_player.timeDisplay.text("");
-	video_player.duration.text("");
-	video_player.time_interval = null;
-	if (video_player.player != null) {
-		video_player.player.a.remove();
-		video_player.player = null;
-	}
-	video_player.paused = true;
-	clearInterval(video_player.time_update_interval);
-	video_player.pause_button.addClass("hiddenControl");
-	video_player.play_button.removeClass("hiddenControl");
-	$("#video_embed_inner_container").find("#video_embed").remove();
-	$("#video_embed_inner_container").append("<div id='video_embed'></div>");
-}
-function updateVideoTimerDisplay() {
-	video_player.timeDisplay.text( readableDuration(video_player.player.getCurrentTime() * 1000) );
-}
+
 function formatTime(time){
     time = Math.round(time);
     var minutes = Math.floor(time / 60),
@@ -1366,158 +1111,102 @@ function formatTime(time){
     seconds = seconds < 10 ? '0' + seconds : seconds;
     return minutes + ":" + seconds;
 }
-function updateVideoProgressBar() {
-	if ( !video_player.lock_time_slider ) {
-		video_player.time_slider.val((video_player.player.getCurrentTime() / video_player.player.getDuration()) * 100);
-	}
-}
-function updateVideoLyricsDisplay() {
-	var curMillisec = video_player.player.getCurrentTime() * 1000;
-	if (current_time_index == -1) {
-		video_player.lyrics.find(".selected").removeClass("selected");
-		for (var i = dynamic_lyrics_starting_times.length - 1; i >= 0; i--) {
-			if ( curMillisec >= dynamic_lyrics_starting_times[i] ) {
-				current_time_index = i;
-				current_time = dynamic_lyrics_starting_times[i];
-				break;
-			} else {
-				current_time_index = -1;
-				current_time = "-3599999";
-			}
-		}
-	} else {
-		if ( (curMillisec > dynamic_lyrics_starting_times[current_time_index+1]) || (curMillisec < dynamic_lyrics_starting_times[current_time_index]) ) {
-			video_player.lyrics.find(".selected").removeClass("selected");
-			current_time_index = -1;
-			current_time = "-3599999";
-		}
-	}
-
-	if ( !$(".lyric_segment_"+current_time).hasClass("selected") ) $("#video_lyrics_inner_container .lyric_segment_"+current_time).addClass("selected");
-}
-function startThisVideo() {
-	if (current_medium == 1) video_player.player.playVideo();
-	else if (current_medium == 2) startLocalVideo();
-
-	if (video_player.paused) {
-		video_player.play_button.addClass("hiddenControl");
-		video_player.pause_button.removeClass("hiddenControl");
-		video_player.paused = false;
-	}
-}
-function pauseThisVideo() {
-	if (current_medium == 1 ) video_player.player.pauseVideo();
-	else if (current_medium == 2) pauseLocalVideo();
-
-	if (!video_player.paused) {
-		video_player.pause_button.addClass("hiddenControl");
-		video_player.play_button.removeClass("hiddenControl");
-		video_player.paused = true;
-	}
-}
-function videoVolumeAdjust(volume) {
-	if (current_medium == 1) video_player.player.setVolume(volume);
-	else if (current_medium == 2) {
-		var vol = volume/100;
-		$(video_player.local).prop('volume', vol);
-	}
-	// Based on the position of the volume slider, the volume of the player and the volume icon will change
-	if (volume == 0) 		video_player.volume_image.attr("src", "assets/mute_white.png");
-	else if (volume < 33) 	video_player.volume_image.attr("src", "assets/volume_1_white.png");
-	else if (volume < 66) 	video_player.volume_image.attr("src", "assets/volume_2_white.png");
-	else 					video_player.volume_image.attr("src", "assets/volume_3_white.png");
-}
-function videoForwardFive(){
-	if (current_medium == 1) {
-		if ( video_player.player.getCurrentTime() + 5 < video_player.player.getDuration() ) {
-			video_player.player.seekTo(video_player.player.getCurrentTime() + 5);
-		}
-		else nextAudio();
-	} else if (current_medium == 2) forwardLocalVideo();
-}
-function videoBackFive(){
-	if (current_medium == 1) {
-		var newTime = (video_player.player.getCurrentTime() - 5 >= 0) ? video_player.player.getCurrentTime() - 5 : 0;
-		video_player.player.seekTo(newTime);
-	}
-	else if (current_medium == 2) backwardLocalVideo();
-}
 
 function videoAutoscrollToggle() {
-	if (!lockLyricScroll) {
-		if ( video_player.autoscroll.hasClass("active") ) {
-			video_player.autoscroll.removeClass("active");
+	if (!globalPlayer.lockLyricScroll) {
+		if ( video_player.autoscrollButton.hasClass("active") ) {
+			video_player.autoscrollButton.removeClass("active");
 			video_player.lyrics.find(".selected").removeClass('selected');
 		} 
-		else video_player.autoscroll.addClass("active");
-		scrollToLyrics = !scrollToLyrics;
+		else video_player.autoscrollButton.addClass("active");
+		globalPlayer.scrollToLyrics = !globalPlayer.scrollToLyrics;
 	}
 }
 
 $(document).ready(function() {
 	/* Setting Global Variables */
-	audio_player = {
-		container: $("#main"),
-		music: $("#player_container"),
-		audio: document.getElementById("audio"),
-		player_and_lyrics: $("#player_art_and_lyrics"),
-		art: $("#player_art"),
+	globalPlayer = {
+		mainContainer:$("#main"),
 		background: $("#player_background"),
+		currentPlayer:null,
+		currentSong:-1,
+		currentAlbum:-1,
+		currentAlbumArtist:-1,
+		currentMediaType:-1,
+		scrollToLyrics:true,
+		lockLyricScroll:false,
+		paused:true,
+		loop:1,
+		shuffle:0,
+		dynamic_lyrics_toggle:false,
+		dynamic_lyrics_starting_times:null,
+		current_time:"-3599999",
+		current_time_index:-1,
+		startPadding:0,
+		endPadding:3599999,
+		canPlay:false,
+		volume:100,
+		lyricsHeight:0,
+		database: [],
+		queue: []
+	};
+	audio_player = {
+		container: $("#player_container"),
+		html: document.getElementById("audio"),
 		title: $("#player_title"),
 		artist: $("#player_artist"),
+		timeSlider: $("#time_slider"),
+		timeDisplay: $("#curTime"),
+		durationDisplay: $("#duration"),
+		playButton: $("#play"),
+		pauseButton: $("#pause"),
+		previousButton: $("#previous"),
+		nextButton: $("#next"),
+		loopButton: $("#repeat"),
+		loopImage: $("#repeat_image"),
+		shuffleButton: $("#shuffle"),
+		shuffleImage: $("#shuffle_image"),
+		backFiveButton: $("#backFive"),
+		forwardFiveButton: $("#forwardFive"),
+		volumeSlider: $("#volume"),
+		volumeImage: $("#volume_image"),
+		optionsButton: $("#options"),
+		autoscrollButton: $("#player_lyrics_autoscroll"),
 		lyrics: $("#player_lyrics"),
-		duration: $("#duration"),
-		curTime: $("#curTime"),
-		time_slider: $("#time_slider"),
-		volume: $("#volume"),
-		volume_image: $("#volume_image"),
-		play: $("#play"),
-		pause: $("#pause"),
-		previous: $("#previous"),
-		next: $("#next"),
-		loop: $("#repeat"),
-		loop_image: $("#repeat_image"),
-		shuffle: $("#shuffle"),
-		shuffle_image: $("#shuffle_image"),
-		edit: $("#options"),
-		autoscroll: $("#player_lyrics_autoscroll"),
-		start_padding: 0, 
-		end_padding: 3599999,
-		canPlay: false
+
+		player_and_lyrics: $("#player_art_and_lyrics"),
+		art: $("#player_art")
 	};
 	video_player = {
 		container: $("#video_container"),
-		player: null,
-		local: document.getElementById("localVideo"),
-		embed: $("#video_embed"),
+		html: document.getElementById("localVideo"),
 		title: $("#video_title"),
 		artist: $("#video_artist"),
-		lyrics_parent: $("#video_lyrics_container"),
-		lyrics: $("#video_lyrics_inner_container"),
+		timeSlider: $("#video_time_slider"),
 		timeDisplay: $("#video_curTime"),
-		duration: $("#video_duration"),
-		time_slider: $("#video_time_slider"),
+		durationDisplay: $("#video_duration"),
+		playButton: $("#video_play"),
+		pauseButton: $("#video_pause"),
+		previousButton: $("#video_previous"),
+		nextButton: $("#video_next"),
+		loopButton: $("#video_repeat"),
+		loopImage: $("#video_repeat_image"),
+		shuffleButton: $("#video_shuffle"),
+		shuffleImage: $("#video_shuffle_image"),
+		backFiveButton: $("#video_backFive"),
+		forwardFiveButton: $("#video_forwardFive"),
+		volumeSlider: $("#video_volume"),
+		volumeImage: $("#video_volume_image"),
+		optionsButton: $("#video_options"),
+		autoscrollButton: $("#video_lyrics_autoscroll"),
+		lyrics: $("#video_lyrics_inner_container"),
+
+		player: null,
+		embed: $("#video_embed"),
+		lyrics_parent: $("#video_lyrics_container"),
 		lock_time_slider: false,
-		time_interval: null,
-		play_button: $("#video_play"),
-		pause_button: $("#video_pause"),
-		paused: true,
-		previous: $("#video_previous"),
-		next: $("#video_next"),
-		back_five: $("#video_backFive"),
-		forward_five: $("#video_forwardFive"),
-		volume_slider: $("#video_volume"),
-		volume_image: $("#video_volume_image"),
-		loop: $("#video_repeat"),
-		loop_image: $("#video_repeat_image"),
-		shuffle: $("#video_shuffle"),
-		shuffle_image: $("#video_shuffle_image"),
-		options: $("#video_options"),
-		autoscroll: $("#video_lyrics_autoscroll"),
-		controls_container: $("#video_extras_container"),
-		start_padding:0,
-		end_padding: 3599999,
-		canPlay: false
+		embedTimeUpdateInterval: null,
+		controls_container: $("#video_extras_container")
 	};
 	editForm = {
 		status: false,
@@ -1587,22 +1276,16 @@ $(document).ready(function() {
 	};
 
 	/* Initialization Functions */
+	globalPlayer.currentPlayer = audio_player;
 	getAllMedia(false, false, -1);
-	volumeAdjust(audio_player.volume.val());
 
 	/* User-related actions */
 	window.onkeydown = function(e) {
 		if ( e.keyCode == 32 && (e.target.tagName.toUpperCase() != 'INPUT') && (e.target.tagName.toUpperCase() != 'TEXTAREA') ) {
 			e.preventDefault();
-			if (currentSong != -1) {
-				if ( current_medium == 0 ) {
-					if (paused) startAudio();
-					else pauseAudio();
-				}
-				else if (current_medium == 1) {
-					if (video_player.paused) startThisVideo();
-					else pauseThisVideo();
-				}
+			if (globalPlayer.currentSong != -1) {
+				if (globalPlayer.paused) startMedia();
+				else pauseMedia();
 			}
 		}
 	};
@@ -1610,23 +1293,25 @@ $(document).ready(function() {
 		$("#left_content").find(".selected").removeClass("selected");
 		$("#left_content").find(".searched").removeClass("searched");
 		$(this).addClass("selected");
+
 		var id = $(this).attr("data-id");
 		var medium = $(this).attr("data-medium");
+
 		openMedia(id, true);
+
 		if (medium == 0) {
-			$(audio_player.audio).trigger('play'); 
-			console.log("Playing Audio");
-			if (paused) {
-				audio_player.play.addClass("hiddenControl");
-				audio_player.pause.removeClass("hiddenControl");
-				paused = false;
+			$(globalPlayer.currentPlayer.html).trigger('play'); 
+			if (globalPlayer.paused) {
+				globalPlayer.currentPlayer.playButton.addClass("hiddenControl");
+				globalPlayer.currentPlayer.pauseButton.removeClass("hiddenControl");
+				globalPlayer.paused = false;
 			}
 		} else if (medium == 2) {
-			$(video_player.local).trigger('play');
-			if (video_player.paused) {
-				video_player.play_button.addClass("hiddenControl");
-				video_player.pause_button.removeClass("hiddenControl");
-				video_player.paused = false;
+			$(globalPlayer.currentPlayer.html).trigger('play');
+			if (globalPlayer.paused) {
+				globalPlayer.currentPlayer.playButton.addClass("hiddenControl");
+				globalPlayer.currentPlayer.pauseButton.removeClass("hiddenControl");
+				globalPlayer.paused = false;
 			}
 		}
 	});
@@ -1636,7 +1321,7 @@ $(document).ready(function() {
 		var curId = parent.attr("data-id");
 		var curEditingId = editForm.songId.val();
 		if (!editForm.status) startEdit(curId);
-		else if (currentSong != curId) {
+		else if (globalPlayer.currentSong != curId) {
 			if (curEditingId != curId) startEdit(curId);
 			else closeEdit();
 		} else {
@@ -1647,11 +1332,11 @@ $(document).ready(function() {
 	$(document).on("click", "#left_close", function() {
 		if (left_close) {
 			$("#left").removeClass("closed");
-			audio_player.container.addClass("left_opened");
+			globalPlayer.mainContainer.addClass("left_opened");
 			$(this).text("Close");
 		} else {
 			$("#left").addClass("closed");
-			audio_player.container.removeClass("left_opened");
+			globalPlayer.mainContainer.removeClass("left_opened");
 			$(this).text("Open");
 		}
 		left_close = !left_close;
@@ -1695,11 +1380,11 @@ $(document).ready(function() {
 	embedForm.total_error.on("mouseleave", function() {	$(this).removeClass("opened");	});
 
 	/* Edit Form-related functions */
-	audio_player.edit.on("click", function() {
-		if (!editForm.status) startEdit(currentSong);
+	audio_player.optionsButton.on("click", function() {
+		if (!editForm.status) startEdit(globalPlayer.currentSong);
 		else {
 			var curId = editForm.songId.val();
-			if (curId != currentSong) startEdit(currentSong);
+			if (curId != globalPlayer.currentSong) startEdit(globalPlayer.currentSong);
 			else closeEdit();
 		}
 	});
@@ -1724,10 +1409,7 @@ $(document).ready(function() {
 		} 
 		else editForm.art_display.attr('src', 'assets/default_album_art.jpg');
 	}
-	editForm.submit.on('click', function(e) {
-		console.log("Balls");
-		editIcon(e);
-	});
+	editForm.submit.on('click', function(e) { editIcon(e); });
 	editForm.close.on("click", closeEdit);
 	$(document).on("click", ".dynamic_lyrics_segment_remove", function() {
 		var seg_id = $(this).attr('data-id');
@@ -1763,13 +1445,9 @@ $(document).ready(function() {
         }).done(function(response) {	
         	if (response.success) getAllMedia();
         	else alert(response.message);
-		}).fail(function(jqXHR, textStatus, errorThrown) {	
-			alert('ERRORS @ Adding New Media: ' + textStatus);
-		});
+		}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Adding New Media: ' + textStatus);	});
 	});
-	$(document).on("click", ".addAlbumArt_button", function() {	
-		startAlbumArtEdit( parseInt($(this).attr("data-id")) );
-	});	
+	$(document).on("click", ".addAlbumArt_button", function() {	startAlbumArtEdit( parseInt($(this).attr("data-id")) );	});	
 	$("#edit_album_art_form_input").on("change", prepareAlbumArtEdit);
 	editAlbumArtForm.form.on("submit", submitAlbumArtEdit);
 	$(document).on("click", ".alternate_art_container_for_album_art_edit .alternate_art_label", function() {
@@ -1782,76 +1460,72 @@ $(document).ready(function() {
 	});
 
 	/* Player-related functions */
-	audio_player.time_slider.on("input", function() { 	timeAdjust( $(this).val() );	});	/* Moving the slider adjusts the audio's time */
-	audio_player.volume.on( "input", function() { volumeAdjust($(this).val()); 	});
-	$(audio_player.audio).on("ended", nextAudio);
-	audio_player.previous.on("click", previousAudio);
-	audio_player.next.on("click", nextAudio);
-	audio_player.autoscroll.on("click", autoscrollToggle);
-	audio_player.loop.on("click", function() {
-		loop++;
-		if (loop == 3) loop = 0;
-		audio_player.loop_image.attr("src", loopStagesDefault[loop]);
+	audio_player.playButton.on('click', startMedia);
+	audio_player.pauseButton.on('click', pauseMedia);
+	audio_player.loopButton.on("click", function() {
+		globalPlayer.loop = (globalPlayer.loop == 2) ? 0 : globalPlayer.loop + 1;
+		audio_player.loopImage.attr("src", loopStagesDefault[globalPlayer.loop]);
 		loadQueue();
 	});
-	audio_player.shuffle.on("click", function(){
-		shuffle ++;
-		if (shuffle == 2) shuffle = 0;
-		audio_player.shuffle_image.attr("src", shuffleStages[shuffle]);
+	audio_player.shuffleButton.on("click", function(){
+		globalPlayer.shuffle = (globalPlayer.shuffle == 1) ? 0 : 1;
+		audio_player.shuffleImage.attr("src", shuffleStagesDefault[globalPlayer.shuffle]);
 		loadQueue();
 	});
+	audio_player.volumeSlider.on( "input", function() { volumeAdjust($(this).val()); 	});
+	audio_player.timeSlider.on("input", function() { 	timeAdjust( $(this).val() );	});	/* Moving the slider adjusts the audio's time */
+	$(audio_player.html).on("ended", nextMedia);
+	audio_player.previousButton.on("click", previousMedia);
+	audio_player.nextButton.on("click", nextMedia);
+	audio_player.forwardFiveButton.on("click", forwardMedia);
+    audio_player.backFiveButton.on("click", backwardMedia);
+	audio_player.autoscrollButton.on("click", autoscrollToggle);
 
+	
 	/* Video Player-related functions */
-	video_player.time_slider.on("mousedown touchstart", function(e) {
-		video_player.lock_time_slider = true;
-	});
-	video_player.time_slider.on('mouseup touchend', function (e) {
-		if (current_medium == 1) {
-			var restart_video = false;
-			if (!video_player.paused)	{
-				pauseThisVideo();
-				restart_video = true;
+	video_player.timeSlider.on("mousedown touchstart", function(e) { video_player.lock_time_slider = true; });
+	video_player.timeSlider.on('mouseup touchend', function (e) {
+		if (globalPlayer.currentMediaType == 1) {
+			var unPauseVideo = false;
+			if (!globalPlayer.paused)	{
+				pauseMedia();
+				unPauseVideo = true;
 			}
-	    	var newTime = video_player.player.getDuration() * (e.target.value / 100);
-			video_player.player.seekTo(newTime);
-			if ( restart_video ) startThisVideo();
-			video_player.lock_time_slider = false;
-		} else if (current_medium == 2) {
-			timeAdjustLocalVideo( $(this).val() * parseInt($(video_player.local).prop('duration')) * 10 );
+			console.log(e.target.value);
+	    	var newTime = e.target.value;
+			globalPlayer.currentPlayer.player.seekTo(revertFromMilliseconds(newTime));
+			if ( unPauseVideo ) startMedia();
+		} else if (globalPlayer.currentMediaType == 2) {
+			timeAdjust( $(this).val() );
 		}
+		video_player.lock_time_slider = false;
 	});
-	video_player.play_button.on('click', startThisVideo);
-    video_player.pause_button.on('click', pauseThisVideo);
-    video_player.volume_slider.on('input', function() {
-    	videoVolumeAdjust($(this).val());
-    });
-    video_player.loop.on("click", function() {
-    	loop++;
-    	if (loop == 3) loop = 0;
-    	video_player.loop_image.attr("src", loopStagesWhite[loop]);
-    	if (loop == 1 && current_medium == 1) video_player.player.setLoop();
+	video_player.playButton.on('click', startMedia);
+    video_player.pauseButton.on('click', pauseMedia);
+    video_player.loopButton.on("click", function() {
+    	globalPlayer.loop = ( globalPlayer.loop == 2 ) ? 0 : globalPlayer.loop + 1;
+    	video_player.loopImage.attr("src", loopStagesWhite[globalPlayer.loop]);
+    	if (globalPlayer.loop == 1 && globalPlayer.currentMediaType == 1) video_player.player.setLoop();
     	loadQueue();
     });
-    video_player.shuffle.on("click", function(){
-		shuffle ++;
-		if (shuffle == 2) shuffle = 0;
-		video_player.shuffle_image.attr("src", shuffleStages[shuffle]);
+    video_player.shuffleButton.on("click", function(){
+    	globalPlayer.shuffle = (globalPlayer.shuffle == 1) ? 0 : 1
+		video_player.shuffleImage.attr("src", shuffleStagesWhite[globalPlayer.shuffle]);
 		loadQueue();
 	});
-    video_player.previous.on("click", previousAudio);
-    video_player.next.on("click", nextAudio);
-    video_player.forward_five.on("click", videoForwardFive);
-    video_player.back_five.on("click", videoBackFive);
-    video_player.options.on("click", function()  {
-    	if (!editForm.status) startEdit(currentSong);
+	video_player.volumeSlider.on( "input", function() { volumeAdjust($(this).val()); 	});
+    video_player.previousButton.on("click", previousMedia);
+    video_player.nextButton.on("click", nextMedia);
+    video_player.forwardFiveButton.on("click", forwardMedia);
+    video_player.backFiveButton.on("click", backwardMedia);
+    video_player.optionsButton.on("click", function()  {
+    	if (!editForm.status) startEdit(globalPlayer.currentSong);
 		else {
 			var curId = editForm.songId.val();
-			if (curId != currentSong) startEdit(currentSong);
+			if (curId != globalPlayer.currentSong) startEdit(globalPlayer.currentSong);
 			else closeEdit();
 		}
     });
-    video_player.autoscroll.on('click', videoAutoscrollToggle);
+    video_player.autoscrollButton.on('click', videoAutoscrollToggle);
 });
-
-
 

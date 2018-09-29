@@ -1,18 +1,18 @@
 <?php
-	define ("PATH_TO_CONTENT", "media/");
-	define ("ROOT_DIRECTORY", "media/");
-	define( "PATH_TO_ASSETS_FOR_FILES", "assets/" );
+	define('PATH_TO_CONTENT','media/');
+	define('ROOT_DIRECTORY','media/');
+	define('PATH_TO_ASSETS_FOR_FILES','assets/');
 
-	ini_set('memory_limit', '96M');
-	ini_set('post_max_size', '64M');
-	ini_set('upload_max_filesize', '64M');
+	ini_set('memory_limit','96M');
+	ini_set('post_max_size','64M');
+	ini_set('upload_max_filesize','64M');
 
 	// ** MySQL connection settings ** //
 	//Keep this as localhost for the course server
-	define('DB_HOST', 'localhost');
-	define('DB_USER', 'kimryan0416');    
-	define('DB_PASSWORD', 'starcraft'); 
-	define('DB_NAME', 'simple_music_player'); 
+	define('DB_HOST','localhost');
+	define('DB_USER','kimryan0416');    
+	define('DB_PASSWORD','starcraft'); 
+	define('DB_NAME','simple_music_player'); 
 
 	$db = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME ) or die('Error connecting to MySQL server.' .mysql_error());
 	$db->autocommit(FALSE);
@@ -20,11 +20,8 @@
 
 	function closeFile($arr, $comm = true) {
 		global $db;
-		if ($comm) {
-			$db->commit();
-		} else {
-			$db->rollback();
-		}
+		if ($comm) $db->commit();
+		else $db->rollback();
 		$db->close();
 		print(json_encode($arr, JSON_UNESCAPED_SLASHES));
 		return;
@@ -96,8 +93,8 @@
 	}
 
 	function decodeLyricsForPrint($string) {
-		$htmlEntities = array( "|NL|" );
-		$printEntities = array("<br/>");
+		$htmlEntities = array('|NL|');
+		$printEntities = array('<br/>');
 		return str_replace( $htmlEntities, $printEntities, $string );
 	}
 ?>

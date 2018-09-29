@@ -1,9 +1,7 @@
 <?php
-	require("scripts/config.php");
-
+	require('scripts/config.php');
 	$content = array();
-
-	$query = "SELECT 
+	$query = 'SELECT 
 		T1.album_artist_id AS album_artist_id,
 	    T3.name AS album_artist_name,
 	    T1.album_id AS album_id, 
@@ -25,33 +23,33 @@
     RIGHT OUTER JOIN albumToart AS T8 ON T1.album_id = T8.album_id
     RIGHT OUTER JOIN art AS T9 ON T8.art_id = T9.id
     WHERE T5.title IS NOT NULL OR T5.url IS NOT NULL
-	ORDER BY album_artist_name, album_name, title";
-	$music = $db->query($query) or die("Error selecting all files from database");
+	ORDER BY album_artist_name, album_name, title';
+	$music = $db->query($query) or die('Error selecting all files from database');
 
 	while ($row = $music->fetch_assoc()) {
-		$album_artist_name = $row["album_artist_name"] != null ? $row["album_artist_name"] : "Unknown Album Artist";
+		$album_artist_name = $row['album_artist_name'] != null ? $row['album_artist_name'] : 'Unknown Album Artist';
 		if ( $content[$album_artist_name] == null ) {
 			$content[$album_artist_name] = array(
-				"name" => $album_artist_name,
-				"albums" => array()
+				'name' => $album_artist_name,
+				'albums' => array()
 			);
 		}
-		$album_name = $row["album_name"] != null ? $row["album_name"] : "Unknown Album";
-		$album_art = $row["album_art"] != null ? $row["album_art"] : "assets/default_album_art.jpg";
-		$album_id = $row["album_id"];
-		if ( $content[$album_artist_name]["albums"][$album_name] == null ) {
-			$content[$album_artist_name]["albums"][$album_name] = array(
-				"art" => $album_art,
-				"id" => $album_id,
-				"songs" => array()
+		$album_name = $row['album_name'] != null ? $row['album_name'] : 'Unknown Album';
+		$album_art = $row['album_art'] != null ? $row['album_art'] : 'assets/default_album_art.jpg';
+		$album_id = $row['album_id'];
+		if ( $content[$album_artist_name]['albums'][$album_name] == null ) {
+			$content[$album_artist_name]['albums'][$album_name] = array(
+				'art' => $album_art,
+				'id' => $album_id,
+				'songs' => array()
 			);
 		}  
-		$content[$album_artist_name]["albums"][$album_name]["songs"][] = array(
-			"id" => $row["id"],
-			"title" => $row["title"],
-			"artist" => $row["artist"],
-			"medium" => $row["medium"],
-			"url" => $row["url"]
+		$content[$album_artist_name]['albums'][$album_name]['songs'][] = array(
+			'id' => $row['id'],
+			'title' => $row['title'],
+			'artist' => $row['artist'],
+			'medium' => $row['medium'],
+			'url' => $row['url']
 		);
 	}
 	$db->commit();
@@ -92,26 +90,26 @@
 							echo '<div class="album_artist_div">';
 							echo '<h1 class="album_artist_name">'.$album_artist['name'].'</h1>';
 							foreach ($album_artist['albums'] as $album_name=>$album) {
-								echo '<div class="album" id="album_'.$album["id"].'">';
+								echo '<div class="album" id="album_'.$album['id'].'">';
 								echo '<div class="album_header">';
 								echo '<div class="album_image_container">';
-								echo '<img class="album_image" src="'.$album["art"].'#'.time().'" alt="">';
-								echo '<div class="addAlbumArt_button" data-id="'.$album["id"].'"></div>';
+								echo '<img class="album_image" src="'.$album['art'].'#'.time().'" alt="">';
+								echo '<div class="addAlbumArt_button" data-id="'.$album['id'].'"></div>';
 								echo '</div>';
 								echo '<h2>'.$album_name.'</h2>';
 								echo '</div>';
-								foreach($album["songs"] as $song) {
-									echo "<div class=\"song\" id=\"".$song['id']."\" data-id=\"".$song['id']."\" data-medium=\"".$song['medium']."\">";
-									if ($song["medium"] == 1) {
-										echo "<img class=\"video_icon\" src=\"assets/youtube.png\" alt=\"YouTube\">";
-										echo "<span class=\"video_title\">".$song['title']."</span>";
-										echo "<span class=\"video_artist\">".$song['artist']."</span>";
+								foreach($album['songs'] as $song) {
+									echo '<div class="song" id="'.$song['id'].'" data-id="'.$song['id'].'" data-medium="'.$song['medium'].'">';
+									if ($song['medium'] == 1) {
+										echo '<img class="video_icon" src="assets/youtube.png" alt="YouTube">';
+										echo '<span class="video_title">'.$song['title'].'</span>';
+										echo '<span class="video_artist">'.$song['artist'].'</span>';
 									} else {
-										echo "<span class=\"song_title\">".$song['title']."</span>";
-										echo "<span class=\"song_artist\">".$song['artist']."</span>";
+										echo '<span class="song_title">'.$song['title'].'</span>';
+										echo '<span class="song_artist">'.$song['artist'].'</span>';
 									}
-									echo "<img class=\"song_options\" src=\"assets/options.png\" alt=\"Song Options\">";
-									echo "</div>";
+									echo '<img class="song_options" src="assets/options.png" alt="Song Options">';
+									echo '</div>';
 								}
 								echo '</div>';
 							}
@@ -162,7 +160,7 @@
 					<div id="video_embed_container">
 						<div id="video_embed_inner_container">
 							<div id="video_embed"></div>
-							<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdateVideo(this);">
+							<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdate(this);">
 								Your browser does not support the audio element.
 							</video>
 							<div id="video_title_and_artist">
@@ -212,6 +210,14 @@
 										<img class="video_extras_button" id="video_options_image" src="assets/options.png" alt="Edit Media Info">
 									</div>
 									<span class="video_extras_button_container active" id="video_lyrics_autoscroll">Autoscroll</span>
+									<!--
+									<select class="video_extras_button_container" id="video_quality">
+										<option></option>
+										<option></option>
+										<option></option>
+										<option value=></option>
+									</select>
+								-->
 								</div>
 							</div>
 						</div>
@@ -250,10 +256,10 @@
 							</div>
 							<div id="controls_container">
 								<img class="control" id="previous" src="assets/previous.png" alt="Previous">
-								<img class="control" id="backFive" src="assets/back.png" alt="-5sec" onclick="backwardAudio();">
-								<img class="control" id="play" src="assets/start.png" alt="Play" onclick="startAudio();">
-								<img class="control hiddenControl" id="pause" src="assets/pause.png" alt="Pause" onclick="pauseAudio();">
-								<img class="control" id="forwardFive" src="assets/forward.png" alt="+5sec" onclick="forwardAudio();">
+								<img class="control" id="backFive" src="assets/back.png" alt="-5sec">
+								<img class="control" id="play" src="assets/start.png" alt="Play">
+								<img class="control hiddenControl" id="pause" src="assets/pause.png" alt="Pause">
+								<img class="control" id="forwardFive" src="assets/forward.png" alt="+5sec">
 								<img class="control" id="next" src="assets/next.png" alt="Next">
 							</div>
 							<div id="extras_container">
