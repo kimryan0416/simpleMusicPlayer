@@ -1,0 +1,11 @@
+**/.DS_Store
+
+!**/media/*
+**/media/**/.DS_Store
+**/media/**/*.mp3
+**/media/**/*.m4a
+**/media/**/*.wav
+**/media/**/*.mp4
+
+!**/upload_directory/
+**/upload_directory/.DS_Store
