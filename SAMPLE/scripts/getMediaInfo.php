@@ -2,17 +2,6 @@
 	require("config.php");
 
 	$arrayToSend = array();
-	function convertToSeconds($str_time) {
-    	sscanf($str_time, "%d:%d.%d", $minutes, $seconds, $milliseconds);
-    	$time_seconds = isset($milliseconds) ? ($minutes*60 + $seconds) . "." . $milliseconds : ($minutes*60 + $seconds) . ".000";
-    	return $time_seconds;
-    }
-
-    function convertToMilliseconds($str_time) {
-    	sscanf($str_time, "%d:%d.%d", $minutes, $seconds, $milliseconds);
-    	$time_seconds = isset($milliseconds) ? $minutes*60000 + $seconds*1000 + $milliseconds : $minutes*60000 + $seconds*1000;
-    	return $time_seconds;
-    }
 
 	$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
 

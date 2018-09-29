@@ -65,10 +65,28 @@
 	    return str_replace($entities, $replacements, $string);
 	}
 
+	function convertToSeconds($str_time) {
+    	sscanf($str_time, "%d:%d.%d", $minutes, $seconds, $milliseconds);
+    	$time_seconds = isset($milliseconds) ? ($minutes*60 + $seconds) . "." . $milliseconds : ($minutes*60 + $seconds) . ".000";
+    	return $time_seconds;
+    }
+
+    function convertToMilliseconds($str_time) {
+    	sscanf($str_time, "%d:%d.%d", $minutes, $seconds, $milliseconds);
+    	$time_seconds = isset($milliseconds) ? $minutes*60000 + $seconds*1000 + $milliseconds : $minutes*60000 + $seconds*1000;
+    	return $time_seconds;
+    }
+
 	function myUrlEncode($string) {
 		//$entities = array('!', '*', "'", "(", ")", ";", ":", "@", "&", "=", "+", "$", ",", "/", "?", "%", "#", "[", "]");
 		$entities = array('!', '*', "'", "(", ")", ":", "[", "]");
 		$replacements = array('%21', '%2A', '%27', '%28', '%29', '%3B', '%3A', '%40', '%26', '%3D', '%2B', '%24', '%2C', '%2F', '%3F', '%25', '%23', '%5B', '%5D');
 	    return str_replace($entities, $replacements, $string);
+	}
+
+	function decodeLyricsForPrint($string) {
+		$htmlEntities = array( "|NL|" );
+		$printEntities = array("<br/>");
+		return str_replace( $htmlEntities, $printEntities, $string );
 	}
 ?>

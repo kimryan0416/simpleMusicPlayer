@@ -1,4 +1,4 @@
-var sortedDatabase = [];
+var database = [];
 var queue = [];
 var currentSong = -1, currentAlbum = -1, currentAlbumArtist = -1;
 var paused = true, loop = 1, shuffle = 0, dynamic_lyrics_toggle = false;
@@ -9,6 +9,8 @@ var current_time = "-3599999", current_time_index = -1;
 var screenHeight = window.innerHeight;
 var lyricsHeight, scrollToLyrics = true;
 var addAlbumArt_id;
+var source;
+var search_element, search_options_element, search_text, search_option, searching_boolean = true, search_matches = [];
 
 function readableDuration(milliseconds) {
     // Get the duration or current time of a song in minutes:seconds instead of just seconds
@@ -123,29 +125,15 @@ function updatePart(song_id) {
 }
 
 function openMedia(id, newQueue = false) {
-	var data = "id="+id;
-	$.ajax({
-		url: "scripts/getMediaInfo.php", 
-		data: data, 
-		type: 'POST', 
-		dataType: 'json',
-		success: function(response, textStatus, jqXHR) {
-			if (response.success) {
-				preparePlayer(response.info);
-				if (response.info.medium == 0) {
-					prepareAudio(response.info);
-				}
-				if (newQueue) {
-					loadQueue();
-				}
-			} 
-			else alert(response.message);
-		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			alert('ERRORS @ Opening Media: ' + errorThrown);
-			location.reload(true);
-		}
-	});
+	var data = database[id];
+	console.log(data);
+	preparePlayer(data);
+	if (data.medium == 0) {
+		prepareAudio(data);
+	}
+	if (newQueue) {
+		loadQueue();
+	}
 }
 
 function getAllMedia(updateCurrentPlayer = false, print = true, scrollTo = -1, deleted = false) {
@@ -155,10 +143,10 @@ function getAllMedia(updateCurrentPlayer = false, print = true, scrollTo = -1, d
 		dataType: 'json',
 		success: function(response, textStatus, jqXHR) {
 			if (response.success) {
-				setDatabaseInScript(response.data);
+				setDatabaseInScript(response["raw_data"]);
 				if (print) {
-					$("#left_content").empty();
-					printMedia(updateCurrentPlayer, scrollTo, deleted);
+					$("#left_content").empty().hide();
+					printMedia(response["sorted_data"], updateCurrentPlayer, scrollTo, deleted);
 				}
 			} 
 			else alert(response.message);
@@ -166,20 +154,19 @@ function getAllMedia(updateCurrentPlayer = false, print = true, scrollTo = -1, d
 		error: function(jqXHR, textStatus, errorThrown) {
 			alert('ERRORS @ Getting All Media: ' + errorThrown);
 			location.reload(true);
+		},
+		complete: function() {
+			$("#left_content").show();
 		}
 	});
 }
-function setDatabaseInScript(arr) {
-	sortedDatabase = arr;
-	console.log(sortedDatabase);
+function setDatabaseInScript(raw) {
+	database = raw;
+	console.log(database);
 }
 
 
-function printMedia(updateCurrentPlayer = false, scrollTo = -1, deleted = false) {
-	if (typeof sortedDatabase === "undefined") {
-		alert("Sorted Databse in Script Not Set!");
-		return;
-	}
+function printMedia(sortedDatabase, updateCurrentPlayer = false, scrollTo = -1, deleted = false) {
 	var html, h1, albumHTML, albumHeader, albumArtContainer, albumArt, albumArtLabel, h2, fragment;
 	for(var index in sortedDatabase) {
 		html = document.createElement("div");
@@ -344,7 +331,6 @@ function createLoop(albumId, songId, albumArtistId, shuffle) {
 		dataType: 'json',
 		success: function(response, textStatus, jqXHR) {
 			if (response.success) {
-				console.log(response.loop);
 				addToLoop(response.loop);
 			}
 			else alert("ERROR with creating loop: " + response.message);
@@ -366,6 +352,7 @@ function addToLoop(arr) {
 			}
 		}
 	}
+	console.log(queue);
 }
 
 function loadQueue() {
@@ -379,6 +366,20 @@ function loadQueue() {
 /*  ------  */
 /*  Audio Functions  */
 /*  ------  */
+/*
+function openSong(id) {
+	$("#left_content").find(".selected").removeClass("selected");
+	$(this).addClass("selected");
+	openMedia(id, true);
+	$(player.audio).trigger('play');  
+	if (paused) {
+		player.play.addClass("hiddenControl");
+		player.pause.removeClass("hiddenControl");
+		paused = false;
+	}
+}
+*/
+
 function preparePlayer(arr) {
 	currentSong = arr["id"];
 	currentAlbum = arr["album_id"];
@@ -418,11 +419,9 @@ function preparePlayer(arr) {
 		if (arr["dynamic_lyrics"] == 0) {
 			dynamic_lyrics_toggle = false;
 			dynamic_lyrics_starting_times = null;
-			//dynamic_lyrics_ending_times = null;
 		} else {
 			dynamic_lyrics_toggle = true;
-			dynamic_lyrics_starting_times = arr["lyrics_starting_times"];
-			//dynamic_lyrics_ending_times = arr["lyrics_ending_times"];
+			dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
 		}
 	}
 }
@@ -449,54 +448,81 @@ function resetPlayer() {
 	queue = [];
 	dynamic_lyrics_toggle = false;
 	dynamic_lyrics_starting_times = null;
+	player.canPlay = false;
 	//dynamic_lyrics_ending_times = null;
 	current_time_index = -1;
 	current_time = "-3599999";
 	player.start_padding = 0;
 	player.end_padding = 3599999;
-	player.canPlay = false;
 	player.embed.attr("src", "");
 }
 
 
 
 function prepareAudio(arr) {
-	player.audio.attr("src", arr["url"]);
+	$(player.audio).attr("src", arr["url"]);
 	player.duration.html(arr["duration"]);
-	loadAudio(arr["id"], arr["lyrics"]);
-	if (milliseconds(player.audio.prop("currentTime")) < player.start_padding ) player.audio.prop("currentTime", revertFromMilliseconds(player.start_padding));
+	loadAudio(arr["id"], arr["url"], arr["lyrics"]);
+	if (milliseconds($(player.audio).prop("currentTime")) < player.start_padding ) $(player.audio).prop("currentTime", revertFromMilliseconds(player.start_padding));
 	player.time_slider.attr("max", player.end_padding);
-    //player.time_slider.val(player.audio.prop("currentTime"));
+    player.time_slider.val(milliseconds($(player.audio).prop("currentTime")));
     player.time_slider.val(player.start_padding);
-    startAudio();
 }
 
 function abortAudio(id) {
 	pauseAudio();
-	player.audio.bind('abort');
-	player.audio.trigger('abort');
+	$(player.audio).bind('abort');
+	$(player.audio).trigger('abort');
 	paused = true;
 }
 
-function loadAudio(id, lyrics){
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+function loadAudio(id, url, lyrics){
 	// Forces audio to load into the player, as well as make the time slider for the song appear - used usually prior to starting a song
-	player.audio.bind("load");
-	player.audio.trigger('load');
-	player.audio[0].oncanplay = function() {
+	$(player.audio).bind("load");
+	$(player.audio).trigger('load');
+	player.audio.oncanplay = function() {
     	if (!player.canPlay) {
     		player.lyrics.html("");
 			player.lyrics.html(lyrics);
-			console.log(lyrics)
 	    	lyricsHeight = player.lyrics.height();
 			player.canPlay = true;
 			
     	}
     }
+    /*
+    var request = new XMLHttpRequest();
+	request.open('GET', url, true);
+	request.responseType = 'arraybuffer';
+	// Decode asynchronously
+	request.onload = function() {
+		context.decodeAudioData(request.response, function(buffer) {
+			setSource(buffer);
+			startAudio(0);
+			trackCurrentTime.call(source);
+		});
+		//playSim(dogBarkingBuffer);
+	}
+  	request.send();
+  	*/
 }
 
-function startAudio(){
+function trackCurrentTime() {
+	console.log(this.currentTime);
+}
+
+function setSource(buffer) {
+	source = context.createBufferSource(); // creates a sound source
+	source.buffer = buffer;                    // tell the source which sound to play
+	source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+}
+
+function startAudio(time){
 	// Starts the audio, also causes the pause button to appear and the start button to disappear
-	player.audio.trigger('play');
+	$(player.audio).trigger('play');
+	//source.start(time);   
 	if (paused) {
 		player.play.addClass("hiddenControl");
 		player.pause.removeClass("hiddenControl");
@@ -506,7 +532,10 @@ function startAudio(){
 
 function pauseAudio(){
 	// Opposite of startAudio()
-	player.audio.trigger('pause');
+	//var now = source.currentTime;
+	//source.stop(now);
+	console.log("Pausing Audio");
+	$(player.audio).trigger('pause');
 	player.pause.addClass("hiddenControl");
 	player.play.removeClass("hiddenControl");
 	paused = true;
@@ -515,22 +544,22 @@ function pauseAudio(){
 function forwardAudio(){
 	// Causes the song to advance by 5 seconds, also adjusts the time slider appropriately
 	pauseAudio();
-	player.audio.prop("currentTime", player.audio.prop("currentTime")+5);
-	player.time_slider.val( milliseconds(player.audio.prop("currentTime")) );
+	$(player.audio).prop("currentTime", $(player.audio).prop("currentTime")+5);
+	player.time_slider.val( milliseconds($(player.audio).prop("currentTime")) );
 	current_time_index = -1;
 	current_time = "-3599999";
-	if (milliseconds(player.audio.prop("currentTime")) > player.end_padding) nextAudio();
+	if (milliseconds($(player.audio).prop("currentTime")) > player.end_padding) nextAudio();
 	else startAudio();
 }
 
 function backwardAudio(){
 	// Same as forwardAudio(), except moves back 5 seconds
 	pauseAudio();
-	player.audio.prop("currentTime",player.audio.prop("currentTime")-5);
-	player.time_slider.val( milliseconds(player.audio.prop("currentTime")) );
+	$(player.audio).prop("currentTime",$(player.audio).prop("currentTime")-5);
+	player.time_slider.val( milliseconds($(player.audio).prop("currentTime")) );
 	current_time_index = -1;
 	current_time = "-3599999";
-	if (milliseconds(player.audio.prop("currentTime")) < player.start_padding) previousAudio();
+	if (milliseconds($(player.audio).prop("currentTime")) < player.start_padding) previousAudio();
 	else startAudio();
 }
 
@@ -548,7 +577,7 @@ function nextAudio() {
 		paused = true;
 	} else if (loop == 1) {
 		queue.push(savedId);
-		player.audio.prop("currentTime", revertFromMilliseconds(player.start_padding));
+		$(player.audio).prop("currentTime", revertFromMilliseconds(player.start_padding));
 		player.canPlay = true;
 		startAudio();
 		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
@@ -560,6 +589,7 @@ function nextAudio() {
 		} else {
 			openMedia(queue[0]);
 		}
+		startAudio();
 		queue.push(savedId);
 		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
 	}
@@ -594,7 +624,7 @@ function previousAudio() {
 		} else {
 			openMedia(queue[0]);
 		}
-		openMedia(savedId);
+		startAudio();
 		queue.unshift(savedId);
 		$("#left_content").find(".song[data-id='"+queue[0]+"']").addClass("selected");
 	}
@@ -614,7 +644,7 @@ function timeAdjust(time) {
 		console.log("Reverting to end padding: " + player.end_padding);
 		time = player.end_padding;
 	}
-    player.audio.prop("currentTime", revertFromMilliseconds(time));
+    $(player.audio).prop("currentTime", revertFromMilliseconds(time));
     current_time_index = -1;
     current_time = "-3599999";
 	startAudio();
@@ -627,7 +657,7 @@ function volumeAdjust(volume) {
 	else if (volume < 66) 	player.volume_image.attr("src", "assets/volume_2.png");
 	else 					player.volume_image.attr("src", "assets/volume_3.png");
 	var vol = volume/100;
-    player.audio.prop("volume",vol);
+    $(player.audio).prop("volume",vol);
 }
 function autoscrollToggle() {
 	if ( player.autoscroll.hasClass("deactivated") ){
@@ -641,13 +671,211 @@ function autoscrollToggle() {
 
 
 
+function startEdit(id) {
+	editForm.form[0].reset();
+	var data = "id="+id;
+	$.ajax({
+		url: "scripts/getMediaInfoForEdit.php", 
+		data: data, 
+		type: 'POST', 
+		dataType: 'json',
+		success: function(response, textStatus, jqXHR) {
+			if (response.success) {
+				editForm.title.val(response.info.title);
+				editForm.songId.val(response.info.id);
+				editForm.medium.val(response.info.medium);
+				editForm.artist.val(response.info.artist);
+				editForm.album.val(response.info.album_name);
+				editForm.album_artist.val(response.info.album_artist_name);
+				editForm.composer.val(response.info.composer);
+				if (response.info.medium == 1) {
+					editForm.art_display.addClass("hidden");
+					editForm.art.addClass("hidden");
+					editForm.art_edit.addClass("hidden");
+					editForm.padding_container.addClass("hidden");
+					editForm.lyrics.text(response.info.url);
+					editForm.lyrics_label.text("URL");
+					editForm.lyrics_types.addClass("hidden");
+				} else {
+					editForm.art_display.removeClass("hidden");
+					editForm.art.removeClass("hidden");
+					editForm.art_edit.removeClass("hidden");
+					if (response.info.art != null) editForm.art_display.attr("src", response.info.art +"#"+ new Date().getTime());
+					editForm.padding_container.removeClass("hidden");
+					editForm.start_padding.val(response.info.start_padding);
+					editForm.end_padding.val(response.info.end_padding);
+					editForm.lyrics_label.text("Lyrics");
+					editForm.lyrics_types.removeClass("hidden");
+					editForm.lyrics.text(response.info.lyrics);
+					editForm.dynamic_lyrics_radio.removeClass("hidden");
+					editForm.simple_lyrics_radio.removeClass("hidden");
+					if (response.info.dynamic_lyrics == 1) editForm.dynamic_lyrics_radio.attr("checked","checked");
+					else editForm.simple_lyrics_radio.attr("checked","checked");
+				}
+				openEdit();
+			} 
+			else alert(response.message);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			alert('ERRORS @ Opening Media For Edit: ' + errorThrown);
+		}
+	});
+}
+function openEdit() {
+	editForm.form.addClass("opened");
+	editForm.close.addClass("opened");
+	player.container.addClass("shortened");
+	editForm.status = true;
+}
+function closeEdit() {
+	editForm.form.removeClass("opened");
+	editForm.close.removeClass("opened");
+	player.container.removeClass("shortened");
+	editForm.status = false;
+	iconEdit = null
+	iconEditSet = 0;
+}
+
+function editIcon(event) {
+	event.stopPropagation(); // Stop stuff happening
+	event.preventDefault(); // Totally stop stuff happening
+
+	// Create a formdata object and add the files
+	var data = new FormData();
+	$.each(iconEdit, function(key, value) {
+    	data.append(key, value);
+	});
+
+	console.log(iconEditSet);-
+
+	//Time for the ajax function
+    	$.ajax({
+        	url: "scripts/mediaEdit.php?icon=1&change="+iconEditSet+"&id="+editForm.songId.val(),	// ?files ensures that the "$_GET" in song_icon_upload.php runs properly
+        	type: 'POST',
+        	data: data,
+        	cache: false,
+        	dataType: 'json',
+        	processData: false, 	// Don't process the files - in other words, don't turn the icons into strings
+        	contentType: false, 	// Set content type to false as jQuery will tell the server its a query string request
+        	success: function(response, textStatus, jqXHR) {
+        		if (response.success) submitEdit(event, editForm.songId.val());
+        		else alert("Error on Editing Media:\n" + response.message);
+        	},
+        	error: function(jqXHR, textStatus, errorThrown) {
+            	// Handle errors here
+            	alert('AJAX Error on Editing Media Icon:\n' + textStatus);
+            	
+            	// STOP LOADING SPINNER if I had one
+        	}
+    	});
+}
+
+function submitEdit(event, id, reload = 0, close = false, deleted = false) {
+  	// Create a jQuery object from the form
+   	var formData = editForm.form.serialize();
+
+	$.ajax({
+		url: 'scripts/mediaEdit.php?song=1&edit='+id+'&reload='+reload,
+		type: 'POST',
+		data: formData,
+		cache: false,
+		dataType: 'json',
+		success: function(response, textStatus, jqXHR) {
+			if (response.success) {
+				if (close) closeEdit();
+				var flag = false;
+				if (id == currentSong) {
+					if (reload == 1) resetPlayer();
+					else flag = true;
+				}
+				getAllMedia(flag, true, id, deleted);
+			} 
+			else alert('Error on Editing Media:\n' + textStatus);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			// Handle errors here
+			alert('AJAX Error on Editing Media:\n' + textStatus);
+		},
+		complete: function() {
+			// STOP LOADING SPINNER
+		}
+	});
+}
+
+
+
+
+function openEmbed() {
+	embedForm.form.find("input[type=text], input[type=url]").val("");
+	embedForm.form.removeClass("closed");
+	$("#left_content").addClass("closed");
+	embedForm.status = true;
+}
+
+function closeEmbed() {
+	embedForm.form.find("input[type=text], input[type=url]").val("");
+	embedForm.form.addClass("closed");
+	$("#left_content").removeClass("closed");
+	embedForm.status = false;
+}
+function submitEmbed(event) {
+	event.stopPropagation(); // Stop stuff happening
+	event.preventDefault(); // Totally stop stuff happening
+
+	var data = embedForm.form.serialize();
+
+	$.ajax({
+		url: 'scripts/embedInput.php?input=1',
+		type: 'POST',
+		data: data,
+		dataType: 'json',
+		success: function(response, textStatus, jqXHR) {
+			if (response.success) {
+				console.log(response.info);
+				closeEmbed();
+				getAllMedia(false, true, response.info.id);
+			} 
+			else alert('Error on Inputting Embed Video:\n' + response.message);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			// Handle errors here
+			alert('AJAX Error on Inputting Embed Video:\n' + textStatus);
+		},
+		complete: function() {
+			// STOP LOADING SPINNER
+		}
+	});
+}
+
+
+function search(text, option) {
+	search_matches = [];
+	var options_check = ["title", "artist", "album", "album_artist"];
+	if ( options_check.indexOf(option) == -1 ) {
+		alert("Option \""+option+"\" isn't supported in our search algorithm.");
+		return false;
+	}
+	for (var id in database) {
+		if ( database[id][option].toLowerCase().includes(text.toLowerCase()) ) {
+			search_matches.push(id);
+		}
+	}
+	if (search_matches.length > 0) {
+		return true;
+	} else {
+		alert("No matches found");
+		return false;
+	}
+}
+
 $(document).ready(function() {
 	player = {
 		container: $("#media_container"),
 		music: $("#player_container"),
 		video: $("#video_container"),
 		embed: $("#video_embed"),
-		audio: $("#audio"),
+		//audio: $("#audio"),
+		audio: document.getElementById("audio"),
 		player_and_lyrics: $("#player_art_and_lyrics"),
 		art: $("#player_art"),
 		background: $("#player_background"),
@@ -672,6 +900,46 @@ $(document).ready(function() {
 		canPlay: false
 	};
 
+	editForm = {
+		status: false,
+		close: $("#closeEdit"),
+		form: $("#edit_media_form"),
+		songId: $("#id_edit"),
+		medium: $("#medium_edit"),
+		title: $("#title_edit"),
+		artist: $("#artist_edit"),
+		art_display: $("#art_edit_display"),
+		art_edit: $("#art_edit_overlay"),
+		art: $("#art_edit"),
+		album: $("#album_edit"),
+		album_artist: $("#albumArtist_edit"),
+		composer: $("#composer_edit"),
+		padding_container: $("#song_edit_padding_container"),
+		start_padding: $("#start_padding_edit"),
+		end_padding: $("#end_padding_edit"),
+		lyrics_label: $("#song_edit_lyrics_label"),
+		lyrics_types: $("#song_edit_lyrics_type_container"),
+		simple_lyrics_radio: $("#lyric_dynamic_false"),
+		lyrics: $("#lyrics_edit"),
+		dynamic_lyrics_radio: $("#lyric_dynamic_true"),
+		dynamic_lyrics: $("#dynamic_lyrics_edit_container"),
+		submit: $("#submit_edit")
+	}
+
+	embedForm = {
+		status: false,
+		open: $("#openEmbed"),
+		close: $("#closeEmbed"),
+		form: $("#video_input_form"),
+		title: $("#video_title_input"),
+		artist: $("#video_artist_input"),
+		album: $("#video_album_input"),
+		album_artist: $("#video_album_artist_input"),
+		composer: $("#video_composer_input"),
+		url: $("#video_url_input"),
+		submit: $("#video_input_form_submit")
+	}
+
 	var loopStages = ["assets/repeat_0.png", "assets/repeat_1.png", "assets/repeat_all.png"];
 	var shuffleStages = ["assets/shuffle_0.png", "assets/shuffle_1.png"];
 
@@ -680,16 +948,115 @@ $(document).ready(function() {
 
 	$(document).on("click", ".song", function() {
 		$("#left_content").find(".selected").removeClass("selected");
+		$("#left_content").find(".searched").removeClass("searched");
 		$(this).addClass("selected");
-		var songId = $(this).attr("data-id");
-		openMedia(songId, true);
+		var id = $(this).attr("data-id");
+		var medium = $(this).attr("data-medium");
+		console.log(id);
+		openMedia(id, true);
+		if (medium == 0) {
+			$(player.audio).trigger('play');  
+			if (paused) {
+				player.play.addClass("hiddenControl");
+				player.pause.removeClass("hiddenControl");
+				paused = false;
+			}
+		}
 	});
+
+	$(document).on("click", ".song_options", function(event) {
+		event.stopPropagation();
+		var parent = $(this).parent();
+		var curId = parent.attr("data-id");
+		var curEditingId = editForm.songId.val();
+		if (!editForm.status) startEdit(curId);
+		else if (currentSong != curId) {
+			if (curEditingId != curId) startEdit(curId);
+			else closeEdit();
+		} else {
+			if (curEditingId != curId) startEdit(curId);
+			else closeEdit();
+		}
+	});
+
+
+	embedForm.open.on("click", openEmbed);
+	embedForm.close.on("click", closeEmbed);
+	embedForm.form.on("submit", submitEmbed);
+
+
+	editForm.art.on('change', prepareIconEdit);
+	// Grab the files and set them to our variable
+	function prepareIconEdit(event) {
+		iconEdit = event.target.files;
+		iconEditSet = 1;
+
+		// script to change display image
+		var url = event.target.value;
+    	var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+    	if (event.target.files && event.target.files[0] && (ext == "PNG" || ext == "png" || ext == "jpeg" || ext == "jpg" || ext == "JPEG" || ext == "JPG")) {
+	        var reader = new FileReader();
+	        reader.onload = function (e) {
+	            editForm.art_display.attr('src', e.target.result);
+	        }
+	        reader.readAsDataURL(event.target.files[0]);
+	    } 
+	    else editForm.art_display.attr('src', 'assets/default_album_art.jpg');
+	    
+	}
+	editForm.form.on("submit", editIcon);
+	editForm.close.on("click", closeEdit);
+
+	player.edit.on("click", function() {
+		if (!editForm.status) startEdit(currentSong);
+		else {
+			var curId = editForm.songId.val();
+			if (curId != currentSong) startEdit(currentSong);
+			else closeEdit();
+		}
+	});
+
+	$("#delete_song_submit").on("click", function() {
+		submitEdit(null, editForm.songId.val(), 1, true, true);
+	})
+
+
+	$("#addMedia_input").on("change", mediaAdd);
+	function mediaAdd(event) {
+		// Create a formdata object and add the files
+		var data = new FormData();
+		$.each(event.target.files, function(key, value) {
+	    	data.append(key, value);
+		});
+
+		//Time for the ajax function
+    	$.ajax({
+        	url: "scripts/mediaAdd.php",
+        	type: 'POST',
+        	data: data,
+        	cache: false,
+        	dataType: 'json',
+        	processData: false, 	// Don't process the files - in other words, don't turn the icons into strings
+        	contentType: false, 	// Set content type to false as jQuery will tell the server its a query string request
+        	success: function(response, textStatus, jqXHR) {
+        		if (response.success) getAllMedia();
+        		else alert(response.message);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// Handle errors here
+				alert('ERRORS: ' + textStatus);
+	
+				// STOP LOADING SPINNER if I had one
+			}
+		});
+	}
+
 
 	player.time_slider.on("input", function() { 
 		timeAdjust( $(this).val() );
 	});	// Moving the slider adjusts the audio's time
 	player.volume.on( "input", function() { volumeAdjust($(this).val()); 	});
-	player.audio.on("ended", nextAudio);
+	$(player.audio).on("ended", nextAudio);
 	player.previous.on("click", previousAudio);
 	player.next.on("click", nextAudio);
 	player.autoscroll.on("click", autoscrollToggle);
@@ -706,6 +1073,82 @@ $(document).ready(function() {
 		if (shuffle == 2) shuffle = 0;
 		$(this).attr("src", shuffleStages[shuffle]);
 		loadQueue();
+	});
+
+	$(document).on("click", ".addAlbumArt_label", function() {
+		addAlbumArt_id = $(this).attr("data-id");
+		console.log(addAlbumArt_id);
+	});
+	$("#addAlbumArt_input").on("change", addAlbumArt);
+	function addAlbumArt(event) {
+		// Create a formdata object and add the files
+		var data = new FormData();
+		$.each(event.target.files, function(key, value) {
+	    	data.append(key, value);
+		});
+
+		console.log(data);
+
+		//Time for the ajax function
+    	$.ajax({
+        	url: "scripts/updateAlbumArt.php?album_id="+addAlbumArt_id,
+        	type: 'POST',
+        	data: data,
+        	cache: false,
+        	dataType: 'json',
+        	processData: false, 	// Don't process the files - in other words, don't turn the icons into strings
+        	contentType: false, 	// Set content type to false as jQuery will tell the server its a query string request
+        	success: function(response, textStatus, jqXHR) {
+        		if (response.success) {
+        			addAlbumArt_id = -1;
+        			getAllMedia();
+        		}
+        		else alert(response.message);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// Handle errors here
+				alert('ERRORS: ' + textStatus);
+	
+				// STOP LOADING SPINNER if I had one
+			}
+		});
+	}
+
+	search_element = document.getElementById('search_input');
+	search_options_element = document.getElementById('search_options');
+	search_element.addEventListener('keypress', function(e){
+  		if (e.keyCode == 13) {
+  			if ( searching_boolean ) {
+  				searching_boolean = false;
+  				search_text = search_element.value;
+	  			search_option = search_options_element.value;
+	  			if ( !search(search_text, search_option) ) {
+	  				return;
+	  			}
+  			}
+  			if (search_matches.length > 0) {
+  				$("#left_content").find(".searched").removeClass("searched");
+  				var toSearch = search_matches[0];
+	  			search_matches.shift();
+	  			search_matches.push(toSearch);
+	  			var potential_match = document.getElementById(toSearch);
+	  			while( potential_match == null ) {
+	  				toSearch =  search_matches[0];
+	  				search_matches.shift();
+	  				potential_match = document.getElementById(toSearch);
+	  			}
+				document.getElementById("left_content").scrollTo({
+		    		'behavior': 'smooth',
+		    		'top': potential_match.offsetTop - (screenHeight/2) + (potential_match.offsetHeight/2)
+				});
+				$(potential_match).addClass("searched");
+  			}
+  		} else {
+  			searching_boolean = true;
+  		}
+	});
+	search_options_element.addEventListener('change', function(e){
+		searching_boolean = true;
 	});
 });
 

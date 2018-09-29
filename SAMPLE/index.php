@@ -45,7 +45,8 @@
 			"id" => $row["id"],
 			"title" => $row["title"],
 			"artist" => $row["artist"],
-			"medium" => $row["medium"]
+			"medium" => $row["medium"],
+			"url" => $row["url"]
 		);
 	}
 	$db->close();
@@ -63,7 +64,16 @@
 	<body>
 		<div id="left">
 			<div id="header">
-				<h1 id="header_title">Song List (SAMPLE)</h1>
+				<!--<h1 id="header_title">Song List (SAMPLE)</h1>-->
+				<div id="header_search_container">
+					<select id="search_options">
+						<option value="title">Title</option>
+						<option value="artist">Artist</option>
+						<option value="album">Album</option>
+						<option value="album_artist">Album Artist</option>
+					</select>
+					<input type="text" id="search_input" placeholder="Type Here">
+				</div>
 			</div>
 			<div id="left_content">
 				<?php 
@@ -72,7 +82,7 @@
 						echo '<div class="album_artist_div">';
 						echo '<h1>'.$album_artist['name'].'</h1>';
 						foreach ($album_artist['albums'] as $album_name=>$album) {
-							echo '<div class="album">';
+							echo '<div class="album" id="album_'.$album["id"].'">';
 							echo '<div class="album_header">';
 							echo '<div class="album_image_container">';
 							echo '<img class="album_image" src="'.$album["art"].'" alt="">';

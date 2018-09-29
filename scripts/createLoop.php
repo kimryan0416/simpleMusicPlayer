@@ -26,7 +26,7 @@
 	$arrayToSend["loop"] = array();
 	if ($request->num_rows > 0) {
 		while( $row = $request->fetch_assoc() ) {
-			$arrayToSend["loop"][] = $row["id"];
+			$arrayToSend["loop"][] = (int)$row["id"];
 		}
 	}
 	closeFile($arrayToSend);

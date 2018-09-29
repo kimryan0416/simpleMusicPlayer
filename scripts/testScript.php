@@ -4,11 +4,7 @@
 
 	$dataToSend = array();
 	if (isset($_POST["type"])) {
-		//$url = filter_input(INPUT_POST, "url", FILTER_SANITIZE_STRING);
-		//$url = preg_replace('/\\\\/', '', $url);
-
 		$path = realpath("../".PATH_TO_CONTENT);
-
 		$dir  = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
 		$rii = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::LEAVES_ONLY);
 		$files = array(); 
@@ -27,7 +23,7 @@
 			}
 		}
 
-		$query = "TRUNCATE TABLE music; TRUNCATE TABLE songToalbum; TRUNCATE TABLE songToalbum_artist; TRUNCATE albums; TRUNCATE album_artists;";
+		$query = "TRUNCATE TABLE music; TRUNCATE TABLE songToalbum; TRUNCATE TABLE albumToalbum_artist; TRUNCATE albums; TRUNCATE album_artists;";
 		if (!$db->multi_query($query)) {
 			$dataToSend["success"] = false;
 			$dataToSend["error"] = "Truncation of relevant tables not performable";
