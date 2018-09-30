@@ -8,4 +8,4 @@ media/
 art/
 **/*.xlsx
 
-// **/*.sqlite
+**/*.sqlite
