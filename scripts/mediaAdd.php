@@ -67,8 +67,8 @@
 			// Now, we can't do anything else for this thing - we need to get the id so that when we move the file, it's renamed with the id in mind.
 			// For now, we process the file info to insert into the database
 			
-			$title = str_replace("'", "&#39;", $song_info["title"][0]);
-			$artist = str_replace("'", "&#39;", $song_info["artist"][0]);
+			$title = ( isset($song_info["title"][0]) ) ? str_replace("'", "&#39;", $song_info["title"][0]) : $filename;
+			$artist = ( isset($song_info["artist"][0]) ) ? str_replace("'", "&#39;", $song_info["artist"][0]) : 'Unknown Artist';
 
 			if ( isset ($song_info["album_artist_sort_order"]) ) $album_artist = $song_info["album_artist_sort_order"][0];
 			else if ( isset ($song_info["album_artist"]) ) $album_artist = $song_info["album_artist"][0];
