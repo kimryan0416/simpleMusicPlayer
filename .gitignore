@@ -7,5 +7,4 @@ upload_directory/
 media/
 art/
 **/*.xlsx
-
 **/*.sqlite
