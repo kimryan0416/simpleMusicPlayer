@@ -20,6 +20,7 @@ This is currently **Version 5.1** of the **SMP**. You can view the changelog at 
 #### Version 5.0:
 Version 5.0 was a step up from the latest version of Version 4 and is mostly comprised of bug fixes and code cleanups.
 
+##### Version 5.00
 1. Main ``script.js`` JavaScript reduced in complexity
 	- ~1800+ lines => 1530 lines
 	- Unused functions and code removed
@@ -37,6 +38,7 @@ Version 5.0 was a step up from the latest version of Version 4 and is mostly com
 #### Version 5.1:
 Version 5.1 improves code and load time significantly due to moving to an SQLite database - requests now no longer require MySQL servers! Anybody who can run a PHP server with SQLite installed now can utilize the player.
 
+##### Version 5.10
 1. Conversion from MySQL to SQLite
 	- Load time significantly improved over MySQL runtime
 	- Player can now run on any server with only PHP and SQLite installed (which comes default with most Apache servers with PHP)
@@ -51,3 +53,6 @@ Version 5.1 improves code and load time significantly due to moving to an SQLite
 4. Version control improvements
 	- When pushing to Github, personal databases and media files no longer are pushed either - significantly easier to update without uploading massive amounts of media
 	- Redundant and unused files and directories deleted from Github pushing process + have been deleted from the Github Repo
+
+##### Version 5.11
+1. Modified mobile version for use with SQLite player

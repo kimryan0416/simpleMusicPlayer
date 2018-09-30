@@ -1,5 +1,7 @@
 <?php
 	require('config.php');
+	$db = open_or_init_sqlite_db('database.sqlite', 'init.sql');
+
 	$arrayToSend = array();
 	$raw = array();
 
@@ -19,23 +21,35 @@
 	    T5.start_padding AS start_padding,
 	    T5.end_padding AS end_padding	
 	FROM albumToalbum_artist AS T1
-	RIGHT OUTER JOIN albums AS T2 ON T1.album_id = T2.id
-	RIGHT OUTER JOIN album_artists AS T3 on T1.album_artist_id = T3.id
-	RIGHT OUTER JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
-	RIGHT OUTER JOIN music AS T5 ON T4.song_id = T5.id
-	RIGHT OUTER JOIN songToart AS T6 ON T5.id = T6.song_id 
-    RIGHT OUTER JOIN art AS T7 ON T6.art_id = T7.id
+	LEFT JOIN albums AS T2 ON T1.album_id = T2.id
+	LEFT JOIN album_artists AS T3 on T1.album_artist_id = T3.id
+	LEFT JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
+	LEFT JOIN music AS T5 ON T4.song_id = T5.id
+	LEFT JOIN songToart AS T6 ON T5.id = T6.song_id 
+    LEFT JOIN art AS T7 ON T6.art_id = T7.id
 	WHERE (T5.title IS NOT NULL OR T5.url IS NOT NULL) AND T5.medium = 0
 	ORDER BY album_artist_name, album_name, title';
 
+	try {
+		$result = exec_sql_query($db, $query)->fetchAll();
+	}
+	catch (PDOException $exception) {
+		$arrayToSend['success'] = false;
+		$arrayToSend['message'] = 'Error in getting media info from database: '.$exception;
+		closeFileNew($arrayToSend);
+		return;
+	}
+	/*
 	if (!$music = $db->query($query)) {
 		$arrayToSend['success'] = false;
 		$arrayToSend['message'] = 'Error in getting media info from database';
 		closeFile($arrayToSend);
 		return;
 	}
+	*/
 
-	while ($row = $music->fetch_assoc()) {
+	foreach ($result as $row) {
+	//while ($row = $music->fetch_assoc()) {
 		$row['url'] =  myUrlDecode($row['url']);
 
 		$row['start_padding'] = $row['start_padding'] != null ? $row['start_padding'] : 0;
@@ -65,6 +79,6 @@
 	$arrayToSend['success'] = true;
 	$arrayToSend['raw_data'] = $raw;
 
-	closeFile($arrayToSend);
+	closeFileNew($arrayToSend);
 	return;
 ?>

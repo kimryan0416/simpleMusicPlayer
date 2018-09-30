@@ -1,5 +1,7 @@
 <?php
 	require('scripts/config.php');
+	if ( !$db = open_or_init_sqlite_db('scripts/database.sqlite', 'scripts/init.sql') ) die("ERROR CONNECTING TO DATABASE");
+
 	$content = array();
 	$query = 'SELECT 
 		T1.album_artist_id AS album_artist_id,
@@ -14,19 +16,22 @@
 	    T5.medium AS medium,
 	    T7.src AS art
 	FROM albumToalbum_artist AS T1
-	RIGHT OUTER JOIN albums AS T2 ON T1.album_id = T2.id
-	RIGHT OUTER JOIN album_artists AS T3 on T1.album_artist_id = T3.id
-	RIGHT OUTER JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
-	RIGHT OUTER JOIN music AS T5 ON T4.song_id = T5.id
-    RIGHT OUTER JOIN songToart AS T6 ON T5.id = T6.song_id 
-    RIGHT OUTER JOIN art AS T7 ON T6.art_id = T7.id 
-    RIGHT OUTER JOIN albumToart AS T8 ON T1.album_id = T8.album_id
-    RIGHT OUTER JOIN art AS T9 ON T8.art_id = T9.id
+	LEFT JOIN albums AS T2 ON T1.album_id = T2.id
+	LEFT JOIN album_artists AS T3 on T1.album_artist_id = T3.id
+	LEFT JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
+	LEFT JOIN music AS T5 ON T4.song_id = T5.id
+    LEFT JOIN songToart AS T6 ON T5.id = T6.song_id 
+    LEFT JOIN art AS T7 ON T6.art_id = T7.id 
+    LEFT JOIN albumToart AS T8 ON T1.album_id = T8.album_id
+    LEFT JOIN art AS T9 ON T8.art_id = T9.id
     WHERE (T5.title IS NOT NULL OR T5.url IS NOT NULL) AND T5.medium = 0
 	ORDER BY album_artist_name, album_name, title';
-	$music = $db->query($query) or die('Error selecting all files from database');
 
-	while ($row = $music->fetch_assoc()) {
+	$result = exec_sql_query($db, $query)->fetchAll();
+	//$music = $db->query($query) or die('Error selecting all files from database');
+
+	foreach ($result as $row) {
+	//while ($row = $music->fetch_assoc()) {
 		$album_artist_name = $row['album_artist_name'] != null ? $row['album_artist_name'] : 'Unknown Album Artist';
 		$album_artist_id = $row['album_artist_id'];
 		if ( $content[$album_artist_name] == null ) {
@@ -54,7 +59,7 @@
 			'url' => $row['url']
 		);
 	}
-	$db->close();
+	//$db->close();
 ?>
 <!DOCTYPE html>
 <html>
