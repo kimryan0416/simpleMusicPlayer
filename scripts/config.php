@@ -9,14 +9,63 @@
 
 	// ** MySQL connection settings ** //
 	//Keep this as localhost for the course server
-	define('DB_HOST','localhost');
-	define('DB_USER','kimryan0416');    
-	define('DB_PASSWORD','starcraft'); 
-	define('DB_NAME','simple_music_player'); 
+/*
+//		define('DB_HOST','localhost');
+//		define('DB_USER','kimryan0416');    
+//		define('DB_PASSWORD','starcraft'); 
+//		define('DB_NAME','simple_music_player'); 
+*/
+	
+	function exec_sql_query($db, $sql, $params = array()) {
+		$query = $db->prepare($sql);
+		if ($query and $query->execute($params)) {
+			return $query;
+		}
+		return NULL;
+	}
 
-	$db = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME ) or die('Error connecting to MySQL server.' .mysql_error());
-	$db->autocommit(FALSE);
-	$db->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
+	// open connection to database
+	function open_or_init_sqlite_db($db_filename, $init_sql_filename) {
+		if (!file_exists($db_filename)) {
+			$db = new PDO('sqlite:' . $db_filename);
+			$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+			$db_init_sql = file_get_contents($init_sql_filename);
+			if ($db_init_sql) {
+				try {
+					$result = $db->exec($db_init_sql);
+					if ($result) {
+						return $db;
+					}
+				}
+				catch (PDOException $exception) {
+					unlink($db_filename);
+					throw $exception;
+				}
+			}
+		} else {
+			$db = new PDO('sqlite:' . $db_filename);
+			$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			return $db;
+		}
+		return NULL;
+	}
+
+	function makedirs($dirpath, $mode=0777) {
+    	return is_dir($dirpath) || mkdir($dirpath, $mode, true);
+	}
+
+/*
+//		$db = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME ) or die('Error connecting to MySQL server.' .mysql_error());
+//		$db->autocommit(FALSE);
+//		$db->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
+*/
+	
+	function closeFileNew($arr, $comm = true) {
+		print(json_encode($arr, JSON_UNESCAPED_SLASHES));
+		return;
+	}
+		
 
 	function closeFile($arr, $comm = true) {
 		global $db;

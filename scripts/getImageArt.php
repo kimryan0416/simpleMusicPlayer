@@ -1,6 +1,8 @@
 <?php
 	require("getid3/getid3.php");
     require("config.php");
+    $db = open_or_init_sqlite_db('database.sqlite', 'init.sql');
+
 	$getID3 = new getID3;
 
     if (isset($_GET["get"])) {
@@ -9,12 +11,21 @@
             echo false;
             return;
         }
+
+        $query = "SELECT url FROM music WHERE id = :id";
+        $params = array(
+            ':id' => $id
+        );
+        $result = exec_sql_query($db, $query, $params)->fetchAll();
+        $row = $result[0];
+/*
         $query = "SELECT url FROM music WHERE id=".$id;
         if (!$result = $db->query($query)) {
             echo false;
             return;
         }
         $row = $result->fetch_assoc();
+*/
 
         $path = $row["url"];
         $picture = $getID3->analyze("../".$path);

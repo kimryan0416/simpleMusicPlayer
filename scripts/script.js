@@ -38,11 +38,8 @@ function onTimeUpdate(track, embedTime = null) {
 	if (globalPlayer.currentMediaType == 1) curMillisec = embedTime * 1000;
 	else curMillisec = milliseconds(track.currentTime);
 	curTime = readableDuration(curMillisec);
-	console.log(globalPlayer.endPadding)
-	if (curMillisec > globalPlayer.endPadding) {
-		console.log(curMillisec + " | " + globalPlayer.endPadding);
-		return nextMedia();
-	}
+	if (curMillisec > globalPlayer.endPadding) return nextMedia();
+
 	globalPlayer.currentPlayer.timeDisplay.text(curTime);
 	if (globalPlayer.currentMediaType == 1 && !globalPlayer.currentPlayer.lock_time_slider) globalPlayer.currentPlayer.timeSlider.val(curMillisec);
 	else globalPlayer.currentPlayer.timeSlider.val(curMillisec);
@@ -87,44 +84,6 @@ function onTimeUpdate(track, embedTime = null) {
 	}
 }
 
-function reloadMedia() {
-	var data = "type=get";
-	$.ajax({
-		url: "scripts/testScript.php",
-		data: data,
-		type: "post",
-		dataType: "json"
-	}).done(function(response) {
-		if (response.success) {
-			for (var i = 0; i < response.files.length; i++) {	updatePart(i);	}
-			if (reloadPage) $(document).ajaxStop(function() { location.reload(true); });
-		} else {
-			alert("Something went wrong");
-			$(document).ajaxStop(function() { location.reload(true); });
-		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('ERRORS @ Stage 1: ' + errorThrown);
-		location.reload(true);
-	});
-}
-
-function updatePart(song_id) {
-	var data = "id="+song_id;
-	$.ajax({
-		url: "scripts/updateMedia.php", 
-		data: data, 
-		type: 'POST', 
-		dataType: 'json'
-	}).done(function(response) {
-		if (!response.success) {
-			alert(response.message);
-			$(document).ajaxStop(function() { location.reload(true); });
-		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('ERRORS @ Updating Songs: ' + errorThrown);
-		location.reload(true);
-	});
-}
 
 function openMedia(id, newQueue = false) {
 	var data = globalPlayer.database[id];
@@ -226,6 +185,7 @@ function printMedia(sortedDatabase, updateCurrentPlayer = false, scrollTo = -1) 
 	}
 }
 function updateCurrent() {
+	console.log('updateCurrent');
 	var data = "id="+globalPlayer.currentSong;
 	$.ajax({
 		url: "scripts/getMediaInfo.php", 
@@ -267,9 +227,41 @@ function updateCurrent() {
 					}
 				}
 			} 
-			else preparePlayer(arr);
+			else {
+				globalPlayer.currentAlbum = arr["album_id"];
+				globalPlayer.currentAlbumArtist = arr["album_artist_id"];
+				globalPlayer.background.attr("src", arr["art"]+"#"+ new Date().getTime());
+				globalPlayer.currentPlayer.art.attr("src", arr["art"]+"#"+ new Date().getTime());
+				globalPlayer.currentPlayer.title.html(arr["title"]);
+				if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
+				else globalPlayer.currentPlayer.title.removeClass("smallerTitle");
+				globalPlayer.currentPlayer.artist.html(arr["artist"]);
+				globalPlayer.currentPlayer.lyrics.html(arr["lyrics"]);
+				globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.height();
+				globalPlayer.startPadding = arr["start_padding"];
+				globalPlayer.endPadding = arr["end_padding"];
+				if (arr["dynamic_lyrics_toggle"] == 0) {
+					globalPlayer.dynamic_lyrics_toggle = false;
+					globalPlayer.dynamic_lyrics_starting_times = null;
+					globalPlayer.lockLyricScroll = true;
+					if (globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.removeClass("active");
+					if (!globalPlayer.currentPlayer.autoscrollButton.hasClass("locked")) globalPlayer.currentPlayer.autoscrollButton.addClass("locked");
+				} else {
+					globalPlayer.dynamic_lyrics_toggle = true;
+					globalPlayer.dynamic_lyrics_starting_times = arr["dynamic_lyrics_starting_times"];
+					globalPlayer.lockLyricScroll = false;
+					if (globalPlayer.currentPlayer.autoscrollButton.hasClass("locked")) globalPlayer.currentPlayer.autoscrollButton.removeClass("locked");
+					if (globalPlayer.scrollToLyrics) {
+						if (!globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.addClass("active");
+					} else {
+						if (globalPlayer.currentPlayer.autoscrollButton.hasClass("active")) globalPlayer.currentPlayer.autoscrollButton.removeClass("active");
+					}
+				}
+
+				//preparePlayer(arr);
+			}
 			$("#left_content").find(".song[data-id='"+arr["id"]+"']").addClass("selected");
-			if (loop == 2) createLoop(globalPlayer.currentAlbum, globalPlayer.currentSong, globalPlayer.currentAlbumArtist, globalPlayer.shuffle);
+			if (globalPlayer.loop == 2) createLoop(globalPlayer.currentAlbum, globalPlayer.currentSong, globalPlayer.currentAlbumArtist, globalPlayer.shuffle);
 		} 
 		else alert(response.message);
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -288,12 +280,14 @@ function getImageArt(id) {
 	}).done(function(response) {
 		var img;
 		if ( response && response != "data:;charset=utf-8;base64," ) {
+			console.log("Image art found with Base64");
 			audio_player.art.attr("src", response);
-			audio_player.background.attr("src", response);
+			globalPlayer.background.attr("src", response);
 			img = response;
 		} else {
+			console.log("Image Art Not Found - Using Default");
 			audio_player.art.attr("src", "media_player/assets/default_album_art.jpg");
-			audio_player.background.attr("src", "media_player/assets/default_album_art.jpg");
+			globalPlayer.background.attr("src", "media_player/assets/default_album_art.jpg");
 			img = "default";
 		}
 		saveMediaArt(id, img);
@@ -309,7 +303,8 @@ function saveMediaArt(id, img) {
 		type: 'POST', 
 		dataType: 'html'
 	}).done(function(response) {
-		if (!response.success) alert(response.message);	
+		console.log(response);
+		//if ( !response.success ) alert(response.message);	
 	}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Saving Media Art: ' + errorThrown);	});
 }
 
@@ -364,11 +359,11 @@ function preparePlayer(arr) {
 	globalPlayer.current_time = "-3599999";
 	globalPlayer.currentMediaType = parseInt(arr["medium"]);
 	globalPlayer.currentAlbumArtist = arr["album_artist_id"];
-	globalPlayer.background.attr("src", arr["art"]+"#"+ new Date().getTime());
 
 	if (globalPlayer.currentMediaType == 1) {
 		audio_player.container.addClass("closed");
 		video_player.container.removeClass("closed");
+		globalPlayer.mediaContainer.addClass('video');
 		globalPlayer.currentPlayer = video_player;
 		globalPlayer.currentPlayer.title.html(arr["title"]);
 		var setLoopForVideo = (globalPlayer.loop == 1) ? 1 : 0;
@@ -393,6 +388,7 @@ function preparePlayer(arr) {
 	} else if (globalPlayer.currentMediaType == 2) {
 		audio_player.container.addClass("closed");
 		video_player.container.removeClass("closed");
+		globalPlayer.mediaContainer.addClass('video');
 		globalPlayer.currentPlayer = video_player;
 		globalPlayer.currentPlayer.title.html(arr["title"]);
 		globalPlayer.currentPlayer.title.removeClass("smallerTitle");
@@ -400,6 +396,8 @@ function preparePlayer(arr) {
 	} else {
 		video_player.container.addClass("closed");
 		audio_player.container.removeClass("closed");
+		globalPlayer.mediaContainer.removeClass('video');
+		globalPlayer.background.attr("src", arr["art"]+"#"+ new Date().getTime());
 		globalPlayer.currentPlayer = audio_player;
 		if (arr["art"] == null) getImageArt(arr["id"]);
 		else {
@@ -458,6 +456,7 @@ function preparePlayer(arr) {
 
 }
 function resetPlayerAfterEdit() {
+	console.log("resetPlayerAfterEdit");
 	globalPlayer.background.attr("src", "assets/default_album_art.jpg");
 
 	globalPlayer.currentPlayer.title.removeClass("smallerTitle");
@@ -888,7 +887,7 @@ function editIcon(event) {
     		if (response.success) submitEdit(event, editForm.songId.val());
     		else alert("Error on Editing Media:\n" + response.message);
     	},
-    	error: function(jqXHR, textStatus, errorThrown) {	alert('AJAX Error on Editing Media Icon:\n' + textStatus);	}
+    	error: function(jqXHR, textStatus, errorThrown) {	alert('AJAX Error on Editing Media Icon:\n' + errorThrown);	}
 	});
 }
 function submitEdit(event, id, reload = 0, close = false, deleted = false) {
@@ -1128,6 +1127,7 @@ $(document).ready(function() {
 	globalPlayer = {
 		mainContainer:$("#main"),
 		background: $("#player_background"),
+		mediaContainer: $("#media_container"),
 		currentPlayer:null,
 		currentSong:-1,
 		currentAlbum:-1,
@@ -1445,7 +1445,7 @@ $(document).ready(function() {
         }).done(function(response) {	
         	if (response.success) getAllMedia();
         	else alert(response.message);
-		}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Adding New Media: ' + textStatus);	});
+		}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Adding New Media: ' + errorThrown);	});
 	});
 	$(document).on("click", ".addAlbumArt_button", function() {	startAlbumArtEdit( parseInt($(this).attr("data-id")) );	});	
 	$("#edit_album_art_form_input").on("change", prepareAlbumArtEdit);
@@ -1491,7 +1491,7 @@ $(document).ready(function() {
 				pauseMedia();
 				unPauseVideo = true;
 			}
-			console.log(e.target.value);
+			//console.log(e.target.value);
 	    	var newTime = e.target.value;
 			globalPlayer.currentPlayer.player.seekTo(revertFromMilliseconds(newTime));
 			if ( unPauseVideo ) startMedia();

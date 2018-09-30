@@ -1,36 +1,55 @@
 <?php
 	require("config.php");
+	$db = open_or_init_sqlite_db('database.sqlite', 'init.sql');
 
 	$arrayToSend = array();
-
 	$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
 
-	/*
 	$query = "SELECT 
-			T1.album_artist_id AS album_artist_id,
-		    T3.name AS album_artist_name,
-		    T1.album_id AS album_id, 
-		    T2.name AS album_name,
-		    T2.art AS album_art,
-		    T5.id AS id,
-		    T5.artist AS artist,
-		    T5.title AS title,
-		    T5.url AS url,
-		    T5.medium AS medium,
-		    T5.art AS art,
-		    T5.dynamic_lyrics AS dynamic_lyrics,
-		    T5.lyrics AS lyrics,
-		    T5.start_padding AS start_padding,
-		    T5.end_padding AS end_padding,
-		    T5.duration AS duration
-		FROM albumToalbum_artist AS T1
-		RIGHT OUTER JOIN albums AS T2 ON T1.album_id = T2.id
-		RIGHT OUTER JOIN album_artists AS T3 on T1.album_artist_id = T3.id
-		RIGHT OUTER JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
-		RIGHT OUTER JOIN music AS T5 ON T4.song_id = T5.id
-	    WHERE T5.id=".$id;
-	    */
+		T1.album_artist_id AS album_artist_id,
+	    T3.name AS album_artist_name,
+	    T1.album_id AS album_id, 
+	    T2.name AS album_name,
+	    T9.src AS album_art,
+	    T5.id AS id,
+	    T5.artist AS artist,
+	    T5.title AS title,
+	    T5.url AS url,
+	    T5.medium AS medium,
+	    T5.duration AS duration,
+	    T5.lyrics AS lyrics,
+	    T5.dynamic_lyrics_toggle AS dynamic_lyrics_toggle,
+	    T5.start_padding AS start_padding,
+	    T5.end_padding AS end_padding,
+	    T7.src AS art
+	FROM albumToalbum_artist AS T1
+	LEFT JOIN albums AS T2 ON T1.album_id = T2.id
+	LEFT JOIN album_artists AS T3 on T1.album_artist_id = T3.id
+	LEFT JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
+	LEFT JOIN music AS T5 ON T4.song_id = T5.id
+    LEFT JOIN songToart AS T6 ON T5.id = T6.song_id 
+    LEFT JOIN art AS T7 ON T6.art_id = T7.id
+    LEFT JOIN albumToart AS T8 ON T1.album_id = T8.album_id
+    LEFT JOIN art AS T9 ON T8.art_id = T9.id
+    WHERE T5.id = :id";
+    $queryParams = array(
+    	':id'=>$id
+    );
+    $result = null;
+    $row = null;
 
+    try {
+    	$result = exec_sql_query($db, $query, $queryParams)->fetchAll();
+    	$row = $result[0];
+    }
+    catch (PDOException $exception) {
+    	$arrayToSend["success"] = false;
+		$arrayToSend["message"] = "Error in getting media info from database: ".$exception;
+		closeFileNew($arrayToSend);
+		return;
+    }
+
+	/*
 	$query = "SELECT 
 		T1.album_artist_id AS album_artist_id,
 		T3.name AS album_artist_name,
@@ -62,9 +81,8 @@
 		$arrayToSend["message"] = "Error in getting media info from database";
 		closeFile($arrayToSend);
 	}
-
 	$row = $result->fetch_assoc();
-	
+	*/
 	
 	$newUrl =  myUrlDecode($row["url"]);
 	$row["url"] = $newUrl;
@@ -210,6 +228,7 @@
 
 	$arrayToSend["success"] = true;
 	$arrayToSend["info"] = $row; 
-	closeFile($arrayToSend);
+	closeFileNew($arrayToSend);
+	return;
 
 ?>

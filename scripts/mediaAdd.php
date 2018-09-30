@@ -1,6 +1,9 @@
 <?php
 	require("getid3/getid3.php");
     require("config.php");
+    /**/
+    $db = open_or_init_sqlite_db('database.sqlite', 'init.sql');
+    /**/
 
 	$getID3 = new getID3;
 
@@ -47,42 +50,63 @@
 			$thisFileInfo = $getID3->analyze($file);
 			getid3_lib::CopyTagsToComments($thisFileInfo);
 			$song_info = $thisFileInfo["comments_html"];
-			
 			$path_parts = pathinfo($file);
+		
 			$filename = htmlspecialchars($path_parts["filename"]);
 			$extension = pathinfo(basename($file), PATHINFO_EXTENSION);
-			$extensionType = 0;
-
-			if ( array_key_exists($extension, $video_types) ) {
-				$extensionType = 2;
-			} else {
-				$extensionType = 0;
-			}
+			$extensionType = ( array_key_exists($extension, $video_types) ) ? 2 : 0;
 
 			if ( !array_key_exists($extension, $media_types) ) {
 				// This error means the file is an image but is not a jpg or png, so the uploader has to choose another icon
 				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "File is not mp3 or m4a";
-				closeFile($arrayToSend);
+				$arrayToSend["message"] = "File is not mp3, m4a or mp4";
+				closeFileNew($arrayToSend);
 				return;
 			}
-			
+
 			// Now, we can't do anything else for this thing - we need to get the id so that when we move the file, it's renamed with the id in mind.
 			// For now, we process the file info to insert into the database
 			
 			$title = str_replace("'", "&#39;", $song_info["title"][0]);
 			$artist = str_replace("'", "&#39;", $song_info["artist"][0]);
 
-			if ( isset ($song_info["album_artist_sort_order"]) ) {
-				$album_artist = $song_info["album_artist_sort_order"][0];
-			} else if ( isset ($song_info["album_artist"]) ) {
-				$album_artist = $song_info["album_artist"][0];
-			} else if ( isset ($song_info["band"]) ) {
-				$album_artist = $song_info["band"][0];
-			} else {
-				$album_artist = "No Album Artist";
-			}
+			if ( isset ($song_info["album_artist_sort_order"]) ) $album_artist = $song_info["album_artist_sort_order"][0];
+			else if ( isset ($song_info["album_artist"]) ) $album_artist = $song_info["album_artist"][0];
+			else if ( isset ($song_info["band"]) ) $album_artist = $song_info["band"][0];
+			else $album_artist = "No Album Artist";
 			$album_artist_id = -1;
+
+			$selectQuery = "SELECT id FROM album_artists WHERE name = :name";
+			$selectParams = array(
+				':name' => $album_artist
+			);
+			$insertQuery = 'INSERT INTO album_artists (name) VALUES ( :name )';
+			$insertParams = array(
+				':name' => $album_artist
+			);
+			$grabIdQuery = "SELECT seq FROM sqlite_sequence WHERE name = :tableName";
+			$grabParams = array(
+				':tableName'=>'album_artists'
+			);
+			$result = null;
+
+			try { 
+				$result = exec_sql_query($db, $selectQuery, $selectParams)->fetchAll();
+				if ( count($result) == 0 ) {
+					exec_sql_query($db, $insertQuery, $insertParams);
+					$result = exec_sql_query($db, $grabIdQuery, $grabParams)->fetchAll();
+					$album_artist_id = $result[0]['seq'];
+				}
+				else $album_artist_id = $result[0]['id'];
+				$album_artist = $album_artist_id;
+			}
+			catch (PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error in finding if album artists already exists in database: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = 'SELECT id FROM album_artists WHERE name="'.$album_artist.'"';
 			if (!$results = $db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -105,13 +129,42 @@
 				$album_artist_id = $row["id"];
 			}
 			$album_artist = $album_artist_id;
+												*/
 
-			if ( isset($song_info["album"]) ) {
-				$album = $song_info["album"][0];
-			} else {
-				$album = "Unknown Album";
-			}
+			$album = ( isset($song_info["album"]) ) ? $song_info["album"][0] : "Unknown Album";
 			$album_id = -1;
+
+			$selectQuery = "SELECT id FROM albums WHERE name=:name";
+			$selectParams = array(
+				':name' => $album
+			);
+			$insertQuery = 'INSERT INTO albums (name) VALUES ( :name )';
+			$insertParams = array(
+				':name' => $album
+			);
+			$grabIdQuery = "SELECT seq FROM sqlite_sequence WHERE name = :tableName";
+			$grabParams = array(
+				':tableName'=>'albums'
+			);
+
+			$result = null;
+			try {
+				$result = exec_sql_query($db, $selectQuery, $selectParams)->fetchAll();
+				if ( count($result) == 0 ) {
+					exec_sql_query($db, $insertQuery, $insertParams);
+					$result = exec_sql_query($db, $grabIdQuery, $grabParams)->fetchAll();
+					$album_id = $result[0]['seq'];
+				}
+				else $album_id = $result[0]['id'];
+				$album = $album_id;
+			}
+			catch(PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error in finding if album already exists in database: ".$exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = 'SELECT id FROM albums WHERE name="'.$album.'"';
 			if (!$results = $db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -134,6 +187,30 @@
 				$album_id = $row["id"];
 			}
 			$album = $album_id;
+												*/
+
+			$selectQuery = "SELECT id FROM albumToart WHERE album_id=:albumId";
+			$selectParams = array(
+				':albumId' => $album
+			);
+			$insertQuery = 'INSERT INTO albumToart (album_id, art_id) VALUES ( :albumId, :artId )';
+			$insertParams = array(
+				':albumId' => $album,
+				':artId' => 0
+			);
+			$result = null;
+
+			try {
+				$result = exec_sql_query($db, $selectQuery, $selectParams)->fetchAll();
+				if ( count($result) == 0 ) exec_sql_query($db, $insertQuery, $insertParams);
+			}
+			catch (PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error in finding if album-art relationship already exists: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = 'SELECT id FROM albumToart WHERE album_id='.$album;
 			if (!$results = $db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -150,33 +227,57 @@
 					return;
 				} 
 			}
+												*/
 
-	
-			if (isset($song_info["composer"])) {
-				$composer = $song_info["composer"][0];
-			} else {
-				$composer = "";
-			}
+			$composer = ( isset($song_info["composer"]) ) ? $song_info["composer"][0] : '';
 
-			if ( isset($song_info["lyrics"]) ) {
-				$lyrics = $song_info["lyrics"][0];
-			} else if ( isset($song_info["unsynchronized_lyric"]) ) {
-				$lyrics = $song_info["unsynchronized_lyric"][0];
-			} else if ($extensionType == 2) {
-				$lyrics = "";
-			} else {
-				$lyrics = "No Lyrics Provided";
-			}
+			if ( isset($song_info["lyrics"]) ) $lyrics = $song_info["lyrics"][0];
+			else if ( isset($song_info["unsynchronized_lyric"]) ) $lyrics = $song_info["unsynchronized_lyric"][0];
+			else if ($extensionType == 2) $lyrics = "";
+			else $lyrics = "No Lyrics Provided";
 			
-			if ( isset($song_info["comment"]) ) {
-				$comment = myUrlEncode($song_info["comment"][0]);
-			} else {
-				$comment = "";
-			}
+			$comment = ( isset($song_info["comment"]) ) ? myUrlEncode($song_info["comment"][0]) : '';
 
 
-		
+												/*
 			$query = "INSERT INTO music (filename, extension, title, artist, composer, lyrics, comment, duration, medium, start_padding, end_padding) VALUES (\"".myUrlEncode($filename)."\", \"".$extension."\", \"".$title."\", \"".$artist."\", \"".$composer."\", \"".$lyrics."\", \"".$comment."\", \"".$thisFileInfo["playtime_string"]."\", ".$extensionType.", 0, ".convertToMilliseconds($thisFileInfo["playtime_string"]).");";
+												*/
+
+			/**/
+			$insertQuery = "INSERT INTO music (extension, title, artist, composer, lyrics, comment, duration, medium, start_padding, end_padding, url) VALUES ( :extension, :title, :artist, :composer, :lyrics, :comment, :duration, :medium, :startPadding, :endPadding, :url);";
+			$insertParams = array(
+				':extension'=>$extension,
+				':title'=>$title,
+				':artist'=>$artist,
+				':composer'=>$composer,
+				':lyrics'=>$lyrics,
+				':comment'=>$comment,
+				':duration'=>$thisFileInfo["playtime_string"],
+				':medium'=>$extensionType,
+				':startPadding'=>0,
+				':endPadding'=>convertToMilliseconds($thisFileInfo["playtime_string"]),
+				':url'=> 'temp'
+			);
+			$grabIdQuery = "SELECT seq FROM sqlite_sequence WHERE name = :tableName";
+			$grabParams = array(
+				':tableName'=>'music'
+			);
+			$id = null;
+
+			try {
+				exec_sql_query($db, $insertQuery, $insertParams);
+				$grabResult = exec_sql_query($db, $grabIdQuery, $grabParams)->fetchAll();
+				$id = $grabResult[0]['seq'];
+			}
+			catch (PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Unable to insert into database: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+			/**/
+
+												/*
 			if (!$db->query($query)) {
 				$arrayToSend["success"] = false;
 				$arrayToSend["message"] = "Unable to insert into database: " . $title . " | " . $db->error;
@@ -184,17 +285,32 @@
 				return;
 			}
 			$id = $db->insert_id;
+												*/
 			
-			$movedURL = "media/uploads/".$id.".".$extension;
-
+			$movedURL = "media/".$id.".".$extension;
 			if ( !rename($file, "../".$movedURL) ) {
 				$arrayToSend["success"] = false;
 				$arrayToSend["message"] = "Unable to move file to media upload folder";
-				closeFile($arrayToSend);
+				closeFileNew($arrayToSend);
 				return;
 			}
 
 			// Need to set song - to - art relationship - initially set to null
+			$insertQuery = "INSERT INTO songToart (song_id, art_id) VALUES (:songId, :artId)";
+			$insertParams = array(
+				':songId' => $id,
+				':artId' => -1
+			);
+			try {
+				exec_sql_query($db, $insertQuery, $insertParams);
+			}
+			catch(PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error with creating new relationship between song and art: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = "INSERT INTO songToart (song_id, art_id) VALUES (".$id.", -1)";
 			if (!$db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -202,9 +318,33 @@
 				closeFile($arrayToSend);
 				return;
 			}
+												*/
 			
 			// Getting old album_artist record, replacing old album_artist_id with new one
 			// We first check if there is a relationship between the song and the album artist first:
+			$selectQuery = "SELECT * FROM albumToalbum_artist WHERE album_id=:albumId AND album_artist_id=:albumArtistId";
+			$selectParams = array(
+				':albumId' => $album,
+				':albumArtistId' => $album_artist
+			);
+			$insertQuery = "INSERT INTO albumToalbum_artist (album_id, album_artist_id) VALUES ( :albumId, :albumArtistId)";
+			$insertParams = array(
+				':albumId' => $album,
+				':albumArtistId' => $album_artist
+			);
+			$result = null;
+
+			try {
+				$result = exec_sql_query($db, $selectQuery, $selectParams)->fetchAll();
+				if ( count($result) == 0 ) exec_sql_query($db, $insertQuery, $insertParams);
+			}
+			catch(PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error with checking for existing relationship between album and album artist: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = "SELECT * FROM albumToalbum_artist WHERE album_id=".$album." AND album_artist_id=".$album_artist;
 			if (!$result = $db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -222,8 +362,32 @@
 					return;
 				}
 			} 
+												*/
 				
 			// We now perform the same thing with songToalbum, just in case
+			$selectQuery = "SELECT * FROM songToalbum WHERE song_id = :songId AND album_id = :albumId";
+			$selectParams = array(
+				':songId' => $id,
+				':albumId' => $album
+			);
+			$insertQuery = "INSERT INTO songToalbum (song_id, album_id) VALUES ( :songId, :albumId )";
+			$insertParams = array(
+				':songId' => $id,
+				':albumId' => $album
+			);
+			$result = null;
+
+			try {
+				$result = exec_sql_query($db, $selectQuery, $selectParams)->fetchAll();
+				if ( count($result) == 0 ) exec_sql_query($db, $insertQuery, $insertParams);
+			}
+			catch (PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Error with checking for existing relationship between song and album: ".$exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = "SELECT * FROM songToalbum WHERE song_id=".$id." AND album_id=".$album;
 			if (!$result = $db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -241,7 +405,23 @@
 					return;
 				}
 			}
+												*/
 
+			$updateQuery = "UPDATE music SET url = :url WHERE id = :id";
+			$updateParams = array(
+				':url' => $movedURL,
+				':id' => $id
+			);
+			try {
+				exec_sql_query($db, $updateQuery, $updateParams);
+			}
+			catch (PDOException $exception) {
+				$arrayToSend["success"] = false;
+				$arrayToSend["message"] = "Could not update url of file into databse: " . $exception;
+				closeFileNew($arrayToSend);
+				return;
+			}
+												/*
 			$query = "UPDATE music SET url=\"".$movedURL."\" WHERE id=".$id;
 			if (!$db->query($query)) {
 				$arrayToSend["success"] = false;
@@ -249,214 +429,20 @@
 				closeFile($arrayToSend);
 				return;
 			}
+												*/
 
 		}
 
 		$arrayToSend["success"] = true;
-		closeFile($arrayToSend);
+		closeFileNew($arrayToSend);
 		return;
 
 	} else {
 		$arraToSend["success"] = false;
 		$arrayToSend["message"] = "Type not set";
-		closeFile($arrayToSend);
+		closeFileNew($arrayToSend);
 		return;
 	}
-
-	/*
-	// Detects if the proper files were sent via AJAX and not some malicious other way
-	if ( isset($_FILES) ) {
-		$upload_dir = 'media/uploads/';
-		$arrayToSend["data"] = $_FILES;
-		//foreach($_FILES as $file) {
-			
-			$thisFileInfo = $getID3->analyze($file['tmp_name']);
-			getid3_lib::CopyTagsToComments($thisFileInfo);
-			$song_info = $thisFileInfo["comments_html"];
-			
-			$path_parts = pathinfo($file["name"]);
-			$filename = htmlspecialchars($path_parts["filename"]);
-			$extension = pathinfo(basename($file["name"]), PATHINFO_EXTENSION);
-
-			if ( !array_key_exists($extension, $media_types) ) {
-				// This error means the file is an image but is not a jpg or png, so the uploader has to choose another icon
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "File is not mp3 or m4a";
-				closeFile($arrayToSend);
-			}
-			
-			
-			// Now, we can't do anything else for this thing - we need to get the id so that when we move the file, it's renamed with the id in mind.
-			// For now, we process the file info to insert into the database
-
-			
-			$title = str_replace("'", "&#39;", $song_info["title"][0]);
-			$artist = str_replace("'", "&#39;", $song_info["artist"][0]);
-
-			if ( isset ($song_info["album_artist_sort_order"]) ) {
-				$album_artist = htmlspecialchars($song_info["album_artist_sort_order"][0]);
-			} else if ( isset ($song_info["album_artist"]) ) {
-				$album_artist = htmlspecialchars($song_info["album_artist"][0]);
-			} else if ( isset ($song_info["band"]) ) {
-				$album_artist = htmlspecialchars($song_info["band"][0]);
-			} else {
-				$album_artist = "No Album Artist";
-			}
-			$album_artist_id = -1;
-			$query = 'SELECT id FROM album_artists WHERE name="'.$album_artist.'"';
-			if (!$results = $db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Error in finding if album artists already exists in database";
-				closeFile($arrayToSend);
-			}
-			if ($results->num_rows == 0) {
-				$query = 'INSERT INTO album_artists (name) VALUES ("'.$album_artist.'")';
-				if (!$db->query($query)) {
-					$arrayToSend["success"] = false;
-					$arrayToSend["message"] = "Error in creating new album artist";
-					closeFile($arrayToSend);
-				} 
-				$album_artist_id = $db->insert_id;
-			}
-			else {
-				$row = $results->fetch_assoc();
-				$album_artist_id = $row["id"];
-			}
-			$album_artist = $album_artist_id;
-
-			if ( isset($song_info["album"]) ) {
-				$album = $song_info["album"][0];
-			} else {
-				$album = "Unknown Album";
-			}
-			$album_id = -1;
-			$query = 'SELECT id FROM albums WHERE name="'.$album.'"';
-			if (!$results = $db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Error in finding if album already exists in database";
-				closeFile($arrayToSend);
-			}
-			if ($results->num_rows == 0) {
-				$query = 'INSERT INTO albums (name) VALUES ("'.$album.'")';
-				if (!$db->query($query)) {
-					$arrayToSend["success"] = false;
-					$arrayToSend["message"] = "Error in creating new album";
-					closeFile($arrayToSend);
-				} 
-				$album_id = $db->insert_id;
-			}
-			else {
-				$row = $results->fetch_assoc();
-				$album_id = $row["id"];
-			}
-			$album = $album_id;
-
-	
-			if (isset($song_info["composer"])) {
-				$composer = $song_info["composer"][0];
-			} else {
-				$composer = "";
-			}
-
-			if ( isset($song_info["lyrics"]) ) {
-				//$lyrics = html_entity_decode($song_info["lyrics"][0], ENT_QUOTES, "utf-8");
-				$lyrics = $song_info["lyrics"][0];
-				$lyrics = preg_replace("/\r\n|\r|\n/",'<br/>',$lyrics);
-				$lyrics = str_replace(array("'", "&#13;"), array("&#39;", "<br/>"), $lyrics);
-			} else if ( isset($song_info["unsynchronized_lyric"]) ) {
-				//$lyrics = html_entity_decode($song_info["unsynchronized_lyric"][0], ENT_QUOTES, "utf-8");
-				$lyrics = $song_info["unsynchronized_lyric"][0];
-				//$lyrics = preg_replace("/\r\n|\r|\n/",'<br/>',$lyrics);
-				$lyrics = str_replace(array("'", "&#13;"), array("&#39;", "<br/>"), $lyrics);
-			} else {
-				$lyrics = "<i>No Lyrics Provided</i>";
-			}
-			
-			if ( isset($song_info["comment"]) ) {
-				$comment = myUrlEncode($song_info["comment"][0]);
-			} else {
-				$comment = "";
-			}
-
-			$query = "INSERT INTO music (filename, extension, title, artist, composer, lyrics, comment, duration) VALUES (\"".myUrlEncode($filename)."\", \"".$extension."\", \"".$title."\", \"".$artist."\", \"".$composer."\", \"".$lyrics."\", \"".$comment."\", \"".$thisFileInfo["playtime_string"]."\");";
-			if (!$db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Unable to insert into database: " . $title . " | " . $db->error;
-				closeFile($arrayToSend);
-			}
-			$id = $db->insert_id;
-
-
-
-
-			// Getting old album_artist record, replacing old album_artist_id with new one
-			// We first check if there is a relationship between the song and the album artist first:
-			$query = "SELECT * FROM albumToalbum_artist WHERE album_id=".$album." AND album_artist_id=".$album_artist;
-			if (!$result = $db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Error with updating relationship between album and album artist: ".$db->error;
-				closeFile($arrayToSend);
-			}
-			if ($result->num_rows == 0) {
-				// IF there is no preset relationship, we create a new one:
-				$query = "INSERT INTO albumToalbum_artist (album_id, album_artist_id) VALUES (".$album.", ".$album_artist.")";
-				if (!$db->query($query)) {
-					$arrayToSend["success"] = false;
-					$arrayToSend["message"] = "Error with creating new relationship between album and album artist: ".$db->error;
-					closeFile($arrayToSend);
-				}
-			} 
-				
-			// We now perform the same thing with songToalbum, just in case
-			$query = "SELECT * FROM songToalbum WHERE song_id=".$id." AND album_id=".$album;
-			if (!$result = $db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Error with updating relationship between song and album: ".$db->error;
-				closeFile($arrayToSend);
-			}
-			if ($result->num_rows == 0) {
-				// IF there is no preset relationship, we create a new one:
-				$query = "INSERT INTO songToalbum (song_id, album_id) VALUES (".$id.", ".$album.")";
-				if (!$db->query($query)) {
-					$arrayToSend["success"] = false;
-					$arrayToSend["message"] = "Error with creating new relationship between song and album: ".$db->error;
-					closeFile($arrayToSend);
-				}
-			} 
-			*/
-
-			/* Assuming a successful insert into the database, we now have the id so that we can rename the file properly */
-			/*
-			$target_file = $upload_dir . $id . "." . $extension;
-			if ( file_exists("../" . $target_file) ) {
-				// This error means there is already an image for the media file we couldn't delete it
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "There is already a file with that very audio file id name - there must have been something wonky";
-				closeFile($arrayToSend);
-			}
-			if (!move_uploaded_file($file['tmp_name'], "../" . $target_file)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Could not move the file to the upload folder";
-				closeFile($arrayToSend);
-			}
-			$query = "UPDATE music SET url=\"".$target_file."\" WHERE id=".$id;
-			if (!$db->query($query)) {
-				$arrayToSend["success"] = false;
-				$arrayToSend["message"] = "Could not update url of file into databse: " . $db->error;
-				closeFile($arrayToSend);
-			} 
-				
-			$arrayToSend["success"] = true;
-			$arrayToSend["message"] = "Image successfully uploaded to " . $target_file;
-			closeFile($arrayToSend);
-		}
-		closeFile($arrayToSend);
-	} else {
-		$arrayToSend["success"] = false;
-		$arrayToSend["message"] = "No files prepared for upload";
-		closeFile($arrayToSend);
-	}
-	*/
 
 
 ?>

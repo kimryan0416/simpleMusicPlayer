@@ -1,5 +1,71 @@
 <?php
 	require('scripts/config.php');
+	// open connection to database
+	if (!$db = open_or_init_sqlite_db("scripts/database.sqlite", "scripts/init.sql") ) die("ERROR WITH DATABASE CONNECTION");
+	else if ( !makedirs('upload_directory/') ) die("ERROR SETTING UP \"upload_directory/\"");
+	else if ( !makedirs('media/') ) die ("ERROR SETTING UP \"media/\"");
+	else if ( !makedirs('art/') ) die("ERROR SETTING UP \"art\"");
+
+	$content = array();
+	$query = 'SELECT 
+		T1.album_artist_id AS album_artist_id,
+	    T3.name AS album_artist_name,
+	    T1.album_id AS album_id, 
+	    T2.name AS album_name,
+	    T9.src AS album_art,
+	    T5.id AS id,
+	    T5.artist AS artist,
+	    T5.title AS title,
+	    T5.url AS url,
+	    T5.medium AS medium,
+	    T7.src AS art
+	FROM albumToalbum_artist AS T1
+	LEFT JOIN albums AS T2 ON T1.album_id = T2.id
+	LEFT JOIN album_artists AS T3 on T1.album_artist_id = T3.id
+	LEFT JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
+	LEFT JOIN music AS T5 ON T4.song_id = T5.id
+    LEFT JOIN songToart AS T6 ON T5.id = T6.song_id 
+    LEFT JOIN art AS T7 ON T6.art_id = T7.id 
+    LEFT JOIN albumToart AS T8 ON T1.album_id = T8.album_id
+    LEFT JOIN art AS T9 ON T8.art_id = T9.id
+    WHERE T5.title IS NOT NULL OR T5.url IS NOT NULL
+	ORDER BY album_artist_name, album_name, title';
+
+	try {
+		$music= exec_sql_query($db, $query)->fetchAll();
+		foreach($music as $row) {
+			$album_artist_name = $row['album_artist_name'] != null ? $row['album_artist_name'] : 'Unknown Album Artist';
+			if ( $content[$album_artist_name] == null ) {
+				$content[$album_artist_name] = array(
+					'name' => $album_artist_name,
+					'albums' => array()
+				);
+			}
+			$album_name = $row['album_name'] != null ? $row['album_name'] : 'Unknown Album';
+			$album_art = $row['album_art'] != null ? $row['album_art'] : 'assets/default_album_art.jpg';
+			$album_id = $row['album_id'];
+			if ( $content[$album_artist_name]['albums'][$album_name] == null ) {
+				$content[$album_artist_name]['albums'][$album_name] = array(
+					'art' => $album_art,
+					'id' => $album_id,
+					'songs' => array()
+				);
+			}  
+			$content[$album_artist_name]['albums'][$album_name]['songs'][] = array(
+				'id' => $row['id'],
+				'title' => $row['title'],
+				'artist' => $row['artist'],
+				'medium' => $row['medium'],
+				'url' => $row['url']
+			);
+		}
+	} 
+	catch (PDOException $exception) {
+		die($exception);
+	}
+
+	/*
+	require('scripts/config.php');
 	$content = array();
 	$query = 'SELECT 
 		T1.album_artist_id AS album_artist_id,
@@ -54,6 +120,7 @@
 	}
 	$db->commit();
 	$db->close();
+	*/
 ?>
 
 <!DOCTYPE html>
@@ -64,20 +131,20 @@
 		<title>SimpleMusicPlayer</title>
 		<link rel="stylesheet" type="text/css" href="styles/all.css">
 		<script src="scripts/jquery-3.1.1.min.js"></script>
-	<script src="https://www.youtube.com/iframe_api"></script>
-	<script src="scripts/script.js"></script>
+		<script src="https://www.youtube.com/iframe_api"></script>
+		<script src="scripts/script.js"></script>
 	</head>
 	<body>
+
 		<div id="left">
 			<div id="left_inner">
-				<span id="left_close">Close</span>		<!-- *** Button to close and open the LEFT column *** -->
-				<div id="header">						<!-- *** HEADER - contains options and searchbar *** -->
+				<span id="left_close">Close</span>		
+				<div id="header">
 					<div class="header_dropdown" id="header_settings">
 						<img class="header_placeholder" src="assets/gear.png" alt="Settings">
 						<div class="header_dropdown_contents">
 							<span id="addMedia" class="header_dropdown_item">Add Song</span>
 							<span id="openEmbed" class="header_dropdown_item">Add YT Video</span>
-							<span id="reloadMedia" class="header_dropdown_item" onclick="reloadMedia();">Reload Media</span>
 						</div>
 					</div>
 					<div id="header_search_container">
@@ -210,14 +277,6 @@
 										<img class="video_extras_button" id="video_options_image" src="assets/options.png" alt="Edit Media Info">
 									</div>
 									<span class="video_extras_button_container active" id="video_lyrics_autoscroll">Autoscroll</span>
-									<!--
-									<select class="video_extras_button_container" id="video_quality">
-										<option></option>
-										<option></option>
-										<option></option>
-										<option value=></option>
-									</select>
-								-->
 								</div>
 							</div>
 						</div>
@@ -402,5 +461,6 @@
 				</form>
 			</div>
 		</div>
+
 	</body>
 </html>
