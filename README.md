@@ -56,3 +56,8 @@ Version 5.1 improves code and load time significantly due to moving to an SQLite
 
 ##### Version 5.11
 1. Modified mobile version for use with SQLite player
+
+#### Version 5.12
+1. Remove JavaScript redundant code & function-ized common code sequences, specifically code that creates new DOM elements
+2. Modified Search function - searches now show suggestions below search bar instead of relying on clicking "Enter" to cycle through song items
+3. Removed redundant script files no longer being used

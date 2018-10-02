@@ -94,7 +94,7 @@ function loadMedia() {
 	$(player.html).bind("load");
 	$(player.html).trigger("load");
 	player.time_slider.attr("max", player.end_padding);
-    player.time_slider.val(milliseconds($(player.html).prop("currentTime")));
+    //player.time_slider.val(milliseconds($(player.html).prop("currentTime")));
     player.time_slider.val(player.start_padding);
     player.html.oncanplay = function() {
     	if (!player.canPlay) {

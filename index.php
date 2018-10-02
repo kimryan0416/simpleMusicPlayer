@@ -138,7 +138,7 @@
 
 		<div id="left">
 			<div id="left_inner">
-				<span id="left_close">Close</span>		
+				<span id="left_close">Close</span>
 				<div id="header">
 					<div class="header_dropdown" id="header_settings">
 						<img class="header_placeholder" src="assets/gear.png" alt="Settings">
@@ -147,8 +147,10 @@
 							<span id="openEmbed" class="header_dropdown_item">Add YT Video</span>
 						</div>
 					</div>
+					<!--<div class='header_item'></div>-->
 					<div id="header_search_container">
 						<input type="text" id="search_input" placeholder="Type Here">
+						<div id='search_results'></div>
 					</div>
 				</div>
 				<div id="left_content">
