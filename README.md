@@ -17,7 +17,7 @@ This is currently **Version 5.1** of the **SMP**. You can view the changelog at 
 
 ### **Version 5**
 
-#### Version 5.0:
+#### Version 5.0 - The Bug-Fixing Build:
 Version 5.0 was a step up from the latest version of Version 4 and is mostly comprised of bug fixes and code cleanups.
 
 ##### Version 5.00
@@ -35,7 +35,7 @@ Version 5.0 was a step up from the latest version of Version 4 and is mostly com
 	- Art assets such as loop buttons and shuffle buttons now alter color properly based on whether if player is playing audio or video
 	- Player in general no longer lags under long stretches of time due to memory leakages being fixed
 
-#### Version 5.1:
+#### Version 5.1 - The SQLite Build:
 Version 5.1 improves code and load time significantly due to moving to an SQLite database - requests now no longer require MySQL servers! Anybody who can run a PHP server with SQLite installed now can utilize the player.
 
 ##### Version 5.10
@@ -57,7 +57,53 @@ Version 5.1 improves code and load time significantly due to moving to an SQLite
 ##### Version 5.11
 1. Modified mobile version for use with SQLite player
 
-#### Version 5.12
+##### Version 5.12
 1. Remove JavaScript redundant code & function-ized common code sequences, specifically code that creates new DOM elements
 2. Modified Search function - searches now show suggestions below search bar instead of relying on clicking "Enter" to cycle through song items
 3. Removed redundant script files no longer being used
+
+#### Version 5.2 - The Editor And Styling Build:
+Version 5.2 replaces a lot of extraneous code by utilizing functions and erasing now-nonfunctional code. As a result, improvements have been made to the general stability of the build.
+Major stylistic changes have also been made, with major changes made to the general look of the player, info editor, and list of songs.
+Back-end adjustments mainly include altering how dynamic lyrics are managed by the editor, fixes to code that previewed new art when uploading new artwork, etc.
+New functions have been added into the build, including the ability to save and toggle between simple lyrics and dynamic lyrics, being able to transfer simple lyrics into dynamic lyrics and vice versa, and being able to add new dynamic lyric segments before and after particular lyric segments that have already been added into the lyrics editor.
+
+##### Version 5.20
+1. Styling changes:
+	- General changes:
+		- Using classes, many repetitious elements have been commonly styled and therefore reduced in number of overwritten CSS code
+		- Both left and write bars now feature transparent backgrounds - all wrapper elements now feature common CSS styling
+	- Main player changes
+		- Background image now visible but blurred behind all major elements on the screen
+			- CSS blur filter produced a lot of lag, but now possible without lag due to finding out that using the ``<canvas>`` tag with a blur filter significantly reduces blur.
+		- Controls and Title/Artist now take up less space on the screen in general
+		- Autoscroll (on the music player) / Lyrics (on the video player) toggle now switched in appearance - dark when dynamic lyrics are deactivated, white when dynamic lyrics are activated
+	- Left bar changes:
+		- Completely transparent background - able to see blurred background through the left bar
+		- Album artwork changed position - now side-by-side with Album title
+		- Albums sport a slightly-transparent background rectangle to separate them from the blurred background
+		-	Songs no longer have a completely white background, instead a transparent one to match the new background rectangle of their parent albums
+		- YouTube Video Embed form now also sports a similar, slightly-transparent background rectangle to separate it from the blurred background.
+		- Search bar now animates to open when hovered over - styling matches that of settings button
+			- dropdown items also now share common CSS styling via classes
+	- Editor changes
+		- Navigation bar at top that toggles between main details, lyrics, and album artwork removed
+		- All 3 sections (main details, lyrics, and album work) now all visible at the same time
+		- Album artwork preview, upload button, and choice of existing artwork take up significantly less space in the editor
+		- Toggle between dynamic and simple lyrics actual labels that change with interaction instead of just radio buttons
+2. Back-End changes:
+	- HTML-based:
+		- Left bar now part of a flex container alongside the main player instead of a position-absoluted element - makes toggling the left bar easier with adjusting 1 class instead of multiple classes
+		- Simplified some ID's and Classes names
+		- Switched some inline-elements to ``flex`` due to concerns with compatibility. These include:
+			- Left Bar: album headers that contain album artwork and album names
+			- Main Player: controls divider and artwork/lyrics divider now flex items
+		- Right (editor) side now sports fewer wrapper divs and elements
+		- dropdown elements simplified into common structures, most notably for the left bar header items for settings and search bar
+	- Database Alterations:
+		- Added new ``dynamic_lyrics`` column - now able to save both simple lyrics within ``lyrics`` and dynamic lyrics within ``dynamic_lyrics``
+	- PHP-based:
+		- Replaced several double quotes ``""`` with single quotes ``''`` to improve efficiency
+		- Removed remaining MySQL code that was commented out when converting to SQLite.
+		- Adjusted queries to reflect database alterations mentioned above
+		- Combined ``getAllArtForEdit.php`` and ``getAlbumArtForEdit.php`` into single file - beginning process of combining extraneous files

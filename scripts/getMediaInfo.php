@@ -17,7 +17,8 @@
 	    T5.url AS url,
 	    T5.medium AS medium,
 	    T5.duration AS duration,
-	    T5.lyrics AS lyrics,
+	    T5.lyrics AS simpleLyrics,
+	    T5.dynamic_lyrics AS dynamicLyrics,
 	    T5.dynamic_lyrics_toggle AS dynamic_lyrics_toggle,
 	    T5.start_padding AS start_padding,
 	    T5.end_padding AS end_padding,
@@ -48,48 +49,13 @@
 		closeFileNew($arrayToSend);
 		return;
     }
-
-	/*
-	$query = "SELECT 
-		T1.album_artist_id AS album_artist_id,
-		T3.name AS album_artist_name,
-		T1.album_id AS album_id, 
-		T2.name AS album_name,
-		T2.art AS album_art,
-		T5.id AS id,
-		T5.artist AS artist,
-		T5.title AS title,
-		T5.url AS url,
-		T5.medium AS medium,
-		T5.dynamic_lyrics_toggle AS dynamic_lyrics_toggle,
-		T5.lyrics AS lyrics,
-		T5.start_padding AS start_padding,
-		T5.end_padding AS end_padding,
-		T5.duration AS duration,
-	    T7.src AS art
-	FROM albumToalbum_artist AS T1
-	RIGHT OUTER JOIN albums AS T2 ON T1.album_id = T2.id
-	RIGHT OUTER JOIN album_artists AS T3 on T1.album_artist_id = T3.id
-	RIGHT OUTER JOIN songToalbum AS T4 ON T1.album_id = T4.album_id
-	RIGHT OUTER JOIN music AS T5 ON T4.song_id = T5.id
-    RIGHT OUTER JOIN songToart AS T6 ON T5.id = T6.song_id 
-    RIGHT OUTER JOIN art AS T7 ON T6.art_id = T7.id
-	WHERE T5.id=".$id;
-
-	if ( !$result = $db->query($query) ) {
-		$arrayToSend["success"] = false;
-		$arrayToSend["message"] = "Error in getting media info from database";
-		closeFile($arrayToSend);
-	}
-	$row = $result->fetch_assoc();
-	*/
 	
 	$newUrl =  myUrlDecode($row["url"]);
 	$row["url"] = $newUrl;
 
 	if ($row["medium"] == 0) {
 		if ($row["dynamic_lyrics_toggle"] == 1) {
-			$lyrics_array = explode("||realNEWLINE||", $row["lyrics"]);
+			$lyrics_array = explode("||realNEWLINE||", $row["dynamicLyrics"]);
 			$lyrics= "";
 			$lyrics_starting_times = array();
 			//$lyrics_ending_times = array();
@@ -141,23 +107,22 @@
 				$lyrics_HTML .= "</span>";
 				$lyrics .= $lyrics_HTML;
 			}
-			$row["lyrics"] = "<span class='lyric_segment lyric_segment_0 noText'></span>" . $lyrics;
+			//$row["lyrics"] = "<span class='lyric_segment lyric_segment_0 noText'></span>" . $lyrics;
+			$row['lyrics'] = '<span class="lyric_segment lyric_segment_0 noText"></span>' . $lyrics . '<span class="lyric_segment lyric_segment_0 noText"></span>';
 			$row["dynamic_lyrics_starting_times"] = $lyrics_starting_times;
-			$row["dynamic_lyrics_ending_times"] = $lyrics_ending_times;
 		} else {
 			$lyrics = "<span class='lyric_segment lyric_segment_-1 noText'></span>";
-			$lyrics_array = explode("\r\n", $row["lyrics"]);
+			$lyrics_array = explode("\r\n", $row["simpleLyrics"]);
 			foreach ($lyrics_array as $lyric_segment) {
 				$lyrics .= "<span class='lyric_segment lyric_segment_-1 noText'>" . $lyric_segment . "</span>";
 			}
 			$lyrics .= "<span class='lyric_segment lyric_segment_-1 noText'></span>";
 			$row["lyrics"] = $lyrics;
 			$row["dynamic_lyrics_starting_times"] = null;
-			$row["dynamic_lyrics_ending_times"] = null;
 		}
 	} else if ($row["medium"] == 1 || $row["medium"] == 2 ) {
 		if ($row["dynamic_lyrics_toggle"] == 1) {
-			$lyrics_array = explode("||realNEWLINE||", $row["lyrics"]);
+			$lyrics_array = explode("||realNEWLINE||", $row["dynamicLyrics"]);
 			$lyrics= "";
 			$lyrics_starting_times = array();
 			$largeSize = count($lyrics_array);
@@ -208,10 +173,10 @@
 				$lyrics_HTML .= "</span>";
 				$lyrics .= $lyrics_HTML;
 			}
-			$row["lyrics"] = $lyrics;
+			$row["lyrics"] = '<span class="lyric_segment lyric_segment_0 noText"></span>' . $lyrics . '<span class="lyric_segment lyric_segment_0 noText"></span>';
 			$row["dynamic_lyrics_starting_times"] = $lyrics_starting_times;
 		} else {
-			$row["lyrics"] = "";
+			$row['lyrics'] = '';
 			$row["dynamic_lyrics_starting_times"] = null;
 		}
 	}

@@ -18,14 +18,6 @@
         );
         $result = exec_sql_query($db, $query, $params)->fetchAll();
         $row = $result[0];
-/*
-        $query = "SELECT url FROM music WHERE id=".$id;
-        if (!$result = $db->query($query)) {
-            echo false;
-            return;
-        }
-        $row = $result->fetch_assoc();
-*/
 
         $path = $row["url"];
         $picture = $getID3->analyze("../".$path);
