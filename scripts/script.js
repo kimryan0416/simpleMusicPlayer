@@ -65,7 +65,7 @@ function setBackground(img, backgroundElement = null, blur = 3) {
 	return canvas;
 }
 
-var globalPlayer, audio_player, video_player, editForm, editAlbumArtForm, embedForm, iconEdit, iconEditSet = 0, left_close = false;
+var globalPlayer, audio_player, video_player, left_close = false;
 var screenHeight = window.innerHeight;
 var search_element, searchResults, search_options_element, search_text, search_option, searching_boolean = true, search_matches = [];
 var loopStagesDefault = ["assets/repeat_0.png", "assets/repeat_1.png", "assets/repeat_all.png"];
@@ -165,14 +165,17 @@ function setDatabaseInScript(raw) {
 function printMedia(sortedDatabase, updateCurrentPlayer = false, scrollTo = -1) {
 	var html, albumHTML, albumSongList;
 	for (var index in sortedDatabase) {
-		html = make([ 'div', { class:'album_artist_div' }, [ 'h1', {class:'album_artist_name'}, sortedDatabase[index]['name'] ] ]);
+		html = make(['div',{class:'container albumArtist'},['div',{class:'item albumArtist'},['h1',sortedDatabase[index]['name']] ]]);
 		for(var album in sortedDatabase[index]['albums']) {
-			albumHTML = make(['div',{class:'album'},['div',{class:'album_header'},['div',{class:'album_image_container'},['img',{class:'album_image',src:sortedDatabase[index]['albums'][album]['art']+'#'+ new Date().getTime(),alt:''}],['div',{class:'addAlbumArt_button','data-id':sortedDatabase[index]['albums'][album]['id']}]],['div',{class:'albumArtistContainer'},['h2',album]]]]);
-			albumSongList = make(['div',{class:'albumSongList'}]);
+			albumHTML = make(['div',{class:'container album',id:'album_'+album},['div',{class:'item album'},['div',{class:'container albumArt'},['img',{class:'item albumArt',src:sortedDatabase[index]['albums'][album]['art']+'#'+ new Date().getTime(),alt:''}],['span',{class:'item addAlbumArt_button','data-id':sortedDatabase[index]['albums'][album]['id']},'Change Artwork']],['h2',album]]]);
+			albumSongList = make(['div',{class:'container albumSongList'}]);
 			sortedDatabase[index]['albums'][album]['songs'].forEach(function(d, index) {
-				var attributes = { class:'song', id:d['id'], 'data-id':d['id'], 'data-medium':d['medium']}
-				if (d['medium'] == 1) albumSongList.appendChild( make([ 'div', attributes, [ 'img', { class:'video_icon', src:'assets/youtube.png', alt:'YouTube' } ], [ 'span', { class:'video_title' }, d['title'] ], [ 'span', { class:'video_artist' }, d['artist'] ], [ 'img', { class:'song_options', src:'assets/options.png', alt:'Song Options' } ] ]) );
-				else albumSongList.appendChild( make([ 'div', attributes, [ 'span', { class:'song_title' }, d['title'] ], [ 'span', { class:'song_artist' }, d['artist'] ], [ 'img', { class:'song_options', src:'assets/options.png', alt:'Song Options' } ] ]));
+				var songToAppend = make(['div',{class:'item song', id:d['id'], 'data-id':d['id'], 'data-medium':d['medium']}]);
+				if (d['medium'] == 1) songToAppend.appendChild(make(['img',{class:'item icon',src:'assets/youtube.png',alt:'YouTube'}]));
+				else if (d['medium'] == 2) songToAppend.appendChild(make(['img',{class:'item icon',src:'assets/video.png',alt:'Video'}]));
+				songToAppend.appendChild(make(['div',{class:'container text'},['span',{class:'item title'},d['title']],['span',{class:'item artist'},d['artist']]]));
+				songToAppend.appendChild(make(['img',{class:'item options',src:'assets/options.png',alt:'Song Options'}]));
+				albumSongList.appendChild(songToAppend);
 			});
 			albumHTML.appendChild(albumSongList);
 			html.appendChild(albumHTML);
@@ -239,8 +242,8 @@ function updateCurrent() {
 
 				globalPlayer.currentPlayer.art.attr("src", arr["art"]+"#"+ new Date().getTime());
 				globalPlayer.currentPlayer.title.html(arr["title"]);
-				if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
-				else globalPlayer.currentPlayer.title.removeClass("smallerTitle");
+				//if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
+				//else globalPlayer.currentPlayer.title.removeClass("smallerTitle");
 				globalPlayer.currentPlayer.artist.html(arr["artist"]);
 				globalPlayer.currentPlayer.lyrics.html(arr["lyrics"]);
 				globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.height();
@@ -361,7 +364,7 @@ function preparePlayer(arr) {
 		video_player.container.removeClass("closed");
 		globalPlayer.mediaContainer.addClass('video');
 		globalPlayer.currentPlayer = video_player;
-		globalPlayer.currentPlayer.title.html(arr["title"]);
+		//globalPlayer.currentPlayer.title.html(arr["title"]);
 		var setLoopForVideo = (globalPlayer.loop == 1) ? 1 : 0;
 		globalPlayer.currentPlayer.player = new YT.Player('video_embed', {
 			width: 600,
@@ -386,7 +389,7 @@ function preparePlayer(arr) {
 		video_player.container.removeClass("closed");
 		globalPlayer.mediaContainer.addClass('video');
 		globalPlayer.currentPlayer = video_player;
-		globalPlayer.currentPlayer.title.html(arr["title"]);
+		//globalPlayer.currentPlayer.title.html(arr["title"]);
 		globalPlayer.currentPlayer.title.removeClass("smallerTitle");
 		volumeAdjust(globalPlayer.volume);
 	} else {
@@ -400,12 +403,16 @@ function preparePlayer(arr) {
 			globalPlayer.currentPlayer.art.attr("src", arr["art"]+"#"+ new Date().getTime());
 			setBackground(arr["art"], globalPlayer.background);
 		}
-		globalPlayer.currentPlayer.title.html(arr["title"]);
-		if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
+		//if (globalPlayer.currentPlayer.title.height() > 100) globalPlayer.currentPlayer.title.addClass("smallerTitle");
 		volumeAdjust(globalPlayer.volume);
 	}
 
+	//var tempTitle = arr["title"].split(' ').reduce(function(accumulator,currentValue,currentIndex) {
+	//	return (currentIndex == 1) ?  '<span class="titleSegment">'+accumulator+'</span>' + '<span class="titleSegment">'+currentValue+'</span>' : accumulator + '<span class="titleSegment">'+currentValue+'</span>';
+	//});
+	globalPlayer.currentPlayer.title.html(arr['title']);
 	globalPlayer.currentPlayer.artist.html(arr["artist"]);
+
 	globalPlayer.currentPlayer.lyrics.html('');
 	globalPlayer.startPadding = arr["start_padding"];
 	globalPlayer.endPadding = arr["end_padding"];
@@ -698,7 +705,7 @@ function autoscrollToggle() {
 
 
 function startEdit(id) {
-	editForm.form[0].reset();
+	globalPlayer.editMediaForm.form[0].reset();
 	var data = "id="+id;
 	$.ajax({
 		url: "scripts/getMediaInfoForEdit.php", 
@@ -714,85 +721,81 @@ function startEdit(id) {
 	}).always(openEdit);
 }
 function prepareEdit(arr) {
-	iconEditSet = 0;
-	iconEdit = null;
+	globalPlayer.editMediaForm.iconEditSet = 0;
+	globalPlayer.editMediaForm.iconEdit = null;
 
-	editForm.songId.val(arr.id);
-	editForm.medium.val(arr.medium);
-	editForm.title.val(arr.title);
-	editForm.artist.val(arr.artist);
-	editForm.album.val(arr.album_name);
-	editForm.album_artist.val(arr.album_artist_name);
-	editForm.composer.val(arr.composer);
+	globalPlayer.editMediaForm.songId.val(arr.id);
+	globalPlayer.editMediaForm.medium.val(arr.medium);
 
-	if (arr.art != null) editForm.art_temp = arr.art +"#"+ new Date().getTime();
-	else editForm.art_temp = "assets/default_album_art.jpg";
-	editForm.art_display.attr("src", editForm.art_temp);
+	globalPlayer.editMediaForm.title.val(arr.title);
+	globalPlayer.editMediaForm.artist.val(arr.artist);
+	globalPlayer.editMediaForm.album.val(arr.album_name);
+	globalPlayer.editMediaForm.albumArtist.val(arr.album_artist_name);
+	globalPlayer.editMediaForm.composer.val(arr.composer);
+
+	globalPlayer.editMediaForm.artDisplay.attr('src', (arr.art != null) ? arr.art +'#'+ new Date().getTime() : 'assets/default_album_art.jpg');
 	if ( arr.medium == 0 ) {
-		editForm.video_id_container.hide();
-		editForm.lyricsSettings.show();
-		editForm.convertLyricsActivator.show();
+		globalPlayer.editMediaForm.videoIdContainer.hide();
+		globalPlayer.editMediaForm.lyricsSettings.show();
+		globalPlayer.editMediaForm.convertLyricsActivator.show();
 
-		editForm.padding_container.show();
-		editForm.start_padding.val(arr.start_padding);
-		editForm.end_padding.val(arr.end_padding);
+		globalPlayer.editMediaForm.paddingContainer.show();
+		globalPlayer.editMediaForm.startPadding.val(arr.start_padding);
+		globalPlayer.editMediaForm.endPadding.val(arr.end_padding);
 
-		editForm.simple_lyrics.text(arr.simpleLyrics);
+		globalPlayer.editMediaForm.simpleLyrics.text(arr.simpleLyrics);
+		globalPlayer.editMediaForm.dynamicLyricsInnerContainer.empty();
 		var seg = arr.dynamicLyrics;
-		editForm.dynamic_lyrics_inner_container.empty();
 		if (seg.length > 0) {
-			console.log(seg);
-			for (var lyric_seg in seg) {
-				console.log(seg);
-				editForm.dynamic_lyrics_index = parseInt(lyric_seg);
-				editForm.dynamic_lyrics_inner_container[0].appendChild(dynamicLyricSegmentForEdit(lyric_seg, seg[lyric_seg]["time"], seg[lyric_seg]["style"], seg[lyric_seg]["no_text"], seg[lyric_seg]["text"]));
+			for (var lyricSeg in seg) {
+				globalPlayer.editMediaForm.dynamicLyricsIndex = parseInt(lyricSeg);
+				globalPlayer.editMediaForm.dynamicLyricsInnerContainer[0].appendChild(dynamicLyricSegmentForEdit(lyricSeg, seg[lyricSeg]['time'], seg[lyricSeg]['style'], seg[lyricSeg]['no_text'], seg[lyricSeg]['text']));
 			}
 		}
-
 		if (arr.dynamic_lyrics_toggle == 1) {
-			editForm.lyricsSettingsSimpleRadio.checked = false;
-			editForm.lyricsSettingsDynamicRadio.checked = true;
-			editForm.lyricsSimpleContainer.removeClass('selected');
-			editForm.lyricsDynamicContainer.addClass('selected');
-			editForm.convertLyricsActivator.text('=> Import from Simple Lyrics');
-			editForm.openedLyrics = 1;
+			globalPlayer.editMediaForm.lyricsSettingsSimpleRadio.checked = false;
+			globalPlayer.editMediaForm.lyricsSettingsDynamicRadio.checked = true;
+			globalPlayer.editMediaForm.lyricsSimpleContainer.removeClass('selected');
+			globalPlayer.editMediaForm.lyricsDynamicContainer.addClass('selected');
+			globalPlayer.editMediaForm.convertLyricsActivator.text('=> Import from Simple Lyrics');
+			globalPlayer.editMediaForm.openedLyrics = 1;
 		} else {
-			editForm.lyricsSettingsSimpleRadio.checked = true;
-			editForm.lyricsSettingsDynamicRadio.checked = false;
-			editForm.lyricsSimpleContainer.addClass('selected');
-			editForm.lyricsDynamicContainer.removeClass('selected');
-			editForm.convertLyricsActivator.text('Import from Dynamic Lyrics <=');
-			editForm.openedLyrics = 0;
+			globalPlayer.editMediaForm.lyricsSettingsSimpleRadio.checked = true;
+			globalPlayer.editMediaForm.lyricsSettingsDynamicRadio.checked = false;
+			globalPlayer.editMediaForm.lyricsSimpleContainer.addClass('selected');
+			globalPlayer.editMediaForm.lyricsDynamicContainer.removeClass('selected');
+			globalPlayer.editMediaForm.convertLyricsActivator.text('Import from Dynamic Lyrics <=');
+			globalPlayer.editMediaForm.openedLyrics = 0;
 		}
 	}
 	else {
 
-		editForm.padding_container.hide();
+		globalPlayer.editMediaForm.paddingContainer.hide();
 
 		if (arr.medium == 1) {
-			editForm.video_id.val(arr.url);
-			editForm.video_id_container.show();
+			globalPlayer.editMediaForm.videoId.val(arr.url);
+			globalPlayer.editMediaForm.videoIdContainer.show();
 		} else {
-			editForm.video_id_container.hide();
+			globalPlayer.editMediaForm.videoIdContainer.hide();
 		}
-		editForm.lyricsSettings.hide();
-		editForm.lyricsSettingsSimpleRadio.checked = false;
-		editForm.lyricsSettingsDynamicRadio.checked = true;
-		editForm.lyricsSimpleContainer.removeClass('selected');
-		editForm.lyricsDynamicContainer.addClass('selected');
-		editForm.convertLyricsActivator.hide();
-		editForm.openedLyrics = 1;
+		globalPlayer.editMediaForm.lyricsSettings.hide();
+		globalPlayer.editMediaForm.lyricsSettingsSimpleRadio.checked = false;
+		globalPlayer.editMediaForm.lyricsSettingsDynamicRadio.checked = true;
+		globalPlayer.editMediaForm.lyricsSimpleContainer.removeClass('selected');
+		globalPlayer.editMediaForm.lyricsDynamicContainer.addClass('selected');
+		globalPlayer.editMediaForm.convertLyricsActivator.hide();
+		globalPlayer.editMediaForm.openedLyrics = 1;
 		var seg = arr.dynamicLyrics;
 		if (seg.length > 0) {
-			for (var lyric_seg in seg) {
-				editForm.dynamic_lyrics_index = parseInt(lyric_seg);
-				editForm.dynamic_lyrics_inner_container[0].appendChild(dynamicLyricSegmentForEdit(lyric_seg, seg[lyric_seg]["time"], seg[lyric_seg]["style"], seg[lyric_seg]["no_text"], seg[lyric_seg]["text"]));
+			for (var lyricSeg in seg) {
+				globalPlayer.editMediaForm.dynamicLyricsIndex = parseInt(lyricSeg);
+				globalPlayer.editMediaForm.dynamicLyricsInnerContainer[0].appendChild(dynamicLyricSegmentForEdit(lyricSeg, seg[lyricSeg]['time'], seg[lyricSeg]['style'], seg[lyricSeg]['no_text'], seg[lyricSeg]['text']));
 			}
 		}
 	}
 }
 function convertLyrics() {
-	var current = editForm.openedLyrics;
+	var current = globalPlayer.editMediaForm.openedLyrics;
 	var allSegments = [];
 	var thisString = '';
 	if (current == 0) {
@@ -800,111 +803,64 @@ function convertLyrics() {
 			allSegments.push(elmnt.value);
 		});
 		thisString = allSegments.join('\n');
-		editForm.simple_lyrics.empty().val(thisString);
+		globalPlayer.editMediaForm.simpleLyrics.empty().val(thisString);
 		return;
 	}
 	else if (current == 1) {
-		thisString = editForm.simple_lyrics.val();
+		thisString = globalPlayer.editMediaForm.simpleLyrics.val();
 		allSegments = thisString.split('\n\n');
-		editForm.dynamic_lyrics_inner_container.empty();
+		globalPlayer.editMediaForm.dynamicLyricsInnerContainer.empty();
 		allSegments.forEach(function(d,index) {
-			editForm.dynamic_lyrics_inner_container[0].appendChild(dynamicLyricSegmentForEdit(index, '', '', '', d));
-			editForm.dynamic_lyrics_index = index;
+			globalPlayer.editMediaForm.dynamicLyricsInnerContainer[0].appendChild(dynamicLyricSegmentForEdit(index, '', '', '', d));
+			globalPlayer.editMediaForm.dynamicLyricsIndex = index;
 		});
 		return;
 	}
 	else return;
 }
-function dynamicLyricSegmentForEdit(id, time = "", style = "", notext = true, text = "") {
-	var lyricSegHTML = make(
-		[
-			'div',
-			{id:'dynamic_lyrics_segment_'+id,class:'segmentContainer dynamicLyricsSegment'},
-			[
-				'span',
-				{'class':'dynamicLyricsSegmentAddAbove'},
-				'Add Segment Above'
-			],
-			[
-				'span',
-				{class:'cancel dynamicLyricsSegmentRemove','data-id':id},
-				'X'
-			],
-			[
-				'div',
-				{class:'segmentContainer dynamicLyricsSegmentSettings'},
-				[
-					'input',
-					{class:'inputText dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}
-				],
-				[
-					'input',
-					{class:'inputText dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}
-				],
-			],
-			[
-				'div',
-				{class:'segmentContainer dynamicLyricsSegmentSettings'},
-				[
-					'input',
-					{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}
-				],
-				[
-					'input',
-					{id:'dynamic_lyrics_notext_'+id,class:'inputRadio dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}
-				],
-				[
-					'label',
-					{class:'inputLabel dynamicLyricsNotextLabel',for:'dynamic_lyrics_notext_'+id},
-					'No Text'
-				]
-			],
-			[
-				'div',
-				{class:'segmentContainer innerContainer dynamicLyricsTextareaContainer'},
-				[
-					'textarea',
-					{class:'editInput dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}
-				]
-			],
-			[
-				'span',
-				{'class':'dynamicLyricsSegmentAddBelow'},
-				'Add Segment Below'
-			]
-		]
-	);
-	editForm.dynamic_lyrics_prev_time = time;
+function dynamicLyricSegmentForEdit(id, time = '', style = '', notext = true, text = '') {
+	var lyricSegHTML = make(['div',{id:'dynamic_lyrics_segment_'+id,class:'segmentContainer dynamicLyricsSegment'},['span',{'class':'dynamicLyricsSegmentAddAbove'},'Add Segment Above'],['span',{class:'cancel dynamicLyricsSegmentRemove','data-id':id},'X'],['div',{class:'segmentContainer dynamicLyricsSegmentSettings'},['input',{class:'inputText dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}],['input',{class:'inputText dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}],],['div',{class:'segmentContainer dynamicLyricsSegmentSettings'},['input',{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}],['input',{id:'dynamic_lyrics_notext_'+id,class:'inputRadio dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}],['label',{class:'inputLabel dynamicLyricsNotextLabel',for:'dynamic_lyrics_notext_'+id},'No Text']],['div',{class:'segmentContainer innerContainer dynamicLyricsTextareaContainer'},['textarea',{class:'editInput dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}]],['span',{'class':'dynamicLyricsSegmentAddBelow'},'Add Segment Below']]);
+	globalPlayer.editMediaForm.dynamicLyricsPrevTime = time;
 	return lyricSegHTML;
 }
-function removeLyricSegment(seg_id) {	editForm.lyricsDynamicContainer.find("#dynamic_lyrics_segment_"+seg_id).remove();	}
+function removeLyricSegment(segId) {	globalPlayer.editMediaForm.lyricsDynamicContainer.find('#dynamic_lyrics_segment_'+segId).remove();	}
 function addLyricSegment() {
-	editForm.dynamic_lyrics_index = parseInt(editForm.dynamic_lyrics_index) + 1;
-	editForm.dynamic_lyrics_inner_container[0].appendChild(dynamicLyricSegmentForEdit(editForm.dynamic_lyrics_index, "", "", false, ""));
+	globalPlayer.editMediaForm.dynamicLyricsIndex = parseInt(globalPlayer.editMediaForm.dynamicLyricsIndex) + 1;
+	globalPlayer.editMediaForm.dynamicLyricsInnerContainer[0].appendChild(dynamicLyricSegmentForEdit(globalPlayer.editMediaForm.dynamicLyricsIndex, '', '', false, ''));
 }
 function openEdit() {
-	editForm.parent.removeClass("closed");
-	editForm.form.show();
-	editAlbumArtForm.form.hide();
-	globalPlayer.mainContainer.addClass("right_opened");
-	editForm.status = true;
+	$(globalPlayer.leftSongs).hide();
+	globalPlayer.embedForm.form.hide();
+	globalPlayer.editAlbumArtForm.form.hide();
+
+	globalPlayer.editMediaForm.form.show();
+	globalPlayer.editMediaForm.status = true;
+
+	if ( !video_player.lyrics_parent.hasClass("lock") )	video_player.lyrics_parent.addClass("lock");
+	if ( !video_player.controls_container.hasClass("lock") ) video_player.controls_container.addClass("lock");
+	if (!globalPlayer.leftOpen) {
+		$('#left').removeClass('closed');
+		$('#main').removeClass('wide');
+	}
 }
 function closeEdit() {
-	editForm.parent.addClass("closed");
-	globalPlayer.mainContainer.removeClass("right_opened");
-	editForm.status = false;
-	iconEdit = null
-	iconEditSet = 0;
-	editAlbumArtForm.status = false;
-	editAlbumArtForm.id = -1;
-	editAlbumArtForm.iconEdit = null;
-	editAlbumArtForm.iconEditSet = -1;
+	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.editAlbumArtForm.status ) {
+		$('#left').addClass('closed');
+		$('#main').addClass('wide');
+	}
 	if ( video_player.lyrics_parent.hasClass("lock") )	video_player.lyrics_parent.removeClass("lock");
 	if ( video_player.controls_container.hasClass("lock") ) video_player.controls_container.removeClass("lock");
+
+	globalPlayer.editMediaForm.form.hide();
+	globalPlayer.editMediaForm.status = false;
+	$(globalPlayer.leftSongs).show();
+
+	globalPlayer.editMediaForm.iconEdit = null
+	globalPlayer.editMediaForm.iconEditSet = 0;
 }
 function auto_grow(element) {
-    element.style.height = "20px";
-    element.style.height = (element.scrollHeight)+"px";
+    element.style.height = '20px';
+    element.style.height = (element.scrollHeight)+'px';
 }
 function editIcon(event) {
 	event.stopPropagation(); 	/* Stop stuff happening */
@@ -912,11 +868,11 @@ function editIcon(event) {
 
 	/* Create a formdata object and add the files */
 	var data = new FormData();
-	$.each(iconEdit, function(key, value) {
+	$.each(globalPlayer.editMediaForm.iconEdit, function(key, value) {
     	data.append(key, value);
 	});
     $.ajax({
-    	url: "scripts/mediaEdit.php?icon=1&change="+iconEditSet+"&id="+editForm.songId.val(),	// ?files ensures that the "$_GET" in song_icon_upload.php runs properly
+    	url: 'scripts/mediaEdit.php?icon=1&change='+globalPlayer.editMediaForm.iconEditSet+'&id='+globalPlayer.editMediaForm.songId.val(),	// ?files ensures that the "$_GET" in song_icon_upload.php runs properly
     	type: 'POST',
     	data: data,
     	cache: false,
@@ -925,8 +881,8 @@ function editIcon(event) {
     	contentType: false, 	// Set content type to false as jQuery will tell the server its a query string request
     	success: function(response, textStatus, jqXHR) {
     		console.log(response);
-    		if (response.success) submitEdit(event, iconEditSet, editForm.songId.val());
-    		else alert("Error on Editing Media:\n" + response.message);
+    		if (response.success) submitEdit(event, globalPlayer.editMediaForm.iconEditSet, globalPlayer.editMediaForm.songId.val());
+    		else alert('Error on Editing Media:\n' + response.message);
     	},
     	error: function(jqXHR, textStatus, errorThrown) {	alert('AJAX Error on Editing Media Icon:\n' + errorThrown);	}
 	});
@@ -937,7 +893,7 @@ function submitEdit(event, iconUploaded=0, id, reload = 0, close = false, delete
 		if (obj.checked) document.getElementById(thisId+'Hidden').disabled = true;
 		else document.getElementById(thisId+'Hidden').disabled = false;
 	});
-   	var formData = editForm.form.serialize();
+   	var formData = globalPlayer.editMediaForm.form.serialize();
 	$.ajax({
 		url: 'scripts/mediaEdit.php?song=1&edit='+id+'&reload='+reload+'&iconUploaded='+iconUploaded,
 		type: 'POST',
@@ -946,8 +902,8 @@ function submitEdit(event, iconUploaded=0, id, reload = 0, close = false, delete
 		dataType: 'json'
 	}).done(function(response) {
 		if (response.success) {
-			iconEdit = null;
-			iconEditSet = 0;
+			globalPlayer.editMediaForm.iconEdit = null;
+			globalPlayer.editMediaForm.iconEditSet = 0;
 			if (close) closeEdit();
 			else populateAlternativeArtContainer();
 			var flag = false;
@@ -964,9 +920,8 @@ function submitEdit(event, iconUploaded=0, id, reload = 0, close = false, delete
 
 
 function startAlbumArtEdit(album_id) {
-	closeEdit();
-	setTimeout(function() {
-		editAlbumArtForm.alternatives_container.empty();
+	//setTimeout(function() {
+		globalPlayer.editAlbumArtForm.alternativesContainer.empty();
 		var data = 'get=1&albumId='+album_id;
 		var grabAllArt = $.ajax({
 			url: "scripts/getAllArtForEdit.php",
@@ -976,70 +931,49 @@ function startAlbumArtEdit(album_id) {
 		});
 		$.when(grabAllArt).then(function(art) {
 			if ( !art['success'] || art['success'] == false  || art['success']=='false' ) return alert("AJAX Error on Retrieving Album Art For Edit: " + art[0]['message']);
-			editAlbumArtForm.temp = (art['art'] != null) ? art['art'] : 'assets/default_album_art.jpg';
-			editAlbumArtForm.display.src = editAlbumArtForm.temp + '#' + new Date().getTime();
-			if ( editAlbumArtForm.array != art['data'] ) {
-				editAlbumArtForm.array = art['data'];
-				var alternative_html;
+			globalPlayer.editAlbumArtForm.display.src = (art['art'] != null) ?  art['art'] :  'assets/default_album_art.jpg#' + new Date().getTime();
+			if ( globalPlayer.editAlbumArtForm.array != art['data'] ) {
+				globalPlayer.editAlbumArtForm.array = art['data'];
+				var alternativeHtml;
 				for (var index in art['data']) {
-					alternative_html = make(
-						[
-							'div',
-							{
-								class:'item alternate_art_container_for_album_art_edit'
-							},
-							[
-								'img',
-								{
-									class:'preview alternatePreview',
-									src:art['data'][index],
-									alt:''
-								}
-							],
-							[
-								'input',
-								{
-									type:'radio',
-									class:'inputRadio alternateRadio',
-									id:'alternate_art_for_album_art_edit_'+index,
-									name:'alternate_art_for_album_art_edit',
-									value:index
-								}
-							],
-							[
-								'label',
-								{
-									for:'alternate_art_for_album_art_edit_'+index,
-									class:'previewLabel alternateLabel',
-									'data-id':index
-								}
-							]
-						]
-					);
-					/*)
-					"<div class=\"alternate_art_container_for_album_art_edit\">
-						<img class=\"alternatePreview\" src=\""+art['data'][index]+"\" alt=\"\">
-						<input type=\"radio\" class=\"alternateRadio\" id=\"alternate_art_for_album_art_edit_"+index+"\" name=\"alternate_art_for_album_art_edit\" value=\""+index+"\">
-						<label for=\"alternate_art_for_album_art_edit_"+index+"\" class=\"alternateLabel\" data-id=\""+index+"\"></label>
-					</div>";
-					*/
-					editAlbumArtForm.alternatives_container.append(alternative_html);
+					alternativeHtml = make(['div',{class:'item alternate_art_container_for_album_art_edit'},['img',{class:'preview alternatePreview',src:art['data'][index],alt:''}],['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_for_album_art_edit_'+index,name:'alternate_art_for_album_art_edit',value:index}],['label',{for:'alternate_art_for_album_art_edit_'+index,class:'previewLabel alternateLabel','data-id':index}]]);
+					globalPlayer.editAlbumArtForm.alternativesContainer.append(alternativeHtml);
 				}
 			}
 		}).then(function() {
-			editAlbumArtForm.iconEdit = null;
-			editAlbumArtForm.iconEditSet = -1;
-			editAlbumArtForm.id = album_id;
+			globalPlayer.editAlbumArtForm.iconEdit = null;
+			globalPlayer.editAlbumArtForm.iconEditSet = -1;
+			globalPlayer.editAlbumArtForm.id = album_id;
 			openAlbumArtEdit();
 		});
-	},500);
+	//},500);
 }
 function openAlbumArtEdit() {
-	editAlbumArtForm.parent.removeClass("closed");
-	editAlbumArtForm.form.show()
-	editForm.form.hide();
-	globalPlayer.mainContainer.addClass("right_opened");
-	editAlbumArtForm.status = true;
+	$(globalPlayer.leftSongs).hide();
+	globalPlayer.embedForm.form.hide();
+	globalPlayer.editMediaForm.form.hide();
+	
+	globalPlayer.editAlbumArtForm.form.show()
+	globalPlayer.editAlbumArtForm.status = true;
+
+	if (!globalPlayer.leftOpen) {
+		$('#left').removeClass('closed');
+		$('#main'),removeClass('wide');
+	}
+}
+function closeAlbumArtEdit() {
+	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.editMediaForm.status ) {
+		$('#left').addClass('closed');
+		$('#main').addClass('wide');
+	}
+
+	globalPlayer.editAlbumArtForm.form.hide();
+	globalPlayer.editAlbumArtForm.status = false;
+	$(globalPlayer.leftSongs).show();
+
+	globalPlayer.editAlbumArtForm.id = -1;
+	globalPlayer.editAlbumArtForm.iconEdit = null;
+	globalPlayer.editAlbumArtForm.iconEditSet = -1;
 }
 
 /* closeAlbumArtEdit = closeEdit(), so no function is written for that */
@@ -1051,27 +985,14 @@ function prepareAlbumArtEdit(event) {
 		var reader = new FileReader();
 		reader.onload = function (e) {
 			var srcData = e.target.result; // <--- data: base64
-			editAlbumArtForm.display.src = srcData;	
-			//var newImage = document.createElement('img');
-			//newImage.id = 'edit_album_art_form_display';
-			//newImage.src = srcData;
-			//editAlbumArtForm.displayParent.innerHTML = newImage.outerHTML;
-			//var newBase = editAlbumArtForm.displayParent.childNodes[0].src;
-			//if (newBase == null || extensions.indexOf(newBase.substring(newBase.lastIndexOf('.')+1).toLowerCase()) > -1 ) {
-			//	editAlbumArtForm.iconEdit = event.target.files;
-			//	editAlbumArtForm.iconEditSet = 1;
-			//} else {
-			//	editAlbumArtForm.iconEdit = newBase;
-			//	editAlbumArtForm.iconEditSet = 2;
-			//}
-			//console.log(newBase);
+			globalPlayer.editAlbumArtForm.display.src = srcData;	
 		}
 		reader.readAsDataURL(event.target.files[event.target.files.length-1]);
-		editAlbumArtForm.iconEdit = event.target.files;
-		editAlbumArtForm.iconEditSet = 1;
+		globalPlayer.editAlbumArtForm.iconEdit = event.target.files;
+		globalPlayer.editAlbumArtForm.iconEditSet = 1;
 	} 
 	else {
-		editAlbumArtForm.display.src = 'assets/default_album_art.jpg';
+		globalPlayer.editAlbumArtForm.display.src = 'assets/default_album_art.jpg';
 		alert("That image is not a proper image file (jpg or png)");
 	}
 }
@@ -1079,27 +1000,27 @@ function submitAlbumArtEdit(event) {
 	event.stopPropagation(); 	/* Stop stuff happening */
 	event.preventDefault(); 	/* Totally stop stuff happening */
 	var data, performAjax;
-	if ( editAlbumArtForm.iconEditSet == -1 ) {
+	if ( globalPlayer.editAlbumArtForm.iconEditSet == -1 ) {
 		/* A new image was not selected */
 		alert('A new image was not chosen.\nPlease select a new image or close out of the edit screen.');
 		return;
-	} else if (editAlbumArtForm.iconEditSet == 0) {
+	} else if (globalPlayer.editAlbumArtForm.iconEditSet == 0) {
 		/* An alternative art was used, and a new art was not uploaded */
-		data = editAlbumArtForm.form.serialize();
+		data = globalPlayer.editAlbumArtForm.form.serialize();
 		performAjax = $.ajax({
-			url: 'scripts/updateAlbumArt.php?album_id='+editAlbumArtForm.id+'&iconEditSet='+editAlbumArtForm.iconEditSet,
+			url: 'scripts/updateAlbumArt.php?album_id='+globalPlayer.editAlbumArtForm.id+'&iconEditSet='+globalPlayer.editAlbumArtForm.iconEditSet,
 			type: 'POST',
 			data: data,
 			dataType: 'json'
 		});
 	}
-	else if (editAlbumArtForm.iconEditSet == 1) {
+	else if (globalPlayer.editAlbumArtForm.iconEditSet == 1) {
 		data = new FormData();
-		$.each(editAlbumArtForm.iconEdit, function(key, value) {
+		$.each(globalPlayer.editAlbumArtForm.iconEdit, function(key, value) {
 			data.append(key, value);
 		});
 		performAjax = $.ajax({
-			url: 'scripts/updateAlbumArt.php?album_id='+editAlbumArtForm.id+'&iconEditSet='+editAlbumArtForm.iconEditSet,
+			url: 'scripts/updateAlbumArt.php?album_id='+globalPlayer.editAlbumArtForm.id+'&iconEditSet='+globalPlayer.editAlbumArtForm.iconEditSet,
 			type: 'POST',
 			data: data,
 			cache: false,
@@ -1125,22 +1046,35 @@ function submitAlbumArtEdit(event) {
 
 
 function openEmbed() {
-	embedForm.form.find('.textInput').val('');
-	embedForm.form.find(".inputError").text('');
-	embedForm.form.show();
 	$(globalPlayer.leftSongs).hide();
-	embedForm.status = true;
+
+	globalPlayer.editMediaForm.form.hide();
+	globalPlayer.editAlbumArtForm.form.hide();
+
+	globalPlayer.embedForm.form.find('.textInput').val('');
+	globalPlayer.embedForm.form.find(".inputError").text('');
+	globalPlayer.embedForm.form.show();
+	globalPlayer.embedForm.status = true;
+	if (!globalPlayer.leftOpen) {
+		$('#left').removeClass('closed');
+		$('#main').removeClass('closed');
+	}
 }
 function closeEmbed() {
-	embedForm.form.find("input[type=text], input[type=url]").val('');
-	embedForm.form.hide();
+	if (!globalPlayer.editMediaForm.status && !globalPlayer.editAlbumArtForm.status && !globalPlayer.leftOpen) {
+		$('#left').addClass('closed');
+		$('#main').addClass('wide');
+	}
+	globalPlayer.embedForm.form.find('.textInput').val('');
+	globalPlayer.embedForm.form.hide();
+	globalPlayer.embedForm.status = false;
+
 	$(globalPlayer.leftSongs).show();
-	embedForm.status = false;
 }
 function submitEmbed(event) {
 	event.stopPropagation(); 	/* Stop stuff happening */
 	event.preventDefault(); 	/* Totally stop stuff happening */
-	var data = embedForm.form.serialize();
+	var data = globalPlayer.embedForm.form.serialize();
 	$.ajax({
 		url: 'scripts/embedInput.php?input=1',
 		type: 'POST',
@@ -1153,10 +1087,10 @@ function submitEmbed(event) {
 			populateAlternativeArtContainer();
 		} 
 		else {
-			embedForm.total_error.text(response.message).addClass('opened');
+			globalPlayer.embedForm.totalError.text(response.message).addClass('opened');
 			if ( response.errors != null ) {
 				for (var error_type in response.errors) {
-					embedForm.form.find('#embed_'+error_type+'_Error').text(response['errors'][error_type]);
+					globalPlayer.embedForm.form.find('#embed_'+error_type+'_Error').text(response['errors'][error_type]);
 				}
 			}
 		}
@@ -1184,7 +1118,7 @@ function search(text) {
 }
 
 function populateAlternativeArtContainer() {
-	editForm.alternative_art_container.find('.alternate').remove();
+	globalPlayer.editMediaForm.alternativeArtContainer.find('.alternate').remove();
 	var data = 'get=1';
 	$.ajax({
 		url: 'scripts/getAllArtForEdit.php',
@@ -1194,12 +1128,12 @@ function populateAlternativeArtContainer() {
 	}).done(function(response) {
         if (response.success) {
         	if (response.data != null) {
-        		editForm.alternative_art_array = response.data;
-       			editForm.alternative_art_activator.hide();
+        		globalPlayer.editMediaForm.alternativeArtArray = response.data;
+       			globalPlayer.editMediaForm.alternativeArtActivator.hide();
         		var html;
         		for (var index in response.data) {
         			html = make(['div',{class:'item'},['img',{class:'preview',src:response["data"][index]+'?'+new Date().getTime(),alt:''}],['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}],['label',{for:'alternate_art_'+index,class:'previewLabel','data-id':index}]]);
-					editForm.alternative_art_container.append(html);
+					globalPlayer.editMediaForm.alternativeArtContainer.append(html);
        			}	
        		} 
        		else $(this).text('No alternate album art available');
@@ -1247,7 +1181,68 @@ $(document).ready(function() {
 	/* Setting Global Variables */
 	globalPlayer = {
 		leftSongs:document.getElementById('leftSongs'),
-		leftEmbedForm:document.getElementById('embedInputForm'),
+		leftOpen:true,
+		leftToggle:$('#toggleLeft'),
+		embedForm:{
+			status: false,
+			form: $("#embedInputForm"),
+			open: $("#openEmbed"),
+			close: $("#closeEmbed"),
+			totalError: $("#embedTotalError")
+		},
+		editMediaForm:{
+			status:false,
+			close: $("#closeEdit"),
+			form: $("#editMediaForm"),
+			songId: $("#id_edit"),
+			medium: $("#medium_edit"),
+			title: $("#titleEdit"),
+			artist: $("#artistEdit"),
+			artDisplay: $("#editArtDisplay"),
+			artEdit: $("#editArtOverlay"),
+			art: $("#artEdit"),
+			alternativeArtContainer: $("#editArtAlternativesContainer"),
+			alternativeArtActivator: $("#editArtAlternativesActivator"),
+			alternativeArtArray: null,
+			album: $("#albumEdit"),
+			albumArtist: $("#albumArtistEdit"),
+			composer: $("#composerEdit"),
+			paddingContainer: $("#editPaddingContainer"),
+			startPadding: $("#startPaddingEdit"),
+			endPadding: $("#endPaddingEdit"),
+			videoIdContainer: $("#editVideoIdContainer"),
+			videoId: $("#videoIdEdit"),
+			lyrics_types: $("#song_edit_lyrics_type_container"),
+			lyricsSettings: $("#editLyricsSettings"),
+			lyricsSettingsSimple: $("#editLyricsSimpleLabel"),
+			lyricsSettingsDynamic: $("#editLyricsDynamicLabel"),
+			lyricsSettingsSimpleRadio: document.getElementById('editLyricsSimpleRadio'),
+			lyricsSettingsDynamicRadio: document.getElementById('editLyricsDynamicRadio'),
+			lyricsSimpleContainer: $("#editLyricsSimpleContainer"),
+			simpleLyrics: $("#simple_lyrics_edit"),
+			lyricsDynamicContainer: $("#editLyricsDynamicContainer"),
+			dynamicLyricsInnerContainer: $("#dynamicLyricsEditInnerContainer"),
+			dynamicLyricsIndex: -1,
+			dynamicLyricsPrevTime: "00:00",
+			dynamicLyricsAddSegment: $("#dynamicLyricsEditAdd"),
+			convertLyricsActivator: $('#convertLyricsActivator'),
+			openedLyrics:0,
+			iconEdit:null,
+			iconEditSet:0,
+			submit: $("#submitEdit")
+		},
+		editAlbumArtForm:{
+			status: false,
+			close: $("#closeAlbumArtEdit"),
+			form: $("#editAlbumArtForm"),
+			display: document.getElementById('editAlbumArtDisplay'),
+			new_upload_input: $("#edit_album_art_form_input"),
+			alternativesContainer: $('#editAlbumArtAlternativesContainer'),
+			array: null,
+			id: -1,
+			iconEdit: null,
+			iconEditSet: -1
+		},
 		mainContainer:$("#main"),
 		background: document.getElementById('background'),
 		mediaContainer: $("#media_container"),
@@ -1328,72 +1323,10 @@ $(document).ready(function() {
 		embedTimeUpdateInterval: null,
 		controls_container: $("#video_extras_container")
 	};
-	editForm = {
-		status: false,
-		parent: $("#right"),
-		close: $("#closeEdit"),
-		form: $("#editMediaForm"),
-		songId: $("#id_edit"),
-		medium: $("#medium_edit"),
-		title: $("#titleEdit"),
-		artist: $("#artistEdit"),
-		art_display: $("#editArtDisplay"),
-		art_edit: $("#editArtOverlay"),
-		art: $("#artEdit"),
-		art_temp: null,
-		alternative_art_container: $("#editArtAlternativesContainer"),
-		alternative_art_activator: $("#editArtAlternativesActivator"),
-		alternative_art_array: null,
-		album: $("#albumEdit"),
-		album_artist: $("#albumArtistEdit"),
-		composer: $("#composerEdit"),
-		padding_container: $("#editPaddingContainer"),
-		start_padding: $("#startPaddingEdit"),
-		end_padding: $("#endPaddingEdit"),
-		video_id_container: $("#editVideoIdContainer"),
-		video_id: $("#videoIdEdit"),
-		lyrics_types: $("#song_edit_lyrics_type_container"),
-		lyricsSettings: $("#editLyricsSettings"),
-		lyricsSettingsSimple: $("#editLyricsSimpleLabel"),
-		lyricsSettingsDynamic: $("#editLyricsDynamicLabel"),
-		lyricsSettingsSimpleRadio: document.getElementById('editLyricsSimpleRadio'),
-		lyricsSettingsDynamicRadio: document.getElementById('editLyricsDynamicRadio'),
-		lyricsSimpleContainer: $("#editLyricsSimpleContainer"),
-		simple_lyrics: $("#simple_lyrics_edit"),
-		lyricsDynamicContainer: $("#editLyricsDynamicContainer"),
-		dynamic_lyrics_inner_container: $("#dynamicLyricsEditInnerContainer"),
-		dynamic_lyrics_index: -1,
-		dynamic_lyrics_prev_time: "00:00",
-		dynamic_lyrics_add_segment: $("#dynamicLyricsEditAdd"),
-		convertLyricsActivator: $('#convertLyricsActivator'),
-		openedLyrics:0,
-		submit: $("#submitEdit")
-	};
-	editAlbumArtForm = {
-		status: false,
-		parent: $("#right"),
-		close: $("#closeEdit"),
-		form: $("#editAlbumArtForm"),
-		display: document.getElementById('editAlbumArtDisplay'),
-		new_upload_input: $("#edit_album_art_form_input"),
-		alternatives_container: $('#editAlbumArtAlternativesContainer'),
-		array: null,
-		temp: null,
-		id: -1,
-		iconEdit: null,
-		iconEditSet: -1
-	};
-	embedForm = {
-		status: false,
-		open: $("#openEmbed"),
-		close: $("#closeEmbed"),
-		total_error: $("#embedTotalError"),
-		form: $("#embedInputForm")
-	};
 
 	/* Initialization Functions */
 	globalPlayer.currentPlayer = audio_player;
-	getAllMedia(false, true, -1);
+	getAllMedia(false, false, -1);
 
 	/* User-related actions */
 	window.onkeydown = function(e) {
@@ -1406,19 +1339,12 @@ $(document).ready(function() {
 		}
 	};
 
-	var toggles = document.getElementsByClassName('toggle');
-	function toggleParent() {
-		console.log(this);
-		var parent = this.parentNode;
-		if (parent.classList.contains('closed')) parent.classList.remove('closed');
-		else {
-			if (parent.id == 'right') closeEdit();
-			else parent.classList.add('closed');
-		}
-	}
-	for (var i = 0; i < toggles.length; i++) {
-		toggles[i].addEventListener('click',toggleParent,false);
-	}
+	globalPlayer.leftToggle.on('click',function() {
+		$('#left').toggleClass('closed');
+		$('#main').toggleClass('wide');
+		globalPlayer.leftOpen = !globalPlayer.leftOpen;
+	});
+	
 
 	$(document).on("click", ".song", function() {
 		var id = $(this).attr("data-id");
@@ -1443,13 +1369,13 @@ $(document).ready(function() {
 		} 
 		else alert("Selected Song Apparently Doesn't Exist In the Left Bar!");
 	}
-	$(document).on("click", ".song_options", function(event) {
+	$(document).on("click", ".item.options", function(event) {
 		event.stopPropagation();
 		
 		var parent = $(this).parent();
 		var curId = parent.attr("data-id");
-		var curEditingId = editForm.songId.val();
-		if (!editForm.status) startEdit(curId);
+		var curEditingId = globalPlayer.editMediaForm.songId.val();
+		if (!globalPlayer.editMediaForm.status) startEdit(curId);
 		else if (globalPlayer.currentSong != curId) {
 			if (curEditingId != curId) {
 				closeEdit();
@@ -1508,16 +1434,18 @@ $(document).ready(function() {
 
 
 	/* Embed Form-related functions */
-	embedForm.open.on("click", openEmbed);
-	embedForm.close.on("click", closeEmbed);
-	embedForm.form.on("submit", submitEmbed);
-	embedForm.total_error.on("mouseleave", function() {	$(this).removeClass("opened");	});
+	globalPlayer.embedForm.open.on("click", openEmbed);
+	globalPlayer.embedForm.close.on("click", closeEmbed);
+	globalPlayer.embedForm.form.on("submit", submitEmbed);
+	globalPlayer.embedForm.totalError.on('click focus', function() {
+		$(this).removeClass("opened");
+	});
 
 	/* Edit Form-related functions */
 	audio_player.optionsButton.on("click", function() {
-		if (!editForm.status) startEdit(globalPlayer.currentSong);
+		if (!globalPlayer.editMediaForm.status) startEdit(globalPlayer.currentSong);
 		else {
-			if (editForm.songId.val() != globalPlayer.currentSong) {
+			if (globalPlayer.editMediaForm.songId.val() != globalPlayer.currentSong) {
 				closeEdit();
 				setTimeout(function() {
 					startEdit(globalPlayer.currentSong);
@@ -1526,65 +1454,65 @@ $(document).ready(function() {
 			else closeEdit();
 		}
 	});
-	editForm.alternative_art_activator.on("click", populateAlternativeArtContainer);
+	globalPlayer.editMediaForm.close.on('click', closeEdit);
+	globalPlayer.editMediaForm.alternativeArtActivator.on("click", populateAlternativeArtContainer);
 	$(document).on("click", ".alternate .alternateLabel", function() {
-		iconEdit = null;
-		iconEditSet = 0;
+		globalPlayer.editMediaForm.iconEdit = null;
+		globalPlayer.editMediaForm.iconEditSet = 0;
 		var alternative_id = $(this).attr("data-id");
-		var new_art = editForm.alternative_art_array[alternative_id];
-		editForm.art_display.attr("src", new_art)
+		globalPlayer.editMediaForm.artDisplay.attr("src", globalPlayer.editMediaForm.alternativeArtArray[alternative_id])
 	});
-	editForm.art.on('change', prepareIconEdit);
+	globalPlayer.editMediaForm.art.on('change', prepareIconEdit);
 	$(document).on('change','input[name=alternate_art]',function() {
-		iconEdit = null;
-		iconEditSet = 0;
+		globalPlayer.editMediaForm.iconEdit = null;
+		globalPlayer.editMediaForm.iconEditSet = 0;
 	});
 	function prepareIconEdit(event) {
-		iconEdit = event.target.files;
-		iconEditSet = 1;
+		globalPlayer.editMediaForm.iconEdit = event.target.files;
+		globalPlayer.editMediaForm.iconEditSet = 1;
 		var url = event.target.value;
 		var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
 		if (event.target.files && event.target.files[event.target.files.length-1] && (ext == 'PNG' || ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'JPEG' || ext == 'JPG')) {
 			var reader = new FileReader();
 			reader.readAsDataURL(event.target.files[event.target.files.length-1]);
 			reader.onload = function (e) {	
-				editForm.art_display.attr('src', e.target.result);
+				globalPlayer.editMediaForm.artDisplay.attr('src', e.target.result);
 			}
 		} 
-		else editForm.art_display.attr('src', 'assets/default_album_art.jpg');
+		else globalPlayer.editMediaForm.artDisplay.attr('src', 'assets/default_album_art.jpg');
 	}
-	editForm.submit.on('click', function(e) { editIcon(e); });
+	globalPlayer.editMediaForm.submit.on('click', function(e) { editIcon(e); });
 	$(document).on("click", ".dynamicLyricsSegmentRemove", function() {
 		removeLyricSegment($(this).attr('data-id'));
 	});
 	$(document).on('click', '.dynamicLyricsSegmentAddAbove', function() {
-		editForm.dynamic_lyrics_index += 1;
-		var newSeg = dynamicLyricSegmentForEdit(editForm.dynamic_lyrics_index);
+		globalPlayer.editMediaForm.dynamicLyricsIndex += 1;
+		var newSeg = dynamicLyricSegmentForEdit(globalPlayer.editMediaForm.dynamicLyricsIndex);
 		$(newSeg).insertBefore($(this).parent());
 	});
 	$(document).on('click', '.dynamicLyricsSegmentAddBelow', function() {
-		editForm.dynamic_lyrics_index += 1;
-		var newSeg = dynamicLyricSegmentForEdit(editForm.dynamic_lyrics_index);
+		globalPlayer.editMediaForm.dynamicLyricsIndex += 1;
+		var newSeg = dynamicLyricSegmentForEdit(globalPlayer.editMediaForm.dynamicLyricsIndex);
 		$(newSeg).insertAfter($(this).parent());
 	});
-	editForm.dynamic_lyrics_add_segment.on("click", function() {	addLyricSegment();	});
-	editForm.lyricsSettingsSimple.on("click", function() {
-		editForm.lyricsDynamicContainer.removeClass("selected");
-		editForm.lyricsSimpleContainer.addClass("selected");
-		editForm.convertLyricsActivator.text('Import from Dynamic Lyrics <=');
-		editForm.openedLyrics = 0;
+	globalPlayer.editMediaForm.dynamicLyricsAddSegment.on("click", function() {	addLyricSegment();	});
+	globalPlayer.editMediaForm.lyricsSettingsSimple.on("click", function() {
+		globalPlayer.editMediaForm.lyricsDynamicContainer.removeClass("selected");
+		globalPlayer.editMediaForm.lyricsSimpleContainer.addClass("selected");
+		globalPlayer.editMediaForm.convertLyricsActivator.text('Import from Dynamic Lyrics <=');
+		globalPlayer.editMediaForm.openedLyrics = 0;
 	});
-	editForm.lyricsSettingsDynamic.on("click", function() {
-		editForm.lyricsSimpleContainer.removeClass("selected");
-		editForm.lyricsDynamicContainer.addClass("selected");
-		editForm.convertLyricsActivator.text('=> Import from Simple Lyrics');
-		editForm.openedLyrics = 1;
+	globalPlayer.editMediaForm.lyricsSettingsDynamic.on("click", function() {
+		globalPlayer.editMediaForm.lyricsSimpleContainer.removeClass("selected");
+		globalPlayer.editMediaForm.lyricsDynamicContainer.addClass("selected");
+		globalPlayer.editMediaForm.convertLyricsActivator.text('=> Import from Simple Lyrics');
+		globalPlayer.editMediaForm.openedLyrics = 1;
 	});
-	editForm.dynamic_lyrics_inner_container.on('change focus keyup keydown paste cut', '.dynamicLyricsEdit', function() {
+	globalPlayer.editMediaForm.dynamicLyricsInnerContainer.on('change focus keyup keydown paste cut', '.dynamicLyricsEdit', function() {
 		auto_grow(this);
 	})
-	editForm.convertLyricsActivator.on('click',convertLyrics);
-	$('#deleteSong').on("click", function() {	submitEdit(null, null, editForm.songId.val(), 1, true, true);	});
+	globalPlayer.editMediaForm.convertLyricsActivator.on('click',convertLyrics);
+	$('#deleteSong').on("click", function() {	submitEdit(null, null, globalPlayer.editMediaForm.songId.val(), 1, true, true);	});
 
 	/* Add Media-related functions */
 	$("#addMedia").on("click", function() {
@@ -1596,16 +1524,18 @@ $(document).ready(function() {
         	else alert(response.message);
 		}).fail(function(jqXHR, textStatus, errorThrown) {	alert('ERRORS @ Adding New Media: ' + errorThrown);	});
 	});
-	$(document).on("click", ".addAlbumArt_button", function() {	startAlbumArtEdit( parseInt($(this).attr("data-id")) );	});	
+	$(document).on("click", ".addAlbumArt_button", function() {
+		startAlbumArtEdit( parseInt($(this).attr("data-id")) );	
+	});	
 	$("#edit_album_art_form_input").on("change", prepareAlbumArtEdit);
-	editAlbumArtForm.form.on("submit", submitAlbumArtEdit);
+	globalPlayer.editAlbumArtForm.form.on("submit", submitAlbumArtEdit);
 	$(document).on("click", ".alternate_art_container_for_album_art_edit .alternateLabel", function() {
-		editAlbumArtForm.iconEdit = null;
-		editAlbumArtForm.iconEditSet = 0;
+		globalPlayer.editAlbumArtForm.iconEdit = null;
+		globalPlayer.editAlbumArtForm.iconEditSet = 0;
 		var alternative_id = $(this).attr("data-id");
-		var new_art = editAlbumArtForm.array[alternative_id];
-		editAlbumArtForm.display.src = new_art;
+		globalPlayer.editAlbumArtForm.display.src = globalPlayer.editAlbumArtForm.array[alternative_id];
 	});
+	globalPlayer.editAlbumArtForm.close.on('click',closeAlbumArtEdit);
 
 	/* Player-related functions */
 	audio_player.playButton.on('click', startMedia);
@@ -1665,9 +1595,9 @@ $(document).ready(function() {
     video_player.forwardFiveButton.on("click", forwardMedia);
     video_player.backFiveButton.on("click", backwardMedia);
     video_player.optionsButton.on("click", function()  {
-    	if (!editForm.status) startEdit(globalPlayer.currentSong);
+    	if (!globalPlayer.editMediaForm.status) startEdit(globalPlayer.currentSong);
 		else {
-			var curId = editForm.songId.val();
+			var curId = globalPlayer.editMediaForm.songId.val();
 			if (curId != globalPlayer.currentSong) {
 				closeEdit();
 				setTimeout(function() {

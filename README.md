@@ -107,3 +107,36 @@ New functions have been added into the build, including the ability to save and 
 		- Removed remaining MySQL code that was commented out when converting to SQLite.
 		- Adjusted queries to reflect database alterations mentioned above
 		- Combined ``getAllArtForEdit.php`` and ``getAlbumArtForEdit.php`` into single file - beginning process of combining extraneous files
+
+###### Version 5.21
+1. Further Styling Changes
+	- ALL elements originally on the RIGHT side of the screen (editor and album artwork editor) moved to the LEFT side, alongside the embed form and song list.
+	- Normalized all form element styling using classes - all common form elements (i.e. text inputs, half segments, textareas, cancel buttons, submit buttons) now utilize common css using classes with exceptions made with ID's or unique combinations classes
+		- simplifies amount of code for CSS significantly, though combinations of classes may make future CSS editing harder. Still preferred over using ID's for css personally.
+	- CSS class common-ification implemented into song list on left side as well - using ``.container`` and ``.item`` classes to format song list items - can also be used iteratively using nesting
+		- ex) an album contains a header with an image and 2 songs - the format would be like:
+		````
+		<div class='container album'>
+			<div class='item album'>
+				<img src='albumArtwork.jpg' alt='Album Name'>
+				<h2>Album Name</h2>
+			</div>
+			<div class='item song'>...</div>
+			<div class='item song'>...</div>
+		</div>
+		````
+	- Left bar now rechanged back into ``position:absolute;`` due to problems associated with ``flex`` property added V5.20
+		- ``flex`` property was causing left bar to shrink instead of remain at its ``flex-basis`` width if the song title in the main audio player was too long. For example:
+		````
+		|   (flex-basis:400px;)   | SHORT TITLE
+		vs
+		|	(flex-basis:400px;)|	LONG LONG LONG LONG TITLE
+		````
+		This problem among smaller grievances made me reconsider using the flex box, in favor of the ``position:absolute``
+	- CSS animations attached to left bar toggling (ease-in)
+	- Local videos now have their own icon, to differentiate between YouTube embeded videos, local videos, and songs (finally...)
+
+2. JavaScript Changes:
+	- Changes made in relation to moving both edit form and album artwork edit form to the left
+	- originally separate objects of their own, the ``editForm`` and ``editAlbumArtForm`` objects moved into the ``globalPlayer`` parent object as ``editMediaForm`` and ``editAlbumArtForm`` respectively
+	- variable names starting to replace underscore ``_`` with naming convention of ``lowercaseUppercase``

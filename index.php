@@ -81,103 +81,212 @@
 	<body>
 		<canvas id='background'></canvas>
 		<div id="left">
-			<span class='toggle left'>Toggle List</span>
-			<div id='leftHeader'>
-				<div class='dropdown settings'>
-					<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">
-					<div class="dropdownContents">
-						<div class='dropdownArrow'></div>
-						<div class='dropdownItems'>
-							<span id="addMedia" class="dropdownItem settings">Add Song</span>
-							<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+			<div class='inner'>
+				<span class='toggle left' id='toggleLeft'>Toggle List</span>
+				<div id='leftHeader'>
+					<div class='dropdown settings'>
+						<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">
+						<div class="dropdownContents">
+							<div class='dropdownArrow'></div>
+							<div class='dropdownItems'>
+								<span id="addMedia" class="dropdownItem settings">Add Song</span>
+								<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+							</div>
+						</div>
+					</div>
+					<div class='dropdown search'>
+						<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>
+						<input class='dropdownPlaceholder input' type="text" id="searchInput" placeholder="Type Here">
+						<div class='dropdownContents'>
+							<div class='dropdownArrow'></div>
+							<div class='dropdownItems' id='searchResults'></div>
 						</div>
 					</div>
 				</div>
-				<div class='dropdown search'>
-					<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>
-					<input class='dropdownPlaceholder input' type="text" id="searchInput" placeholder="Type Here">
-					<div class='dropdownContents'>
-						<div class='dropdownArrow'></div>
-						<div class='dropdownItems' id='searchResults'></div>
-					</div>
-				</div>
-			</div>
-			<div class='content left' id="leftContent">
-				<div id='leftSongs' class='closed'>
-				<?php 
-					foreach($content as $index=>$album_artist) {
-						echo '<div class="album_artist_div">';
-						echo '<h1 class="album_artist_name">'.$album_artist['name'].'</h1>';
-						foreach ($album_artist['albums'] as $album_name=>$album) {
-							echo '<div class="album" id="album_'.$album['id'].'">';
-							echo '<div class="album_header">';
-							echo '<div class="album_image_container">';
-							echo '<img class="album_image" src="'.$album['art'].'#'.time().'" alt="">';
-							echo '<div class="addAlbumArt_button" data-id="'.$album['id'].'"></div>';
-							echo '</div>';
-							echo '<div class="albumArtistContainer">';
-							echo '<h2>'.$album_name.'</h2>';
-							echo '</div>';
-							echo '</div>';
-							echo '<div class="albumSongList">';
-							foreach($album['songs'] as $song) {
-								echo '<div class="song" id="'.$song['id'].'" data-id="'.$song['id'].'" data-medium="'.$song['medium'].'">';
-								if ($song['medium'] == 1) {
-									echo '<img class="video_icon" src="assets/youtube.png" alt="YouTube">';
-									echo '<span class="video_title">'.$song['title'].'</span>';
-									echo '<span class="video_artist">'.$song['artist'].'</span>';
-								} else {
-									echo '<span class="song_title">'.$song['title'].'</span>';
-									echo '<span class="song_artist">'.$song['artist'].'</span>';
+				<div class='content left' id="leftContent">
+					<div id='leftSongs' class='closed'>
+					<?php 
+						foreach($content as $index=>$album_artist) {
+							echo '<div class="container albumArtist">';
+							echo '<div class="item albumArtist"><h1>'.$album_artist['name'].'</h1></div>';
+							foreach ($album_artist['albums'] as $album_name=>$album) {
+								echo '<div class="container album" id="album_'.$album['id'].'">';
+								echo '<div class="item album">';
+								echo '<div class="container albumArt">';
+								echo '<img class="item albumArt" src="'.$album['art'].'#'.time().'" alt="">';
+								echo '<span class="item addAlbumArt_button" data-id="'.$album['id'].'">Change Artwork</span>';
+								echo '</div>';
+								//echo '<div class="albumArtistContainer">';
+								echo '<h2>'.$album_name.'</h2>';
+								//echo '</div>';
+								echo '</div>';
+								echo '<div class="container albumSongList">';
+								foreach($album['songs'] as $song) {
+									echo '<div class="item song" id="'.$song['id'].'" data-id="'.$song['id'].'" data-medium="'.$song['medium'].'">';
+									if ($song['medium'] == 1) {
+										echo '<img class="item icon" src="assets/youtube.png" alt="YouTube">';
+									}
+									else if ($song['medium'] == 2) {
+										echo '<img class="item icon" src="assets/video.png" alt="Video">';
+									}
+									echo '<div class="container text">';
+									echo '<span class="item title">'.$song['title'].'</span>';
+									echo '<span class="item artist">'.$song['artist'].'</span>';
+									echo '</div>';
+									echo '<img class="item options" src="assets/options.png" alt="Song Options">';
+									echo '</div>';
 								}
-								echo '<img class="song_options" src="assets/options.png" alt="Song Options">';
+								echo '</div>';
 								echo '</div>';
 							}
 							echo '</div>';
-							echo '</div>';
 						}
-						echo '</div>';
-					}
-				?>
+					?>
+					</div>
+					<form class='overflow' id='embedInputForm' name='video_input_form' method='post'>
+						<div class='innerForm'>
+							<span class='cancel' id='closeEmbed'>X</span>
+							<h2>Embed YouTube Video</h2>
+							<span class='totalError' id='embedTotalError'>Error</span>
+							<div class='segmentContainer'>
+								<span class='label'>Title<span class='important'>*</span></span>
+								<input class='inputText' name='video_title_input' placeholder='Title of Video' required>
+								<span class='inputError' id='embed_title_Error'></span>
+							</div>
+							<div class='segmentContainer'>
+								<span class='label'>Artist<span class='important'>*</span></span>
+								<input class='inputText' name='video_artist_input' placeholder='Artist' required>
+								<span class='inputError' id='embed_artist_Error'></span>
+							</div>
+							<div class='segmentContainer'>
+								<span class='label'>Album<span class='important'>*</span></span>
+								<input class='inputText' name="video_album_input" placeholder='Album' required>
+								<span class='inputError' id='embed_album_Error'></span>
+							</div>
+							<div class='segmentContainer half left'>
+								<span class='label'>Album Artist<span class='important'>*</span></span>
+								<input class='inputText' name='video_album_artist_input' placeholder='Album Artist' required>
+								<span class='inputError' id='embed_album_artist_Error'></span>
+							</div>
+							<div class='segmentContainer half right'>
+								<span class='label'>Composer</span>
+								<input class='inputText' name="video_composer_input" placeholder='Composer'>
+							</div>
+							<div class='segmentContainer'>
+								<span class='label'>Video ID<span class='important'>*</span></span>
+								<input class='inputText' name='video_url_input' placeholder='Video ID' required> 
+								<span class="inputError" id="embed_url_Error"></span>
+							</div>
+						</div>
+						<div class='submitContainer'>
+							<input type='submit' class='item submit' name='video_input_submit' value='Add Video'>
+						</div>
+					</form>
+					<form class='overflow' id="editMediaForm" name="edit_media_form" method="post">
+						<div class='innerForm'>
+							<span class='cancel' id="closeEdit">X</span>
+							<h2>Edit Media Info</h2>
+							<div class='segmentContainer'>
+								<span class='label'>Title:<span class='important'>*</span></span>
+								<input class='inputText' type='text' id='titleEdit' name='title_edit' placeholder='Title'>
+							</div>
+							<div class='segmentContainer'>
+								<span class='label'>Artist:<span class='important'>*</span></span>
+								<input class='inputText' type='text' id='artistEdit' name='artist_edit' placeholder='Artist'>
+							</div>
+							<div class='segmentContainer'>
+								<span class='label'>Album:<span class='important'>*</span></span>
+								<input class='inputText' type='text' id='albumEdit' name='album_edit' placeholder='Album'>
+							</div>
+							<div>
+								<div class='segmentContainer half left'>
+									<span class='label'>Album Artist:<span class='important'>*</span></span>
+									<input class='inputText' type='text' id='albumArtistEdit' name='albumArtist_edit' placeholder='Album Artist'>
+								</div>
+								<div class='segmentContainer half right'>
+									<span class='label'>Composer:</span>
+									<input class='inputText' type='text' id='composer_edit' name='composerEdit' placeholder='Composer'>
+								</div>
+							</div>
+							<div id="editPaddingContainer">
+								<div class='segmentContainer half left'>
+									<span class='label'>Start Padding:</span>
+									<input class='inputText' type='text' id='startPaddingEdit' name='start_padding_edit' placeholder='00:00'>
+								</div>
+								<div class='segmentContainer half right'>
+									<span class='label'>End Padding:</span>
+									<input class='inputText' type='text' id='endPaddingEdit' name='end_padding_edit' placeholder='00:00'>
+								</div>
+							</div>
+							<div class='segmentContainer' id='editVideoIdContainer'>
+								<span class='label'>YouTube Video ID:<span class='important'>*</span></span>
+								<input class='inputText' type='text' id='videoIdEdit' name='video_id_edit' placeholder='Video ID' required>
+							</div>
+							<div>
+								<div class='segmentContainer half left'>
+									<span class='label'>Edit Artwork:</span>
+									<input class='inputFile' type='file' id='artEdit' name='art_edit'>
+									<div class='segmentContainer innerContainer' id='editArtPreview'>
+										<img id='editArtDisplay' src='assets/default_album_art.jpg' alt='Media Art'>
+										<label class='overlay' for='artEdit' id='editArtOverlay'>Upload New Artwork</label>
+									</div>
+								</div>
+								<div class='segmentContainer half right'>
+									<span class='label'>Existing Artwork:</span>
+									<div class='segmentContainer innerContainer' id='editArtAlternativesContainer'>
+										<span class='overlay' id='editArtAlternativesActivator'>Use Other Media's Artwork</span>
+									</div>
+								</div>
+							</div>
+
+							<div class='segmentContainer' id='editMediaFormLyrics'>
+								<span class='label'>Lyrics</span>
+								<div class='segmentContainer innerContainer' id="editLyricsSettings">
+									<input type='radio' class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsSimpleRadio" value="0">
+									<label for='editLyricsSimpleRadio' class='inputLabel editLyricsLabel' id='editLyricsSimpleLabel'>Simple Lyrics</label>
+									<input type="radio" class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsDynamicRadio" value="1">
+									<label for='editLyricsDynamicRadio' class='inputLabel editLyricsLabel' id='editLyricsDynamicLabel'>Dynamic Lyrics</label>
+								</div>
+								<span class='innerContainer label' id='convertLyricsActivator'></span>
+								<div class='segmentContainer innerContainer' id="editLyricsTextboxContainer">
+									<div id="editLyricsSimpleContainer" class="innerContainer editLyricsTextContainer">
+										<textarea class="editInput" id="simple_lyrics_edit" name="simple_lyrics_edit" placeholder="Plain-Text Lyrics Here"></textarea>
+									</div>
+									<div id="editLyricsDynamicContainer" class="innerContainer editLyricsTextContainer">
+										<span class='inputLabel' id="dynamicLyricsEditAdd">Add Lyric Segment</span>
+										<div class='innerContainer segmentContainer' id="dynamicLyricsEditInnerContainer"></div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class='submitContainer'>
+							<input type="hidden" id="id_edit" name="id_edit" value="-1">
+							<input type="hidden" id="medium_edit" name="medium_edit" value="-1">
+							<input class='item submit' type="submit" id="submitEdit" name="submit_edit" value="Submit Changes" form='editMediaForm'>
+							<span class='item' id='deleteSong'>Delete Media</span>
+						</div>
+					</form>
+					<form class='overflow' id='editAlbumArtForm' name="edit_album_art_form" method="post">
+						<div class='innerForm'>
+							<span class='cancel' id="closeAlbumArtEdit">X</span>
+							<h2>Edit Album Artwork</h2>
+							<div class='segmentContainer' id='editAlbumArtPreviewContainer'>
+								<img class='preview' id='editAlbumArtDisplay' src="assets/default_album_art.jpg" alt="Media Art">
+								<label class='overlay' for="edit_album_art_form_input" id="editAlbumArtOverlay">Upload New Album Art</label>
+								<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
+							</div>
+							<span class='label'>Use Existing Artwork Instead</span>
+							<div class='segmentContainer' id="editAlbumArtAlternativesContainer"></div>
+						</div>
+						<div class='submitContainer'>
+							<input class='item submit' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
+						</div>
+					</form>
 				</div>
-				<form id='embedInputForm' name='video_input_form' method='post'>
-					<span class='cancel' id='closeEmbed'>X</span>
-					<h2>Embed YouTube Video</h2>
-					<span class='totalError' id='embedTotalError'>Error</span>
-					<div class='segmentContainer'>
-						<span class='label'>Title<span class='important'>*</span></span>
-						<input class='inputText' name='video_title_input' placeholder='Title of Video' required>
-						<span class='inputError' id='embed_title_Error'></span>
-					</div>
-					<div class='segmentContainer'>
-						<span class='label'>Artist<span class='important'>*</span></span>
-						<input class='inputText' name='video_artist_input' placeholder='Artist' required>
-						<span class='inputError' id='embed_artist_Error'></span>
-					</div>
-					<div class='segmentContainer'>
-						<span class='label'>Album<span class='important'>*</span></span>
-						<input class='inputText' name="video_album_input" placeholder='Album' required>
-						<span class='inputError' id='embed_album_Error'></span>
-					</div>
-					<div class='segmentContainer half left'>
-						<span class='label'>Album Artist<span class='important'>*</span></span>
-						<input class='inputText' name='video_album_artist_input' placeholder='Album Artist' required>
-						<span class='inputError' id='embed_album_artist_Error'></span>
-					</div>
-					<div class='segmentContainer half right'>
-						<span class='label'>Composer</span>
-						<input class='inputText' name="video_composer_input" placeholder='Composer'>
-					</div>
-					<div class='segmentContainer'>
-						<span class='label'>Video ID<span class='important'>*</span></span>
-						<input class='inputText' name='video_url_input' placeholder='Video ID' required> 
-						<span class="inputError" id="embed_url_Error"></span>
-					</div>
-					<input type='submit' class='submit' name='video_input_submit' value='Add Video'>
-				</form>
 			</div>
 		</div>
-		<div id="main" class="left_opened">
+		<div id='main'>
 			<div id="media_container">
 				<div id="video_container" class="closed">
 					<div id="video_embed_container">
@@ -274,107 +383,5 @@
 				</div>
 			</div>
 		</div>
-		<div id='right' class='closed'>
-			<span class='cancel toggle right' id="closeEdit">X</span>
-			<form class='overflow' id="editMediaForm" name="edit_media_form" method="post">
-				<div class='innerForm'>
-					<h2>Edit Media Info</h2>
-					<div class='segmentContainer'>
-						<span class='label'>Title:<span class='important'>*</span></span>
-						<input class='inputText' type='text' id='titleEdit' name='title_edit' placeholder='Title'>
-					</div>
-					<div class='segmentContainer'>
-						<span class='label'>Artist:<span class='important'>*</span></span>
-						<input class='inputText' type='text' id='artistEdit' name='artist_edit' placeholder='Artist'>
-					</div>
-					<div class='segmentContainer'>
-						<span class='label'>Album:<span class='important'>*</span></span>
-						<input class='inputText' type='text' id='albumEdit' name='album_edit' placeholder='Album'>
-					</div>
-					<div>
-						<div class='segmentContainer half left'>
-							<span class='label'>Album Artist:<span class='important'>*</span></span>
-							<input class='inputText' type='text' id='albumArtistEdit' name='albumArtist_edit' placeholder='Album Artist'>
-						</div>
-						<div class='segmentContainer half right'>
-							<span class='label'>Composer:</span>
-							<input class='inputText' type='text' id='composer_edit' name='composerEdit' placeholder='Composer'>
-						</div>
-					</div>
-					<div id="editPaddingContainer">
-						<div class='segmentContainer half left'>
-							<span class='label'>Start Padding:</span>
-							<input class='inputText' type='text' id='startPaddingEdit' name='start_padding_edit' placeholder='00:00'>
-						</div>
-						<div class='segmentContainer half right'>
-							<span class='label'>End Padding:</span>
-							<input class='inputText' type='text' id='endPaddingEdit' name='end_padding_edit' placeholder='00:00'>
-						</div>
-					</div>
-					<div class='segmentContainer' id='editVideoIdContainer'>
-						<span class='label'>YouTube Video ID:<span class='important'>*</span></span>
-						<input class='inputText' type='text' id='videoIdEdit' name='video_id_edit' placeholder='Video ID' required>
-					</div>
-					<div>
-						<div class='segmentContainer half left'>
-							<span class='label'>Edit Artwork:</span>
-							<input class='inputFile' type='file' id='artEdit' name='art_edit'>
-							<div class='segmentContainer innerContainer' id='editArtPreview'>
-								<img id='editArtDisplay' src='assets/default_album_art.jpg' alt='Media Art'>
-								<label class='overlay' for='artEdit' id='editArtOverlay'>Upload New Artwork</label>
-							</div>
-						</div>
-						<div class='segmentContainer half right'>
-							<span class='label'>Existing Artwork:</span>
-							<div class='segmentContainer innerContainer' id='editArtAlternativesContainer'>
-								<span class='overlay' id='editArtAlternativesActivator'>Use Other Media's Artwork</span>
-							</div>
-						</div>
-					</div>
-
-					<div class='segmentContainer' id='editMediaFormLyrics'>
-						<span class='label'>Lyrics</span>
-						<div class='segmentContainer innerContainer' id="editLyricsSettings">
-							<input type='radio' class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsSimpleRadio" value="0">
-							<label for='editLyricsSimpleRadio' class='inputLabel editLyricsLabel' id='editLyricsSimpleLabel'>Simple Lyrics</label>
-							<input type="radio" class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsDynamicRadio" value="1">
-							<label for='editLyricsDynamicRadio' class='inputLabel editLyricsLabel' id='editLyricsDynamicLabel'>Dynamic Lyrics</label>
-						</div>
-						<span class='innerContainer label' id='convertLyricsActivator'></span>
-						<div class='segmentContainer innerContainer' id="editLyricsTextboxContainer">
-							<div id="editLyricsSimpleContainer" class="innerContainer editLyricsTextContainer">
-								<textarea class="editInput" id="simple_lyrics_edit" name="simple_lyrics_edit" placeholder="Plain-Text Lyrics Here"></textarea>
-							</div>
-							<div id="editLyricsDynamicContainer" class="innerContainer editLyricsTextContainer">
-								<span class='inputLabel' id="dynamicLyricsEditAdd">Add Lyric Segment</span>
-								<div class='innerContainer segmentContainer' id="dynamicLyricsEditInnerContainer"></div>
-							</div>
-						</div>
-					</div>
-
-				</div>
-				<div class='submitContainer'>
-					<input type="hidden" id="id_edit" name="id_edit" value="-1">
-					<input type="hidden" id="medium_edit" name="medium_edit" value="-1">
-					<input class='item' type="submit" id="submitEdit" name="submit_edit" value="Submit Changes" form='editMediaForm'>
-					<span class='item' id='deleteSong'>Delete Media</span>
-				</div>
-			</form>
-			<form class='overflow' id='editAlbumArtForm' name="edit_album_art_form" method="post">
-				<h2>Edit Album Artwork</h2>
-				<div class='segmentContainer' id='editAlbumArtPreviewContainer'>
-					<img class='preview' id='editAlbumArtDisplay' src="assets/default_album_art.jpg" alt="Media Art">
-					<label class='overlay' for="edit_album_art_form_input" id="editAlbumArtOverlay">Upload New Album Art</label>
-					<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
-				</div>
-				<span class='label'>Use Existing Artwork Instead</span>
-				<div class='segmentContainer' id="editAlbumArtAlternativesContainer"></div>
-			
-				<div class='submitContainer'>
-					<input class='submit' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
-				</div>
-			</form>
-		</div>
-
 	</body>
 </html>
