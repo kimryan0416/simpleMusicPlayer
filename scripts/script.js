@@ -816,7 +816,64 @@ function convertLyrics() {
 	else return;
 }
 function dynamicLyricSegmentForEdit(id, time = "", style = "", notext = true, text = "") {
-	var lyricSegHTML = make(['div',{id:'dynamic_lyrics_segment_'+id,class:'dynamicLyricsSegment'},['span',{'class':'dynamicLyricsSegmentAddAbove'},'Add Segment Above'],['span',{class:'dynamicLyricsSegmentRemove','data-id':id},'X'],['div',{class:'dynamicLyricsSegmentSettings'},['input',{class:'dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}],['input',{class:'dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}],['div',{class:'dynamicLyricsNotextContainer'},['input',{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}],['input',{id:'dynamic_lyrics_notext_'+id,class:'dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}],['label',{class:'dynamicLyricsNotextLabel',for:'dynamic_lyrics_notext_'+id},'No Text']]],['textarea',{class:'dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}],['span',{'class':'dynamicLyricsSegmentAddBelow'},'Add Segment Below']]);
+	var lyricSegHTML = make(
+		[
+			'div',
+			{id:'dynamic_lyrics_segment_'+id,class:'segmentContainer dynamicLyricsSegment'},
+			[
+				'span',
+				{'class':'dynamicLyricsSegmentAddAbove'},
+				'Add Segment Above'
+			],
+			[
+				'span',
+				{class:'cancel dynamicLyricsSegmentRemove','data-id':id},
+				'X'
+			],
+			[
+				'div',
+				{class:'segmentContainer dynamicLyricsSegmentSettings'},
+				[
+					'input',
+					{class:'inputText dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}
+				],
+				[
+					'input',
+					{class:'inputText dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}
+				],
+			],
+			[
+				'div',
+				{class:'segmentContainer dynamicLyricsSegmentSettings'},
+				[
+					'input',
+					{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}
+				],
+				[
+					'input',
+					{id:'dynamic_lyrics_notext_'+id,class:'inputRadio dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}
+				],
+				[
+					'label',
+					{class:'inputLabel dynamicLyricsNotextLabel',for:'dynamic_lyrics_notext_'+id},
+					'No Text'
+				]
+			],
+			[
+				'div',
+				{class:'segmentContainer innerContainer dynamicLyricsTextareaContainer'},
+				[
+					'textarea',
+					{class:'editInput dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}
+				]
+			],
+			[
+				'span',
+				{'class':'dynamicLyricsSegmentAddBelow'},
+				'Add Segment Below'
+			]
+		]
+	);
 	editForm.dynamic_lyrics_prev_time = time;
 	return lyricSegHTML;
 }
@@ -827,13 +884,13 @@ function addLyricSegment() {
 }
 function openEdit() {
 	editForm.parent.removeClass("closed");
-	editForm.close.addClass("opened");
+	editForm.form.show();
+	editAlbumArtForm.form.hide();
 	globalPlayer.mainContainer.addClass("right_opened");
 	editForm.status = true;
 }
 function closeEdit() {
 	editForm.parent.addClass("closed");
-	editForm.close.removeClass("opened");
 	globalPlayer.mainContainer.removeClass("right_opened");
 	editForm.status = false;
 	iconEdit = null
@@ -919,14 +976,53 @@ function startAlbumArtEdit(album_id) {
 		});
 		$.when(grabAllArt).then(function(art) {
 			if ( !art['success'] || art['success'] == false  || art['success']=='false' ) return alert("AJAX Error on Retrieving Album Art For Edit: " + art[0]['message']);
-			//else if ( allArt[1] != "success" ) return alert('AJAX errors w/ grabbing all art for album art edit');
 			editAlbumArtForm.temp = (art['art'] != null) ? art['art'] : 'assets/default_album_art.jpg';
 			editAlbumArtForm.display.src = editAlbumArtForm.temp + '#' + new Date().getTime();
 			if ( editAlbumArtForm.array != art['data'] ) {
 				editAlbumArtForm.array = art['data'];
 				var alternative_html;
 				for (var index in art['data']) {
-					alternative_html = "<div class=\"alternate_art_container_for_album_art_edit\"><img class=\"alternatePreview\" src=\""+art['data'][index]+"\" alt=\"\"><input type=\"radio\" class=\"alternateRadio\" id=\"alternate_art_for_album_art_edit_"+index+"\" name=\"alternate_art_for_album_art_edit\" value=\""+index+"\"><label for=\"alternate_art_for_album_art_edit_"+index+"\" class=\"alternateLabel\" data-id=\""+index+"\"></label></div>";
+					alternative_html = make(
+						[
+							'div',
+							{
+								class:'item alternate_art_container_for_album_art_edit'
+							},
+							[
+								'img',
+								{
+									class:'preview alternatePreview',
+									src:art['data'][index],
+									alt:''
+								}
+							],
+							[
+								'input',
+								{
+									type:'radio',
+									class:'inputRadio alternateRadio',
+									id:'alternate_art_for_album_art_edit_'+index,
+									name:'alternate_art_for_album_art_edit',
+									value:index
+								}
+							],
+							[
+								'label',
+								{
+									for:'alternate_art_for_album_art_edit_'+index,
+									class:'previewLabel alternateLabel',
+									'data-id':index
+								}
+							]
+						]
+					);
+					/*)
+					"<div class=\"alternate_art_container_for_album_art_edit\">
+						<img class=\"alternatePreview\" src=\""+art['data'][index]+"\" alt=\"\">
+						<input type=\"radio\" class=\"alternateRadio\" id=\"alternate_art_for_album_art_edit_"+index+"\" name=\"alternate_art_for_album_art_edit\" value=\""+index+"\">
+						<label for=\"alternate_art_for_album_art_edit_"+index+"\" class=\"alternateLabel\" data-id=\""+index+"\"></label>
+					</div>";
+					*/
 					editAlbumArtForm.alternatives_container.append(alternative_html);
 				}
 			}
@@ -939,10 +1035,9 @@ function startAlbumArtEdit(album_id) {
 	},500);
 }
 function openAlbumArtEdit() {
-	editAlbumArtForm.parent.addClass("opened");
-	editAlbumArtForm.close.addClass("opened");
-	editAlbumArtForm.form.addClass("opened");
-	editForm.form.removeClass("opened");
+	editAlbumArtForm.parent.removeClass("closed");
+	editAlbumArtForm.form.show()
+	editForm.form.hide();
 	globalPlayer.mainContainer.addClass("right_opened");
 	editAlbumArtForm.status = true;
 }
@@ -1037,7 +1132,7 @@ function openEmbed() {
 	embedForm.status = true;
 }
 function closeEmbed() {
-	embedForm.form.find("input[type=text], input[type=url]").val("");
+	embedForm.form.find("input[type=text], input[type=url]").val('');
 	embedForm.form.hide();
 	$(globalPlayer.leftSongs).show();
 	embedForm.status = false;
@@ -1103,7 +1198,7 @@ function populateAlternativeArtContainer() {
        			editForm.alternative_art_activator.hide();
         		var html;
         		for (var index in response.data) {
-        			html = make(['div',{class:'alternate'},['img',{class:'alternatePreview',src:response["data"][index]+'?'+new Date().getTime(),alt:''}],['input',{type:'radio',class:'alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}],['label',{for:'alternate_art_'+index,class:'alternateLabel','data-id':index}]]);
+        			html = make(['div',{class:'item'},['img',{class:'preview',src:response["data"][index]+'?'+new Date().getTime(),alt:''}],['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}],['label',{for:'alternate_art_'+index,class:'previewLabel','data-id':index}]]);
 					editForm.alternative_art_container.append(html);
        			}	
        		} 
@@ -1272,18 +1367,16 @@ $(document).ready(function() {
 		dynamic_lyrics_add_segment: $("#dynamicLyricsEditAdd"),
 		convertLyricsActivator: $('#convertLyricsActivator'),
 		openedLyrics:0,
-		submit: $("#submit_edit")
+		submit: $("#submitEdit")
 	};
 	editAlbumArtForm = {
 		status: false,
 		parent: $("#right"),
 		close: $("#closeEdit"),
-		form: $("#edit_album_art_form"),
-		displayParent: document.getElementById('edit_album_art_form_art_inner_container'),
-		display: document.getElementById('edit_album_art_form_display'),
+		form: $("#editAlbumArtForm"),
+		display: document.getElementById('editAlbumArtDisplay'),
 		new_upload_input: $("#edit_album_art_form_input"),
-		alternatives_container: $("#edit_album_art_form_art_alternatives_inner_container"),
-		alternative_input: $("#edit_album_art_form_alternative_id"),
+		alternatives_container: $('#editAlbumArtAlternativesContainer'),
 		array: null,
 		temp: null,
 		id: -1,
@@ -1461,7 +1554,6 @@ $(document).ready(function() {
 		else editForm.art_display.attr('src', 'assets/default_album_art.jpg');
 	}
 	editForm.submit.on('click', function(e) { editIcon(e); });
-	//editForm.close.on("click", closeEdit);
 	$(document).on("click", ".dynamicLyricsSegmentRemove", function() {
 		removeLyricSegment($(this).attr('data-id'));
 	});
@@ -1492,7 +1584,7 @@ $(document).ready(function() {
 		auto_grow(this);
 	})
 	editForm.convertLyricsActivator.on('click',convertLyrics);
-	$("#delete_song_submit").on("click", function() {	submitEdit(null, null, editForm.songId.val(), 1, true, true);	});
+	$('#deleteSong').on("click", function() {	submitEdit(null, null, editForm.songId.val(), 1, true, true);	});
 
 	/* Add Media-related functions */
 	$("#addMedia").on("click", function() {

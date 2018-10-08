@@ -275,7 +275,7 @@
 			</div>
 		</div>
 		<div id='right' class='closed'>
-			<span class='toggle right' id="closeEdit">Close Edit</span>
+			<span class='cancel toggle right' id="closeEdit">X</span>
 			<form class='overflow' id="editMediaForm" name="edit_media_form" method="post">
 				<div class='innerForm'>
 					<h2>Edit Media Info</h2>
@@ -319,37 +319,35 @@
 						<div class='segmentContainer half left'>
 							<span class='label'>Edit Artwork:</span>
 							<input class='inputFile' type='file' id='artEdit' name='art_edit'>
-							<div class='innerContainer' id='editArtPreview'>
+							<div class='segmentContainer innerContainer' id='editArtPreview'>
 								<img id='editArtDisplay' src='assets/default_album_art.jpg' alt='Media Art'>
-								<label for='artEdit' id='editArtOverlay'>Upload New Artwork</label>
+								<label class='overlay' for='artEdit' id='editArtOverlay'>Upload New Artwork</label>
 							</div>
 						</div>
 						<div class='segmentContainer half right'>
 							<span class='label'>Existing Artwork:</span>
-							<div class='innerContainer' id='editArtAlternativesContainer'>
-								<span id='editArtAlternativesActivator'>Use Other Media's Artwork</span>
+							<div class='segmentContainer innerContainer' id='editArtAlternativesContainer'>
+								<span class='overlay' id='editArtAlternativesActivator'>Use Other Media's Artwork</span>
 							</div>
 						</div>
 					</div>
 
 					<div class='segmentContainer' id='editMediaFormLyrics'>
 						<span class='label'>Lyrics</span>
-						<div class='innerContainer' id="editLyricsSettings">
-							<input type='radio' class='editLyricsRadio' name="lyric_dynamic_toggle" id="editLyricsSimpleRadio" value="0">
-							<label for='editLyricsSimpleRadio' class='editLyricsLabel' id='editLyricsSimpleLabel'>Simple Lyrics</label>
-							<input type="radio" class='editLyricsRadio' name="lyric_dynamic_toggle" id="editLyricsDynamicRadio" value="1">
-							<label for='editLyricsDynamicRadio' class='editLyricsLabel' id='editLyricsDynamicLabel'>Dynamic Lyrics</label>
-							<span id='convertLyricsActivator'></span>
+						<div class='segmentContainer innerContainer' id="editLyricsSettings">
+							<input type='radio' class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsSimpleRadio" value="0">
+							<label for='editLyricsSimpleRadio' class='inputLabel editLyricsLabel' id='editLyricsSimpleLabel'>Simple Lyrics</label>
+							<input type="radio" class='inputRadio' name="lyric_dynamic_toggle" id="editLyricsDynamicRadio" value="1">
+							<label for='editLyricsDynamicRadio' class='inputLabel editLyricsLabel' id='editLyricsDynamicLabel'>Dynamic Lyrics</label>
 						</div>
-						<div id="editLyricsTextboxContainer">
-							<div id="editLyricsSimpleContainer" class="editLyricsTextContainer">
+						<span class='innerContainer label' id='convertLyricsActivator'></span>
+						<div class='segmentContainer innerContainer' id="editLyricsTextboxContainer">
+							<div id="editLyricsSimpleContainer" class="innerContainer editLyricsTextContainer">
 								<textarea class="editInput" id="simple_lyrics_edit" name="simple_lyrics_edit" placeholder="Plain-Text Lyrics Here"></textarea>
 							</div>
-							<div id="editLyricsDynamicContainer" class="editLyricsTextContainer">
-								<div id="dynamicLyricsEditAddContainer">
-									<span id="dynamicLyricsEditAdd">Add Lyric Segment</span>
-								</div>
-								<div id="dynamicLyricsEditInnerContainer"></div>
+							<div id="editLyricsDynamicContainer" class="innerContainer editLyricsTextContainer">
+								<span class='inputLabel' id="dynamicLyricsEditAdd">Add Lyric Segment</span>
+								<div class='innerContainer segmentContainer' id="dynamicLyricsEditInnerContainer"></div>
 							</div>
 						</div>
 					</div>
@@ -358,27 +356,24 @@
 				<div class='submitContainer'>
 					<input type="hidden" id="id_edit" name="id_edit" value="-1">
 					<input type="hidden" id="medium_edit" name="medium_edit" value="-1">
-					<input type="submit" id="submit_edit" name="submit_edit" value="Submit Changes" form='edit_media_form'>
-					<span id="delete_song_submit">Delete Media</span>
+					<input class='item' type="submit" id="submitEdit" name="submit_edit" value="Submit Changes" form='editMediaForm'>
+					<span class='item' id='deleteSong'>Delete Media</span>
 				</div>
 			</form>
-				<form id="edit_album_art_form" name="edit_album_art_form" method="post">
-					<div id="edit_album_art_form_art">
-						<div id="edit_album_art_form_art_container">
-							<div id="edit_album_art_form_art_inner_container">
-								<img id="edit_album_art_form_display" src="assets/default_album_art.jpg" alt="Media Art">
-							</div>
-						</div>
-						<div class="" id="edit_album_art_form_art_alternatives_container">
-							<label for="edit_album_art_form_input" id="edit_album_art_form_overlay">Upload New Album Art</label>
-							<input type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
-							<div id="edit_album_art_form_art_alternatives_inner_container"></div>
-						</div>
-					</div>
-					<div id="edit_album_art_form_submit_container">
-						<input type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
-					</div>
-				</form>
+			<form class='overflow' id='editAlbumArtForm' name="edit_album_art_form" method="post">
+				<h2>Edit Album Artwork</h2>
+				<div class='segmentContainer' id='editAlbumArtPreviewContainer'>
+					<img class='preview' id='editAlbumArtDisplay' src="assets/default_album_art.jpg" alt="Media Art">
+					<label class='overlay' for="edit_album_art_form_input" id="editAlbumArtOverlay">Upload New Album Art</label>
+					<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
+				</div>
+				<span class='label'>Use Existing Artwork Instead</span>
+				<div class='segmentContainer' id="editAlbumArtAlternativesContainer"></div>
+			
+				<div class='submitContainer'>
+					<input class='submit' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
+				</div>
+			</form>
 		</div>
 
 	</body>
