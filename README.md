@@ -140,3 +140,30 @@ New functions have been added into the build, including the ability to save and 
 	- Changes made in relation to moving both edit form and album artwork edit form to the left
 	- originally separate objects of their own, the ``editForm`` and ``editAlbumArtForm`` objects moved into the ``globalPlayer`` parent object as ``editMediaForm`` and ``editAlbumArtForm`` respectively
 	- variable names starting to replace underscore ``_`` with naming convention of ``lowercaseUppercase``
+
+##### Version 5.3 - Back-End Update:
+This new version mostly focuses on improvements made to the back-end of the music player - namely PHP-based improvements - as well as continuing alterations to the JavaScript and CSS coding of the website. Major PHP improvements include creating a runner file that is able to access all the other PHP files via ``require`` or ``require_once`` based on the ``GET`` inputs it gets from any AJAX calls made to it, the function-ization of error-reporting and success-reporting when printing back to the JavaScript, the implementation of ``Transactions`` to prevent adjustments to the SQLite database when an error has occurred, and the the ability to clean up artwork that is not being used anymore (due to possible duplications that could occur when uploading new artwork). JavaScript improvements include removal of extraneous code and small adjustments to global variables, functions, and objects. CSS updates include changing class organization such that further repetitious, extraneous code is removed. Updates will explain this in further detail.
+
+###### Version 5.30
+1. PHP Updates:
+	- When making AJAX calls to interact with the SQLite database, all AJAX calls interact with a new ``simpleMusicPlayer.php`` that is able to interpret what needs to be done via a ``GET`` input received from the AJAX call and ``require_once`` or ``require`` the particular PHP file that can do the appropriate actions.
+		- All other PHP files moved into ``requireOnce`` directory
+		- all these files can still be called individually if needed
+	- Error reporting and Success reporting now uses function-based programming
+		- any errors that occur during the back-end process will execute the ``returnError()`` function, which returns the appropriate response with the necessary components that tell the AJAX callback if there was an error or not
+			- Usual cases for errors to be sent back are:
+				- errors with SQL queries
+				- problems with file-based operations such as moving files, renaming files, etc.
+			- When called, automatically executes a ``rollback`` on the database to undo any possible alterations prepared.
+		- The same goes for the new ``returnSuccess()`` function, which does the same as ``returnError()`` but with the appropriate components that indicate that whichever process has been appropriately executed.
+			- When called, executes as ``commit`` onto the database to allow for alterations to be made.
+	- Artwork duplication can occur sometimes, but with a new ``cleanArtTable()`` function duplicate artwork that isn't actually being used is removed appropriately.
+2. JavaScript Updates:
+	- Small alterations to functions to improve efficacy
+	- New ``ajaxCall()`` function deals with all ajax requests, error-reporting, and the like
+		- now other functions won't have to take care of errors themselves, as all error-reporting is performed by ``ajaxCall()`` unless specified by a function to use a unique error reporting methodology.
+3. CSS Updates:
+	- In the attempt to remove further CSS extraneous code, class reorganization within the website has been performed
+		- Now all left-side components (i.e. forms, song list) now follow an ``.container`` / ``.item`` structure where these classes can be nested within each other to prevent repeating the same code again and again.
+			- This was done due to the realization that all forms in the Simple Music Player tend to follow a similar HTML hierarchy that also happened to correspond eerily similarly to the nesting behavior of the song list elements.
+		- Only the player-based HTML elements did not receive any updates to their CSS - this is expected to change relatively soon, however.
