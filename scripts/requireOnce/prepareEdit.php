@@ -80,22 +80,25 @@
 			else $lyrics_array_to_print[$index]['no_text'] = false;
 
 			// Now, we extract time
-			$lyrics_time = '';
-			if ( preg_match("/\[([0-5][0-9]):([0-5][0-9])(.([0-9]{0,3}))?\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) {
+			$lyrics_array_to_print[$index]['time'] = ( preg_match("/\[([0-9]+)\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) ?
+				revertFromMilliseconds((int)$lyrics_segment_time[1]) : '';
 				// $lyrics_segment_time[0] = whole string
+				// $lyrics_segment_time[1] = time in milliseconds
+
 				// $lyrics_segment_time[1] - [2] = time in minutes and seconds
 				// $lyrics_segment_time[3] = .nnn
 				// $lyrics_segment_time[4] = nnn
 
 				// We check if the time has 0 or 3 digits in the nnn section
-				if ( !isset($lyrics_segment_time[4]) || $lyrics_segment_time[4] == '' ) $lyrics_segment_time[4] = '000';
+				//if ( !isset($lyrics_segment_time[4]) || $lyrics_segment_time[4] == '' ) $lyrics_segment_time[4] = '0';
 						
-				$lyrics_time = $lyrics_segment_time[1] . ':' . $lyrics_segment_time[2] . '.' . $lyrics_segment_time[4];
-			}
-			else $lyrics_time = '';		// Fill in the beginning with [59:59]
-			$lyrics_array_to_print[$index]['time'] = $lyrics_time;
+				//$lyrics_time = $lyrics_segment_time[1] . ':' . $lyrics_segment_time[2] . '.' . $lyrics_segment_time[4];
+			//}
+			//else $lyrics_time = '';		// Fill in the beginning with [59:59]
+			//$lyrics_array_to_print[$index]['time'] = $lyrics_time;
 
 			// Now, we extract styling
+			/*
 			$lyrics_style = '';
 			if ( preg_match("/{(.*?)}/", $lyric_segment_parts[0], $lyrics_segment_styling) ) {
 				// $lyrics_segment_time[0] = styling, including brackets
@@ -107,6 +110,8 @@
 			else $lyrics_style = '';	// Fill in the beginning with [59:59]
 
 			$lyrics_array_to_print[$index]['style'] = $lyrics_style;
+			*/
+			$lyrics_array_to_print[$index]['style'] = ( preg_match("/{(.*?)}/", $lyric_segment_parts[0], $lyrics_segment_styling) ) ? $lyrics_segment_styling[1] : '';
 		}
 
 		$row['dynamicLyrics'] = $lyrics_array_to_print;
@@ -133,12 +138,15 @@
 			// $lyrics_segment_time[1] - [2] = time in minutes and seconds
 			// $lyrics_segment_time[3] = .nnn
 			// $lyrics_segment_time[4] = nnn
+			/*
 			$lyrics_array_to_print[$index]['time'] = '';
 			if ( preg_match("/\[([0-5][0-9]):([0-5][0-9])(.([0-9]{0,3}))?\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) {
 				// We check if the time has 0 or 3 digits in the nnn section
 				$lyrics_segment_time[4] = ( !isset($lyrics_segment_time[4]) || $lyrics_segment_time[4] == '' ) ?  '000' : $lyrics_segment_time[4];
 				$lyrics_array_to_print[$index]['time'] = $lyrics_segment_time[1] . ':' . $lyrics_segment_time[2] . '.' . $lyrics_segment_time[4];
 			}
+			*/
+			$lyrics_array_to_print[$index]['time'] = ( preg_match("/\[([0-9]+)\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) ? revertFromMilliseconds((int)$lyrics_segment_time[1]) : '';
 
 			// Now, we extract styling
 			// $lyrics_segment_time[0] = styling, including brackets

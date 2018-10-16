@@ -85,11 +85,12 @@
     }
     function revertFromMilliseconds($milliseconds) {
 		$seconds = $milliseconds / 1000;
+		$milliseconds = $milliseconds % 1000;
 		$minutes = floor($seconds / 60);
 		$minutes = $minutes >= 10 ? $minutes : '0' . $minutes;
 		$seconds = floor($seconds % 60);
 		$seconds = $seconds >= 10 ? $seconds : '0' . $seconds;
-		return $minutes . ":" . $seconds;
+		return $minutes . ':' . $seconds . '.' . $milliseconds;
 	}
     function decodeLyricsForPrint($string) {
 		$htmlEntities=array('&#9733;','&#9734;','&#8212;','&#8230;','&#8730;','&#65374;','&#9654;','&#8594;','&#8595;','&#8593;','&#8592;','&#9757;','&#1374;','&#2570;','&#9758;','&#65314;','&#65313;','&#65336;','&#65337;','&#65324;','&#65330;','&#65331;','&#65317;','&#65315;','&#65332;','&#12288;','&#12304;','&#12305;','|NL|');
@@ -124,17 +125,18 @@
 			$segmentStyle='';
 			$startTime='';
 			$noText='';
-			if (preg_match("/\[([0-5][0-9]):([0-5][0-9])(.([0-9]{0,3}))?\]({.*?})?/",$segmentArray[0],$segmentTime)){
-				if (!isset($segmentTime[5])||$segmentTime[5]=='') $segmentStyle='black'; 
+			if (preg_match("/\[([0-9]*)\]({.*?})?/",$segmentArray[0],$segmentTime)){
+				if (!isset($segmentTime[2])||$segmentTime[2]=='') $segmentStyle='black'; 
 				else {
-					$segmentStyle=str_replace(array('{','}'),array('',''),$segmentTime[5]);
+					$segmentStyle=str_replace(array('{','}'),array('',''),$segmentTime[2]);
 					if ($segmentStyle=='yellow') $segmentStyle='rgb(254,223,0)';
 					else if ($segmentStyle=='pink') $segmentStyle='rgb(255,0,144)';
 				}
-				if (!isset($segmentTime[4])||$segmentTime[4]=='') $segmentTime[4]='000';
-				$lyricsStartingTimes[]=convertToMilliseconds($segmentTime[1].':'.$segmentTime[2].'.'.$segmentTime[4]);
+				if (!isset($segmentTime[1])||$segmentTime[1]=='') $segmentTime[4]='0';
+				$lyricsStartingTimes[]=(int)$segmentTime[1];
+				$startTime = (int)$segmentTime[1];
 			} 
-			else $lyricsStartingTimes[]=convertToMilliseconds('59:59.999');
+			else $lyricsStartingTimes[]=0;
 			if (preg_match("/\[NOTEXT\]/",$segmentArray[0],$segment_noText)) $noText='noText';
 			if (strlen(trim($segmentArray[1]))!=0) $lyrics.='<span class="lyric_segment lyric_segment_'.$startTime.' '.$noText.'" style="color:'.$segmentStyle.';">'.decodeLyricsForPrint($segmentArray[1]).'</span>';
 			else $lyrics.='<span class="lyric_segment lyric_segment_'.$startTime.' noText" style="color:'.$segmentStyle.';"></span>';

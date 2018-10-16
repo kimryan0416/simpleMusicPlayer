@@ -462,7 +462,7 @@ function resetPlayerAfterEdit() {
 }
 
 function prepareLocalMedia(arr) {
-	$(globalPlayer.currentPlayer.html).attr("src", arr["url"]);
+	$(globalPlayer.currentPlayer.html).attr("src", arr["url"]+'?date='+new Date().getTime());
 	globalPlayer.currentPlayer.durationDisplay.html(arr["duration"]);
 	loadLocalMedia(arr["id"], arr["url"], arr["lyrics"]);
 	if (milliseconds($(globalPlayer.currentPlayer.html).prop("currentTime")) < globalPlayer.startPadding ) $(globalPlayer.html).prop("currentTime", revertFromMilliseconds(globalPlayer.startPadding));
@@ -1068,9 +1068,10 @@ function populateAlternativeArtContainer() {
 			globalPlayer.editMediaForm.alternativeArtContainer.find('.item').remove();
 			globalPlayer.editMediaForm.alternativeArtArray = response.data;
 			globalPlayer.editMediaForm.alternativeArtActivator.hide();
-			var html;
+			var html, img;
 			for (var index in response['data']['data']) {
-				html = make(['div',{class:'item alternate'},['img',{class:'item previewItem',src:response['data']['data'][index]+'?'+new Date().getTime(),alt:''}],['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}],['label',{for:'alternate_art_'+index,class:'item previewLabel hover','data-id':index}]]);
+				img = ( response['data']['data'][index].startsWith('data') ) ? response['data']['data'][index] : response['data']['data'][index]+'?'+new Date().getTime();
+				html = make(['div',{class:'item alternate'},['img',{class:'item previewItem',src:img,alt:''}],['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}],['label',{for:'alternate_art_'+index,class:'item previewLabel hover','data-id':index}]]);
 				globalPlayer.editMediaForm.alternativeArtContainer.append(html);
        		}	
        	} 

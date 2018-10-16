@@ -2,9 +2,9 @@
 	require_once('scripts/newConfig.php');
 	// open connection to database
 	if (!$db = initSqliteDB('scripts/database.sqlite', 'scripts/init.sql') ) die('ERROR WITH DATABASE CONNECTION');
-	else if ( !file_exists('upload_directory/') && !makedirs('upload_directory/') ) die("ERROR SETTING UP \"upload_directory/\"");
-	else if ( !file_exists('media/') && !makedirs('media/') ) die ("ERROR SETTING UP \"media/\"");
-	else if ( !file_exists('art/') && !makedirs('art/') ) die("ERROR SETTING UP \"art\"");
+	if ( !file_exists('upload_directory/') && !mkdir('upload_directory/') ) die("ERROR SETTING UP \"upload_directory/\"");
+	if ( !file_exists('media/') && !mkdir('media/') ) die ("ERROR SETTING UP \"media/\"");
+	if ( !file_exists('art/') && !mkdir('art/') ) die("ERROR SETTING UP \"art\"");
 	/*
 	$content = array();
 	$query = 'SELECT 

@@ -9,7 +9,7 @@
   100% { background-color: rgb(255,255,255); }
 }
 html 	{	margin:0;			padding:0;			height:100%;		width:100%;		font-family: "Arial";	}
-body {	display:block;	margin:0;	padding-top:0;	padding-bottom:0;	height:100%;	width:100%;		box-sizing: border-box;		overflow:hidden;	font-size:0;	position:relative;	}
+body {	display:block;	margin:0;	padding-top:0;	padding-bottom:0;	height:100%;	width:100%;		box-sizing: border-box;		overflow:hidden;	font-size:12px;	position:relative;	}
 h1 		{	margin:0;			font-size:30px;	}
 h2		{	margin-top:30px;	margin-bottom:5px;	color:black;	}
 
@@ -99,7 +99,7 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 	.content.left {		padding-top:60px;	overflow-y:scroll;	padding-left:5%;	padding-right:5%;	padding-bottom:60px;	}
 		.item.albumArtist {	width:90%;	padding:20px;	margin-top:30px;	margin-bottom:30px;	background-color:white;	border-radius: 30px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
 		.container.album {	width:90%;	padding:20px;	margin-bottom:30px;	background-color:rgba(255,255,255,0.2);	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	background-color:white;	}
-		.item.album {	border-bottom:1px solid rgb(200,200,200);	margin-bottom: 10px;	}
+		.item.album {	border-bottom:1px solid rgb(200,200,200);	margin-bottom:0;	}
 		.item.album h2{	margin-top:10px;	margin-bottom: 10px;	}
 		.container.albumArt {	max-width: 200px;	max-height: 200px;	margin:auto;	overflow:hidden;	}
 			.item.albumArt {	max-height: 100%;	max-width: 100%;	}
@@ -155,8 +155,8 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 #player_art {	position:absolute;	top:50%;	transform: translateY(-50%);	right:0;	max-width: 100%;	max-height: 250px;	border-radius: 20px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	z-index: 1;	}
 #player_lyrics_container {	flex-grow:2;	margin-left:5%;		max-width:500px;	}
 #player_lyrics {	position:absolute;	top:50%;	transform: translateY(-50%);	left:0;	right:0;	margin-top:0;	margin-bottom:0;	width:90%;	margin-left:auto;	margin-right:auto;	padding-left:20px;	padding-right:20px;	box-sizing: border-box;	overflow-y: scroll;	text-align: center;		max-height:310px;		font-size: 12px;		box-shadow: 0px 0px 2px 2px rgba(0,0,0,0.3);		background-color: rgb(246,255,241);		border-radius: 20px;	}
-#player_lyrics .lyric_segment {	display:block;	width:100%;	height:auto;	min-height:15px;	box-sizing: border-box;	-webkit-transition: padding 100ms linear;	-ms-transition: padding 100ms linear;	transition: padding 100ms linear;	}
-#player_lyrics .lyric_segment.selected {	padding-left:20px;	border-top:1px solid rgba(0,0,0,0.3);	border-bottom:1px solid rgba(0,0,0,0.3);	font-weight: bold;	}
+#player_lyrics .lyric_segment {	display:block;	width:100%;	height:auto;	min-height:15px;	box-sizing: border-box;	-webkit-transition: font-size 100ms linear;	-ms-transition: font-size 100ms linear;	transition: font-size 100ms linear;		-webkit-transition: padding 100ms linear;	-ms-transition: padding 100ms linear;	transition: padding 100ms linear;}
+#player_lyrics .lyric_segment.selected {	border-top:1px solid rgba(0,0,0,0.3);	border-bottom:1px solid rgba(0,0,0,0.3);	font-weight: bold; font-size:13px;	padding-top:5px;	padding-bottom:5px;	}
 #player_lyrics .lyric_segment.noText {	border: none !important;	font-weight: normal !important;	padding-left:0 !important;	}
 #player_info {	position:relative;	z-index: 3;	display:flex;	flex-direction: column-reverse;	justify-content: flex-end;	padding:50px;	height:auto;	width:100%;	font-size: initial;	text-shadow: 0px 0px 3px rgb(255,255,255);	text-align: left;	box-sizing: border-box;	order:2;	flex-grow: 0;	}
 #player_title_and_artist {	display:flex;	width:100%;	height:auto;	position:relative;	order:4;	flex-direction: column-reverse;	justify-content: flex-end;	margin-bottom:10px;	}

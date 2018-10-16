@@ -167,3 +167,25 @@ This new version mostly focuses on improvements made to the back-end of the musi
 		- Now all left-side components (i.e. forms, song list) now follow an ``.container`` / ``.item`` structure where these classes can be nested within each other to prevent repeating the same code again and again.
 			- This was done due to the realization that all forms in the Simple Music Player tend to follow a similar HTML hierarchy that also happened to correspond eerily similarly to the nesting behavior of the song list elements.
 		- Only the player-based HTML elements did not receive any updates to their CSS - this is expected to change relatively soon, however.
+
+###### Version 5.31
+1. PHP updates:
+	- Changed time format of dynamic lyric storage
+		- Originally, times for each dynamic lyric segment were stored as a MM:SS._ _ _ format. While this made it easier for the text to be readable when editing dynamic lyrics, it required a lot of micromanagement to convert them into pure millisecond format, which the audio and video players use.
+		- Now it is flipped - times are stored as pure milliseconds and are converted into the MM:SS._ _ _ format only when editing dynamic lyrics.
+		- Functions that convert pure milliseconds to MM:SS format now allow for milliseconds to be added at the end, fully returning a string formatted as MM:SS._ _ _
+		- Function that prints out dynamic lyrics into a player-friendly HTML format no longer need to convert from MM:SS._ _ _ format
+	- Images from audio files with artwork embedded now extract artwork when adding media files into database initially
+		- Previously, all artwork for art was not extracted from audio files when adding them into the database - they defaulted to what was essentially NULL
+			- When the song was clicked for the first time, an AJAX call was made to extract the artwork from the audio file, then that artwork was saved into the database
+			- this functionality barely even worked anyways... most of the time, the PHP script would return a base64 encoded string with no data
+		- Now, artwork can be properly extracted from the audio file at the moment of insertion into the database, thereby removing the need to extract artwork when songs are played for the first time
+	- Fixed a bug where the PHP function "mkdir()" was accidentally typed as "makeDir()"
+2. CSS updates:
+	- When the audio player selects a lyric segment to highlight, the text increases in size and top/bottom padding instead of left-padding (which looked awkward since the lyrics were text-aligned to the center...)
+3. JavaScript updates:
+	- Artwork sourced with base64 encoding and not by an external image now show up properly
+		- Previously, in order to prevent cached images to show erroneous artwork, a system was implemented where the 'src' attributes in images had an additional '?date=...'  string attached at the end of the source link
+			- This works well for images that are linked to files... but not so well with images sourced with base64 encoded data
+			- This meant that images sourced with base64 encoded data did not show up
+		- Now, conditional statements now check for the image source type and adjust accordingly - images sourced by files have the additional data appended, while base64 images do not

@@ -160,7 +160,7 @@
 			$dynamicLyrics = '';
 
 			if ($medium == 0) {
-				$previous_time = '[59:59.999]';
+				$previous_time = '[0]';
 				$previous_style = '';
 				$current_time = '';
 				$current_style = '';
@@ -174,7 +174,7 @@
 					$compiled_lyric_segment = '';
 
 					// Set Time
-					$current_time = ( $dynamic_lyrics_times[$index] != null ) ? '['.$dynamic_lyrics_times[$index].']' : $previous_time;
+					$current_time = ( $dynamic_lyrics_times[$index] != null ) ? '['.convertToMilliseconds($dynamic_lyrics_times[$index]).']' : $previous_time;
 					$previous_time = $current_time;		// Save this time as the new $previous_time
 
 					// Set style
@@ -214,7 +214,7 @@
 				}
 
 				if ( isset($dynamic_lyrics_texts) && count($dynamic_lyrics_texts) > 0 ) {
-					$previous_time = '[59:59.999]';
+					$previous_time = '[0]';
 					$previous_style = '';
 					$current_time = '';
 					$current_style = '';
@@ -229,7 +229,7 @@
 						$compiled_lyric_segment = '';
 
 						// Set Time
-						$current_time = ( $dynamic_lyrics_times[$index] != null ) ? '['.$dynamic_lyrics_times[$index].']' : $previous_time;
+						$current_time = ( $dynamic_lyrics_times[$index] != null ) ? '['.convertToMilliseconds($dynamic_lyrics_times[$index]).']' : $previous_time;
 						$previous_time = $current_time;
 
 						// Set style
