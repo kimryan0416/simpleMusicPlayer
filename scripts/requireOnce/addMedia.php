@@ -28,38 +28,50 @@
 		'mp4' => 'video/mp4'
 	);
 
-	$upload_dir = 'media/uploads/';
+	/*
+	$temp = array(
+		'max_file_size'=>ini_get("upload_max_filesize"),
+		'$_FILES exists'=>isset($_FILES),
+		'$_FILES size'=>count($_FILES),
+		'fileName'=>$_FILES['file']['tmp_name']
+	);
+	print(returnError($db,'Need to check if $_FILES received anything',$temp));
+	return;
+	*/
 
-	$path = realpath('../upload_directory/');
+	//$path = realpath('../upload_directory/');
 
-	$dir  = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
-	$rii = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::LEAVES_ONLY);
-	$files = array(); 
-	foreach ($rii as $file) {
-		if (!$file->isDir()) {
-			$path_parts = pathinfo($file->getPathname());
-			$title = $path_parts['basename'];
-			if ( substr($title, 0, 1) != '.' ) {
-				$fileURL = $file->getPathname();
-				$newFileURL = str_replace('/Users/RK/Desktop/MAMP_WEB/simple_music_player/v3/', '../', $fileURL);
-				$files[] = $newFileURL;
-			} 
-		}
-	}
+	//$dir  = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
+	//$rii = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::LEAVES_ONLY);
+	//$files = array(); 
+	//foreach ($rii as $file) {
+	//	if (!$file->isDir()) {
+	//		$path_parts = pathinfo($file->getPathname());
+	//		$title = $path_parts['basename'];
+	//		if ( substr($title, 0, 1) != '.' ) {
+	//			$fileURL = $file->getPathname();
+	//			$newFileURL = str_replace('/Users/RK/Desktop/MAMP_WEB/simple_music_player/v3/', '../', $fileURL);
+	//			$files[] = $newFileURL;
+	//		} 
+	//	}
+	//}
 
-	foreach ( $files as $file ) {
-		$thisFileInfo = $getID3->analyze($file);
+	
+	//foreach ( $_FILES as $file ) {
+	$file = $_FILES['file'];
+		$tempFileName = $file['tmp_name'];
+		$thisFileInfo = $getID3->analyze($tempFileName);
 		getid3_lib::CopyTagsToComments($thisFileInfo);
 		$song_info = $thisFileInfo['comments_html'];
-		$path_parts = pathinfo($file);
+		$path_parts = pathinfo($file['name']);
 		
 		$filename = htmlspecialchars($path_parts['filename']);
-		$extension = pathinfo(basename($file), PATHINFO_EXTENSION);
+		$extension = $path_parts['extension'];
 		$extensionType = ( array_key_exists($extension, $video_types) ) ? 2 : 0;
 
 		if ( !array_key_exists($extension, $media_types) ) {
 			// This error means the file is an image but is not a jpg or png, so the uploader has to choose another icon
-			print(returnError($db,'mediaAdd - File is not mp3, m4a, or mp4'));
+			print(returnError($db,'mediaAdd - File is not mp3, m4a, or mp4',array('returnedExtension'=>$extension,'pathParts'=>$path_parts)));
 			return;
 		}
 
@@ -67,20 +79,20 @@
 		// For now, we process the file info to insert into the database
 			
 		$title = ( isset($song_info['title'][0]) ) ? $song_info['title'][0] : $filename;
-			$title = html_entity_decode(trim($title));
+			$title = html_entity_decode(trim($title),ENT_COMPAT,'UTF-8');
 		$artist = ( isset($song_info['artist'][0]) ) ? $song_info['artist'][0] : 'Unknown Artist';
-			$artist = html_entity_decode(trim($artist));
+			$artist = html_entity_decode(trim($artist),ENT_COMPAT,'UTF-8');
 
 		// Need to set song - to - art relationship - initially set to null if $art is null
 		$art = (isset($thisFileInfo['comments']['picture'][0])) ? 'data:'.$thisFileInfo['comments']['picture'][0]['image_mime'].';charset=utf-8;base64,'.base64_encode($thisFileInfo['comments']['picture'][0]['data']) : null;
 
-		if ( isset ($song_info['album_artist_sort_order']) ) $album_artist = $song_info['album_artist_sort_order'][0];
-		else if ( isset ($song_info['album_artist']) ) $album_artist = $song_info['album_artist'][0];
-		else if ( isset ($song_info['band']) ) $album_artist = $song_info['band'][0];
+		if ( isset ($song_info['album_artist_sort_order']) ) $album_artist = html_entity_decode($song_info['album_artist_sort_order'][0],ENT_COMPAT,'UTF-8');
+		else if ( isset ($song_info['album_artist']) ) $album_artist = html_entity_decode($song_info['album_artist'][0],ENT_COMPAT,'UTF-8');
+		else if ( isset ($song_info['band']) ) $album_artist = html_entity_decode($song_info['band'][0], ENT_COMPAT, 'UTF-8');
 		else $album_artist = 'No Album Artist';
 		$album_artist_id = -1;
 
-		$album = ( isset($song_info['album']) ) ? $song_info['album'][0] : 'Unknown Album';
+		$album = ( isset($song_info['album']) ) ? html_entity_decode($song_info['album'][0],ENT_COMPAT,'UTF-8') : 'Unknown Album';
 		$album_id = -1;
 
 		$composer = ( isset($song_info['composer']) ) ? $song_info['composer'][0] : '';
@@ -89,7 +101,8 @@
 		else if ( isset($song_info['unsynchronized_lyric']) ) $lyrics = $song_info['unsynchronized_lyric'][0];
 		else if ($extensionType == 2) $lyrics = '';
 		else $lyrics = 'No Lyrics Provided';
-		$lyrics = str_replace("&#13;","\r\n",$lyrics);
+		//$lyrics = str_replace("&#13;","\r\n",$lyrics);
+		$lyrics = html_entity_decode($lyrics);
 			
 		$comment = ( isset($song_info['comment']) ) ? myUrlEncode($song_info['comment'][0]) : '';
 
@@ -102,7 +115,8 @@
 			$id = $grabResult[0]['seq'];
 		}
 		catch (PDOException $exception) {
-			print(returnError($db,'mediaAdd - insert into music',$exception));
+			//print(returnError($db,'mediaAdd - insert into music',$exceptione);
+			print(returnError($db,'mediaAdd - insert into music',array('duration'=>$thisFileInfo)));
 			return;
 		}
 
@@ -183,7 +197,8 @@
 		}
 			
 		$movedURL = 'media/'.$id.'.'.$extension;
-		if ( !rename($file, '../'.$movedURL) ) {
+		//if ( !rename($file, '../'.$movedURL) ) {
+		if ( !move_uploaded_file($file['tmp_name'], '../' . $movedURL) ) {
 			print(returnError($db,'mediaAdd - unable to move file to media folder',array('oldFile'=>$file,'newFile'=>$movedURL)));
 			return;
 		}
@@ -221,8 +236,9 @@
 			print(returnError($db,'mediaAdd - '.$query,$exception));
 			return;
 		}
-	}
+	//}
 
 	print(returnSuccess($db,'Success'));
 	return;
+	
 ?>

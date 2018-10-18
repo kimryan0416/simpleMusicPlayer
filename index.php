@@ -89,7 +89,8 @@
 						<div class="dropdownContents">
 							<div class='dropdownArrow'></div>
 							<div class='dropdownItems'>
-								<span id="addMedia" class="dropdownItem settings">Add Song</span>
+								<!--<span id="addMedia" class="dropdownItem settings">Add Song</span>-->
+								<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
 								<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
 							</div>
 						</div>
@@ -315,6 +316,46 @@
 						</div>
 						<div class='item submitContainer'>
 							<input class='item submitItem submit hover' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
+						</div>
+					</form>
+					<form id='addMediaForm' name='addMediaForm' method='post' enctype="multipart/form-data">
+						<div class='item header'>
+							<div class='container header'>
+								<span class='cancel' id="closeAddMediaForm">X</span>
+								<h2 class='item formTitle'>Add Media</h2>
+							</div>
+						</div>
+						<div class='item innerForm'>
+							<div class='container innerForm'>
+								<div class='container segmentContainer'>
+									<span class='item label'>Select Media to upload (or drag and drop into this window)</span>
+									<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
+									<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput' onchange='addFiles(this.files)'>
+									<!--<input type="hidden" name="MAX_FILE_SIZE" value="104857600">-->
+								</div>
+								<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
+								<!--
+								<div class='container segmentContainer' id='editAlbumArtPreviewContainer'>
+									<div class='item preview'>
+										<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
+										<div class='container preview'>
+											<img class='item previewItem' id='editAlbumArtDisplay' src='assets/default_album_art.jpg' alt='Media Art'>
+											<label class='item overlay hover' for='edit_album_art_form_input' id='editAlbumArtOverlay'>Upload New Album Artwork</label>
+										</div>
+									</div>
+								</div>
+								<div class='container segmentContainer'>
+									<span class='item label'>Use Existing Artwork Instead:</span>
+									<div class='item preview'>
+										<div class='container alternatives' id='editAlbumArtAlternativesContainer'>
+										</div>
+									</div>
+								</div>
+							-->
+							</div>
+						</div>
+						<div class='item submitContainer'>
+							<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
 						</div>
 					</form>
 				</div>

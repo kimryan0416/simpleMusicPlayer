@@ -189,3 +189,21 @@ This new version mostly focuses on improvements made to the back-end of the musi
 			- This works well for images that are linked to files... but not so well with images sourced with base64 encoded data
 			- This meant that images sourced with base64 encoded data did not show up
 		- Now, conditional statements now check for the image source type and adjust accordingly - images sourced by files have the additional data appended, while base64 images do not
+
+###### Version 5.32
+File Upload System Updated - now supports drag-and-drop
+- Initially, uploading files into the SMP required placing files into a ``upload_directory`` folder present within the root directory of the SMP.
+	- This was not user-friendly because this does not allow users to upload via some interface in the SMP directly.
+- Now, a completely separate form has been added to allow users to upload their media directly into the SMP without interacting with root directories.
+	- The file upload form allows for users to upload single files traditionally via an upload button, or to Drag-And-Drop multiple files into the form
+	- The form itself does not interact with the PHP backend - JavaScript takes care of all file management via AJAX calls
+	- PHP file ``addMedia.php`` altered to now match this upload format
+- Interface changes as a result:
+	- Dropdown button ``Add Media`` opens a new form with both a file upload button and a div that allows for files to be dragged in.
+	- All files to be uploaded are presented as a list - the ``type`` of media (video or audio), the ``name`` of the file, and the ``file size`` of the file are all visible
+	- The maximum file upload limit is 96 MB
+		- possible with new ``.htaccess`` file that designates the maximum memory limit, post upload size, and maximum file upload size.
+	- Files that are not audio or video files are automatically rejected
+	- If any files must be deleted from the list prior to upload, deleting files is possible
+	- When files are uploading, new ``loading.gif`` image indicates which files are being currently processed by the website
+	- Any files that cannot be uploaded are kept in the form's file list and highlighted in red, alongside an ``alert()`` message popping up; successful files are removed from the form's file list.

@@ -46,8 +46,11 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 	.item.preview {	position:relative;	z-index: 2;	width:100%;	}
 	.item.previewItem {	position:absolute;	z-index: 2;	top:50%;	transform:translateY(-50%);	left:0;	right:0;	max-width: 100%;	max-height: 100%;	border-radius: 10px;	}
 	.container.preview {	position:relative;	display:block;	z-index: 2;	width:100%;	padding-top:100%;	height:0;	}
-	.container.alternatives {	position:relative;	display:block;	z-index: 2;	width:100%;	height:135px;	overflow-x:hidden;	overflow-y: scroll;	border-radius:0;	border:1px solid rgb(230,230,230);	padding:10px;	}
+	.container.alternatives, .container.dropArea {	position:relative;	display:block;	z-index: 2;	width:100%;	height:135px;	overflow-x:hidden;	overflow-y: scroll;	border-radius:0;	border:1px solid rgb(230,230,230);	padding:10px;	}
+	.container.dropArea {	border-radius: 20px;	height:auto;	min-height: 400px;	width:90%;	}
+		.container.dropArea.highlight {		box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
 	.item.overlay {	position:absolute;		z-index: 3;	top:50%;	transform: translateY(-50%);	width:80%;	font-size:12px;	left:0;	right:0;	padding:5px;	text-align: center;	background-color: rgba(150,150,150,0.8);	color:white;	border-radius: 20px;	}
+	.item.button {	font-size:12px;	background-color:rgba(150,150,150,0.8);	padding:5px;	width:80%;	color:white;	border-radius: 20px;	}
 	.item.alternate {	display:inline-block;	width:50px;	height:50px;	margin:2px;	position:relative;	border-radius: 10px;	border:1px solid rgb(230,230,230);	}
 	.item.previewLabel {	position:absolute;	z-index: 2;	width:100%;	height:100%;	left:0;	right:0;	border:none;	margin:0;	border-radius: 10px;	}
 	.item.inputLabel {	display:inline-block;	vertical-align: middle;	margin:10px;	font-size:12px;	border:1px solid rgb(150,150,150);	border-radius: 20px;	}
@@ -118,6 +121,16 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 			.item.options {	display:none;	position:absolute;	height:4px;	width:auto;	right:10px;	top:50%;	transform: translateY(-50%);	padding:5px;	background-color:white;	border-radius: 4px;	box-sizing: initial;	z-index: 2;	}
 				.item.song:hover .item.options {	display:block;	}
 				.item.song:hover .item.options:hover {	box-shadow: 0px 0px 2px 2px rgba(0,0,0,0.5);	}
+		#addMediaDropArea .addMediaItem {	position:relative;	box-sizing:border-box;	display:block;	height: 40px;	padding-left:30px;	width:100%;	font-size:0;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	border-radius: 10px;	margin-bottom:10px;	}
+			#addMediaDropArea .addMediaItem.failed {	color:red;	}
+			#addMediaDropArea .addMediaItem .addMediaItemCancel	{	font-size:8px;	height:16px;	width:16px;	line-height: 6px;	top:5px;	right:5px;	}
+			#addMediaDropArea .addMediaItem .addMediaArt {	position:absolute;	top:0;	left:0;	display:block;	width:30px;	height:40px;	}
+				#addMediaDropArea .addMediaItem .addMediaArt .addMediaArtInner {	position:relative;	width:100%;	height:100%;	}
+					#addMediaDropArea .addMediaItem .addMediaArt .addMediaArtInner img {	position:absolute;	width:20px;	height:auto;	top:50%;	transform:translateY(-50%);	left:0;	right:0;	margin:auto;	}
+			#addMediaDropArea .addMediaItem .addMediaText {	display:block;	width:100%;	box-sizing: border-box;	padding-right:35px;	padding-left:5px;	overflow:hidden;	font-size:10px;	text-align: left;	}
+				#addMediaDropArea .addMediaItem .addMediaText span {	display:block;	width:100%;	overflow:hidden;	text-overflow: ellipsis;	white-space: nowrap;	}
+				#addMediaDropArea .addMediaItem .addMediaText .addMediaTitle {	height:	20px;	line-height:20px;	margin-top:5px;	font-weight:bold;	font-size:1.2em;	}
+				#addMediaDropArea .addMediaItem .addMediaText .addMediaSize {	height:10px;	line-height: 10px;	margin-bottom:5px;	font-style:italic;	}
 	
 	.container.editLyricsContainer {	padding-top:100px;	margin-bottom:0;	padding-bottom:0;	}
 	.item.editLyrics {	width:100%;	font-size:10px;	}

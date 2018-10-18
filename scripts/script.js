@@ -9,6 +9,8 @@ function onYouTubeIframeAPIReady() {
 
 function isArray(a) {	return Object.prototype.toString.call(a) === "[object Array]";	}
 
+function formatBytes(a,b){if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]}
+
 /* creates new HTML elements and returns them - otherwise returns a 'false' */
 function make(desc) {
 	// Probably a good idea to check if 'desc' is an array, but this can be done later;
@@ -196,6 +198,7 @@ function printMedia(sortedDatabase) {
 function updateCurrent() {
 	ajaxCall({url:'scripts/simpleMusicPlayer.php?get=2',data:'id='+globalPlayer.currentSong,type:'POST',dataType: 'json'},function(response) {
 		var arr = response['data']['info'];
+
 		if (globalPlayer.currentMediaType == 2) {
 			globalPlayer.startPadding = arr['start_padding'];
 			globalPlayer.endPadding = arr['end_padding'];
@@ -206,11 +209,8 @@ function updateCurrent() {
 				globalPlayer.dynamic_lyrics_starting_times = arr['dynamic_lyrics_starting_times'];
 				globalPlayer.lockLyricScroll = false;
 				if (video_player.autoscrollButton.hasClass('locked')) video_player.autoscrollButton.removeClass('locked');
-				if (globalPlayer.scrollToLyrics) {
-					if (!video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.addClass('active');
-				} else {
-					if (video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.removeClass('active');
-				}
+				if (globalPlayer.scrollToLyrics && !video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.addClass('active');
+				else if (video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.removeClass('active');
 			}
 		} 
 		else if (globalPlayer.currentMediaType == 1) {
@@ -221,11 +221,8 @@ function updateCurrent() {
 				globalPlayer.dynamic_lyrics_starting_times = arr['dynamic_lyrics_starting_times'];
 				globalPlayer.lockLyricScroll = false;
 				if (video_player.autoscrollButton.hasClass('locked')) video_player.autoscrollButton.removeClass('locked');
-				if (globalPlayer.scrollToLyrics) {
-					if (!video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.addClass('active');
-				} else {
-					if (video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.removeClass('active');
-				}
+				if (globalPlayer.scrollToLyrics && !video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.addClass('active');
+				else if (video_player.autoscrollButton.hasClass('active')) video_player.autoscrollButton.removeClass('active');
 			}
 		} 
 		else {
@@ -251,13 +248,11 @@ function updateCurrent() {
 				globalPlayer.dynamic_lyrics_starting_times = arr['dynamic_lyrics_starting_times'];
 				globalPlayer.lockLyricScroll = false;
 				if (globalPlayer.currentPlayer.autoscrollButton.hasClass('locked')) globalPlayer.currentPlayer.autoscrollButton.removeClass('locked');
-				if (globalPlayer.scrollToLyrics) {
-					if (!globalPlayer.currentPlayer.autoscrollButton.hasClass('active')) globalPlayer.currentPlayer.autoscrollButton.addClass('active');
-				} else {
-					if (globalPlayer.currentPlayer.autoscrollButton.hasClass('active')) globalPlayer.currentPlayer.autoscrollButton.removeClass('active');
-				}
+				if (globalPlayer.scrollToLyrics && !globalPlayer.currentPlayer.autoscrollButton.hasClass('active')) globalPlayer.currentPlayer.autoscrollButton.addClass('active');
+				else if (globalPlayer.currentPlayer.autoscrollButton.hasClass('active')) globalPlayer.currentPlayer.autoscrollButton.removeClass('active');
 			}
 		}
+
 		document.getElementById(arr['id']).classList.add('selected');
 		if (globalPlayer.loop == 2) createLoop(globalPlayer.currentAlbum, globalPlayer.currentSong, globalPlayer.currentAlbumArtist, globalPlayer.shuffle);
 	});
@@ -827,6 +822,7 @@ function openEdit() {
 	$(globalPlayer.leftSongs).hide();
 	globalPlayer.embedForm.form.hide();
 	globalPlayer.editAlbumArtForm.form.hide();
+	globalPlayer.addMediaForm.form.hide();
 
 	globalPlayer.editMediaForm.form.show();
 	globalPlayer.editMediaForm.status = true;
@@ -839,7 +835,7 @@ function openEdit() {
 	}
 }
 function closeEdit() {
-	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.editAlbumArtForm.status ) {
+	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.addMediaForm.status && !globalPlayer.editAlbumArtForm.status ) {
 		$('#left').addClass('closed');
 		$('#main').addClass('wide');
 	}
@@ -847,6 +843,7 @@ function closeEdit() {
 	if ( video_player.controls_container.hasClass("lock") ) video_player.controls_container.removeClass("lock");
 
 	globalPlayer.editMediaForm.form.hide();
+	globalPlayer.addMediaForm.form.hide();
 	globalPlayer.editMediaForm.status = false;
 	$(globalPlayer.leftSongs).show();
 
@@ -919,6 +916,7 @@ function openAlbumArtEdit() {
 	$(globalPlayer.leftSongs).hide();
 	globalPlayer.embedForm.form.hide();
 	globalPlayer.editMediaForm.form.hide();
+	globalPlayer.addMediaForm.form.hide();
 	
 	globalPlayer.editAlbumArtForm.form.show()
 	globalPlayer.editAlbumArtForm.status = true;
@@ -929,12 +927,13 @@ function openAlbumArtEdit() {
 	}
 }
 function closeAlbumArtEdit() {
-	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.editMediaForm.status ) {
+	if (!globalPlayer.leftOpen && !globalPlayer.embedForm.status && !globalPlayer.addMediaForm.status && !globalPlayer.editMediaForm.status ) {
 		$('#left').addClass('closed');
 		$('#main').addClass('wide');
 	}
 
 	globalPlayer.editAlbumArtForm.form.hide();
+	globalPlayer.addMediaForm.form.hide();
 	globalPlayer.editAlbumArtForm.status = false;
 	$(globalPlayer.leftSongs).show();
 
@@ -956,6 +955,7 @@ function prepareAlbumArtEdit(event) {
 		}
 		reader.readAsDataURL(event.target.files[event.target.files.length-1]);
 		globalPlayer.editAlbumArtForm.iconEdit = event.target.files;
+		console.log(event.target.files);
 		globalPlayer.editAlbumArtForm.iconEditSet = 1;
 	} 
 	else {
@@ -1003,6 +1003,7 @@ function openEmbed() {
 
 	globalPlayer.editMediaForm.form.hide();
 	globalPlayer.editAlbumArtForm.form.hide();
+	globalPlayer.addMediaForm.form.hide();
 
 	globalPlayer.embedForm.form.find('.textInput').val('');
 	globalPlayer.embedForm.form.find(".inputError").text('');
@@ -1014,7 +1015,7 @@ function openEmbed() {
 	}
 }
 function closeEmbed() {
-	if (!globalPlayer.editMediaForm.status && !globalPlayer.editAlbumArtForm.status && !globalPlayer.leftOpen) {
+	if (!globalPlayer.editMediaForm.status && !globalPlayer.editAlbumArtForm.status && !globalPlayer.addMediaForm.status && !globalPlayer.leftOpen) {
 		$('#left').addClass('closed');
 		$('#main').addClass('wide');
 	}
@@ -1022,6 +1023,7 @@ function closeEmbed() {
 	globalPlayer.embedForm.form.hide();
 	globalPlayer.embedForm.status = false;
 
+	globalPlayer.addMediaForm.form.hide();
 	$(globalPlayer.leftSongs).show();
 }
 function submitEmbed(event) {
@@ -1042,6 +1044,35 @@ function submitEmbed(event) {
 		}
 		else alert(response['message']);
 	});
+}
+
+function openAdd() {
+	console.log('Opening Add Media Form');
+	$(globalPlayer.leftSongs).hide();
+	globalPlayer.editMediaForm.form.hide();
+	globalPlayer.editAlbumArtForm.form.hide();
+	globalPlayer.embedForm.form.hide();
+	
+	globalPlayer.addMediaForm.form.show();
+
+	globalPlayer.addMediaForm.status = true;
+	if (!globalPlayer.leftOpen) {
+		$('#left').removeClass('closed');
+		$('#main').removeClass('closed');
+	}
+}
+function closeAdd() {
+	console.log('Closing Add Media Form');
+	if (!globalPlayer.editMediaForm.status && !globalPlayer.editAlbumArtForm.status && !globalPlayer.embedForm.status && !globalPlayer.leftOpen) {
+		$('#left').addClass('closed');
+		$('#main').addClass('wide');
+	}
+	globalPlayer.addMediaForm.form.hide();
+	globalPlayer.addMediaForm.status = false;
+	globalPlayer.addMediaForm.files = {};
+	$('.addMediaItem').remove();
+
+	$(globalPlayer.leftSongs).show();
 }
 
 function search(text) {
@@ -1121,6 +1152,154 @@ function addMedia() {
 		console.log(response.data);
 	});
 }
+function newAddMedia(event) {
+	event.stopPropagation();
+	event.preventDefault();
+
+	var newFilesArray = [];
+	var keys = globalPlayer.addMediaForm.files;
+	for (var key in globalPlayer.addMediaForm.files) {
+		newFilesArray.push(globalPlayer.addMediaForm.files[key]);
+	}
+
+	var promises = [];
+	var successes = [];
+	var failures = [];
+	var temp, typeImage;
+	$.each(newFilesArray, function(key, value) {
+		//temp = new FormData(globalPlayer.addMediaForm.form[0]);
+		//temp.delete('addMediaFormInput');
+		temp = new FormData();
+		temp.append('file',value);
+		if (value.type.startsWith('audio')) typeImage = 'assets/audio.png';
+		else if (value.type.startsWith('video')) typeImage = 'assets/video.png';
+		document.getElementById('addMediaItem_'+value.size+'|'+value.lastModified).querySelector('.addMediaArtInner img').src = 'assets/loading.gif';
+		if (document.getElementById('addMediaItem_'+value.size+'|'+value.lastModified).classList.contains('failed')) document.getElementById('addMediaItem_'+value.size+'|'+value.lastModified).classList.remove('failed');
+
+		var request = $.ajax({url:'scripts/simpleMusicPlayer.php?get=11',type:'POST',data:temp,dataType:'json',cache:false,processData:false,contentType:false})
+			.done(function(response){
+				console.log(response);
+				if(response.success) successes.push(value);
+				else failures.push(value);
+				document.getElementById('addMediaItem_'+value.size+'|'+value.lastModified).querySelector('.addMediaArtInner img').src = typeImage;
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				console.log(errorThrown);
+			});
+		promises.push(request);
+	});
+	$.when.apply(null,promises).done(function() {
+		var toPrint = false;
+		if (successes.length > 0) {
+			console.log("Successfully Added Files:");
+			console.log(successes);
+			removeFiles(successes.map(file=>{return (file.size+'|'+file.lastModified);}));
+			successes.forEach(file=>{
+				document.getElementById('addMediaItem_'+file.size+'|'+file.lastModified).outerHTML = '';
+			});
+		}
+		if (failures.length > 0) {
+			console.log("Failed To Add Files:");
+			console.log(failures);
+			var failString = '';
+			failures.forEach(file=>{
+				failString += file.name + '\n';
+				document.getElementById('addMediaItem_'+file.size+'|'+file.lastModified).classList.add('failed');
+			});
+			alert('Failed to add the following files:\n'+failString + '\nMost common reasons include:\n- File size exceeds 96 Megabytes\n- The file is a format not recognized by the player');
+		} else {
+			toPrint = true;
+			closeAdd();
+		}
+		getAllMedia(false,toPrint);
+	});
+
+
+}
+function handleDrop(e) {
+	var dt = e.dataTransfer;
+	var files = dt.files;
+	console.log(files);
+	addFiles(files);
+}
+function addFiles(files) {
+	([...files]).forEach(file=>{
+		var type = file.type;
+		var size = file.size;
+		var modified = file.lastModified;
+		var name = file.name;
+		if ( !type.startsWith('audio') && !type.startsWith('video') ) {
+			alert('The following file could not be uploaded:\n"'+name+'"\nReason: File is neither an audio or video file');
+			return;
+		}
+		globalPlayer.addMediaForm.files[size+'|'+modified] = file;
+		previewFile(file);
+	});
+	console.log(globalPlayer.addMediaForm.files);
+}
+function removeFiles(ids) {
+	//ids is an array containing the 'id's of the files they want to remove, with the 'id's being the indexes of the files inside addMediaForm.files object list
+	ids.forEach(id=>{
+		delete globalPlayer.addMediaForm.files[id];
+	});
+	console.log(globalPlayer.addMediaForm.files);
+}
+function previewFile(file) {
+	var name = file.name;
+	var modified = file.lastModified;
+	var size = file.size;
+	var type = file.type;
+	var typeImage;
+	if (type.startsWith('audio')) typeImage = 'assets/audio.png';
+	else if (type.startsWith('video')) typeImage = 'assets/video.png';
+	var addMediaItem = make(['div',{class:'addMediaItem',id:'addMediaItem_'+size+'|'+modified},['div',{class:'addMediaArt'},['div',{class:'addMediaArtInner'},['img',{src:typeImage,alt:''}]]],['div',{class:'addMediaText'},['span',{class:'addMediaTitle'},name],['span',{class:'addMediaSize'},formatBytes(size)]]]);
+	var cancelElement = make(['span',{class:'cancel addMediaItemCancel','data-id':size+'|'+modified},'X']);
+	cancelElement.addEventListener('click',function() {
+		var id = this.getAttribute('data-id');
+		document.getElementById('addMediaItem_'+id).outerHTML = '';
+		removeFiles(['addMediaItem_'+id]);
+	});
+	addMediaItem.appendChild(cancelElement);
+
+	globalPlayer.addMediaForm.dropArea.appendChild(addMediaItem);
+}
+
+function initializeAddMediaForm(I) {
+	var f = {};
+
+	f.status = (I.status != null && typeof I.status === 'boolean') ? I.status : false;
+	f.open = (I.open) ? I.open : $('#openAddMediaForm');
+	f.close = (I.close) ? I.close : $('#closeAddMediaForm');
+	f.form = (I.form) ? I.form : $('#addMediaForm');
+	f.submit = (I.submit) ? I.submit : $('#addMediaFormSubmit');
+	f.dropArea = (I.dropArea) ? I.dropArea : document.getElementById('addMediaDropArea');
+	f.files = {};
+
+	/* Add Media Functions */
+	function preventDefaults (e) {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+	function highlight(e) {
+		f.dropArea.classList.add('highlight');
+	}
+	function unhighlight(e) {
+		f.dropArea.classList.remove('highlight');
+	}
+
+	/* Add Media Form-related functions */
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		f.dropArea.addEventListener(eventName, preventDefaults, false);
+	});
+	['dragenter', 'dragover'].forEach(eventName => {
+		f.dropArea.addEventListener(eventName, highlight, false);
+	});
+	['dragleave', 'drop'].forEach(eventName => {
+		f.dropArea.addEventListener(eventName, unhighlight, false);
+	});
+
+	return f;
+}
 
 
 $(document).ready(function() {
@@ -1189,6 +1368,10 @@ $(document).ready(function() {
 			iconEdit: null,
 			iconEditSet: -1
 		},
+		addMediaForm:initializeAddMediaForm({
+			openAdd:openAdd,
+			closeAdd:closeAdd
+		}),
 		background: document.getElementById('background'),
 		mediaContainer: $("#media_container"),
 		currentPlayer:null,
@@ -1389,6 +1572,13 @@ $(document).ready(function() {
 		$(this).removeClass("opened");
 	});
 
+	/* Add Media Form-related functions */
+	globalPlayer.addMediaForm.open.on('click',openAdd);
+	globalPlayer.addMediaForm.close.on('click',closeAdd);
+	globalPlayer.addMediaForm.dropArea.addEventListener('drop',handleDrop,false);
+	globalPlayer.addMediaForm.form.on('submit',newAddMedia);
+
+
 	/* Edit Form-related functions */
 	audio_player.optionsButton.on("click", function() {
 		if (!globalPlayer.editMediaForm.status) startEdit(globalPlayer.currentSong);
@@ -1461,7 +1651,7 @@ $(document).ready(function() {
 	$('#deleteSong').on("click", function() {	submitEdit(null, null, globalPlayer.editMediaForm.songId.val(), 1, true, true);	});
 
 	/* Add Media-related functions */
-	$("#addMedia").on("click", addMedia);
+	//$("#addMedia").on("click", addMedia);
 	$(document).on("click", ".addAlbumArt_button", function() {
 		startAlbumArtEdit( parseInt($(this).attr("data-id")) );	
 	});	
