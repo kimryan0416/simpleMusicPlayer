@@ -207,3 +207,14 @@ File Upload System Updated - now supports drag-and-drop
 	- If any files must be deleted from the list prior to upload, deleting files is possible
 	- When files are uploading, new ``loading.gif`` image indicates which files are being currently processed by the website
 	- Any files that cannot be uploaded are kept in the form's file list and highlighted in red, alongside an ``alert()`` message popping up; successful files are removed from the form's file list.
+
+###### Version 5.33
+1. Dynamic Lyrics Bug-Fixing
+	- Original bug: If a piece of media has dynamic lyrics, the player would highlight from the beginning through all lyric segments until it reaches the current lyric segment after adjustment of the time slider
+		- Occasionally, dynamic lyrics would loop until the end, preventing the proper lyric segment to be highlighted.
+		- No stopgap was made to prevent the ``ontimechange`` event from firing constantly, potentially affecting the calculations to decide the current lyric segment.
+	- Now, dynamic lyrics properly display the correct current lyric segment without highlighting all lyric segments before reaching the correct one.
+		- If the player is attempting to determine the correct lyric segment to highlight, a stopgap prevents the ``ontimechange`` effect from firing the lyric-finding process until it is complete
+2. All forms have been turned into objects that pseudo-inherent global functions
+	- 5 new functions each return an object list representing a form's inputs and necessary functions.
+	- This is an attempt to make the Simple Music Player take the form of a framework library instead of its own product.

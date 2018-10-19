@@ -330,7 +330,7 @@
 								<div class='container segmentContainer'>
 									<span class='item label'>Select Media to upload (or drag and drop into this window)</span>
 									<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
-									<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput' onchange='addFiles(this.files)'>
+									<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
 									<!--<input type="hidden" name="MAX_FILE_SIZE" value="104857600">-->
 								</div>
 								<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>

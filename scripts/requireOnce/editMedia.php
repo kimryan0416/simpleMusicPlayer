@@ -147,15 +147,15 @@
 			$new_art = filter_input( INPUT_POST, 'alternate_art', FILTER_VALIDATE_INT );
 
 			$title =  str_replace(array("&#39;", "&#34;"), array("'", "\""), $title);
-				$title = htmlentities(trim($title));
+				//$title = htmlentities(trim($title));
 			$artist =  str_replace(array("&#39;", "&#34;"), array("'", "\""), $artist);
-				$artist = htmlentities(trim($artist));
+				//$artist = htmlentities(trim($artist));
 			$album =  str_replace(array("&#39;", "&#34;"), array("'", "\""), $album);
-				$album = htmlentities(trim($album));
+				//$album = htmlentities(trim($album));
 			$album_artist =  str_replace(array("&#39;", "&#34;"), array("'", "\""), $album_artist);
-				$album_artist = htmlentities(trim($album_artist));
+				//$album_artist = htmlentities(trim($album_artist));
 			$composer =  str_replace(array("&#39;", "&#34;"), array("'", "\""), $composer);
-				$composer = htmlentities(trim($composer));
+				//$composer = htmlentities(trim($composer));
 			$simpleLyrics = '';
 			$dynamicLyrics = '';
 
