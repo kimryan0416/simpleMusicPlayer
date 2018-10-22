@@ -74,7 +74,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<title>SimpleMusicPlayer</title>
 		<link rel="stylesheet" type="text/css" href="styles/all.css">
-		<script src="scripts/jquery-3.1.1.min.js"></script>
+		<script src="scripts/jquery-3.3.1.min.js"></script>
 		<script src="https://www.youtube.com/iframe_api"></script>
 		<script src="scripts/script.js"></script>
 	</head>
@@ -188,7 +188,6 @@
 						</div>
 						<div class='item submitContainer'>
 							<input type='submit' class='item submitItem submit hover' name='video_input_submit' value='Add Video'>
-							<!--<span class='item inputError important' id='embedTotalError'>Error</span>-->
 						</div>
 					</form>
 					<form id="editMediaForm" name="edit_media_form" method="post">
@@ -331,27 +330,8 @@
 									<span class='item label'>Select Media to upload (or drag and drop into this window)</span>
 									<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
 									<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
-									<!--<input type="hidden" name="MAX_FILE_SIZE" value="104857600">-->
 								</div>
 								<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
-								<!--
-								<div class='container segmentContainer' id='editAlbumArtPreviewContainer'>
-									<div class='item preview'>
-										<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
-										<div class='container preview'>
-											<img class='item previewItem' id='editAlbumArtDisplay' src='assets/default_album_art.jpg' alt='Media Art'>
-											<label class='item overlay hover' for='edit_album_art_form_input' id='editAlbumArtOverlay'>Upload New Album Artwork</label>
-										</div>
-									</div>
-								</div>
-								<div class='container segmentContainer'>
-									<span class='item label'>Use Existing Artwork Instead:</span>
-									<div class='item preview'>
-										<div class='container alternatives' id='editAlbumArtAlternativesContainer'>
-										</div>
-									</div>
-								</div>
-							-->
 							</div>
 						</div>
 						<div class='item submitContainer'>
@@ -363,51 +343,27 @@
 		</div>
 		<div id='main'>
 			<div id="media_container">
-				<div id="video_container" class="closed">
+				<div id="video_container">
+					<div id="videoTitleAndArtist" class='playerTitleAndArtist'>
+						<div id="video_title_and_artist_inner_container">
+							<h1 id="videoTitle" class='playerTitle'></h1>
+							<span id="videoArtist" class='playerArtist'></span>
+						</div>
+					</div>
+					<div id="video_lyrics_container">
+						<div id="video_lyrics_inner_container"></div>
+					</div>
 					<div id="video_embed_container">
 						<div id="video_embed_inner_container">
 							<div id="video_embed"></div>
 							<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdate(this);">
 								Your browser does not support the audio element.
 							</video>
-							<div id="video_title_and_artist">
-								<div id="video_title_and_artist_inner_container">
-									<div id="video_title_container"><h1 id="video_title"></h1></div>
-									<div id="video_artist_container"><span id="video_artist"></span></div>
-								</div>
-							</div>
-							<div id="video_lyrics_container">
-								<div id="video_lyrics_inner_container"></div>
-							</div>
-							<div id="video_extras_container">
-								<div id="video_extras_inner_container">
-									<div id="video_time_container">
-										<span class="video_time" id="video_curTime"></span>
-										<input type="range" min="0" max="100" id="video_time_slider">
-										<span class="video_time" id="video_duration"></span>
-									</div>
-									<div id='video_extras_button_container'>
-										<img class="control" id='video_previous' src="assets/previous_white.png" alt="Previous">
-										<img class="control" id='video_backFive' src="assets/back_white.png" alt="-5sec">
-										<img class="control" id='video_play' src="assets/start_white.png" alt="Play">
-										<img class="control hiddenControl" id='video_pause' src="assets/pause_white.png" alt="Pause">
-										<img class="control" id='video_forwardFive' src="assets/forward_white.png" alt="+5sec">
-										<img class="control" id='video_next' src="assets/next_white.png" alt="Next">
-										<div class='control' id="video_volume_container">
-											<input type="range" min="0" max="100" value="100" id="video_volume">
-										</div>
-										<img class="control" id="video_repeat" src="assets/repeat_1_white.png" alt="Video Repeat">
-										<img class="control" id="video_shuffle" src="assets/shuffle_0_white.png" alt="Video Shuffle">
-										<img class="control" id="video_options" src="assets/options.png" alt="Edit Media Info">
-										<span class="control active" id="video_lyrics_autoscroll">Lyrics</span>
-									</div>
-								</div>
-							</div>
 						</div>
 					</div>
 				</div>
 				<div id="player_container">
-					<audio id="audio" src="" preload="none" ontimeupdate="onTimeUpdate(this);">
+					<audio id="audio" src="" preload='none' ontimeupdate="onTimeUpdate(this);">
 						Your browser does not support the audio element.
 					</audio>
 					<div id="player_main_div">
@@ -423,36 +379,37 @@
 								</p>
 							</div>
 						</div>
-						<div id="player_info">
-							<div id="player_title_and_artist">
-								<h1 id="player_title">Choose a Song</h1>
-								<span id="player_artist">Artist</span>
+					</div>
+				</div>
+				<div id="playerInfo">
+					<div id='audioTitleAndArtist' class='playerTitleAndArtist'>
+						<h1 id="audioTitle" class='playerTitle'>Choose a Song</h1>
+						<span id="audioArtist" class='playerArtist'>Artist</span>
+					</div>
+					<div id="time_container">
+						<input type="range" min="0" max="0" id="time_slider">
+						<span class='playerTimes'>
+							<span class="player_time" id="curTime">--:--</span> / <span  class="player_time" id="duration">--:--</span>
+						</span>
+					</div>
+					<div id="controls_container">
+						<div class='extrasButtons'>
+							<img class="dropdownPlaceholder control" id='playerOptions' src="assets/transparent.png" alt="Settings">
+							<div id="volume_container" class='control'>
+								<input type="range" min="0" max="100" value="100" id="volume" />
+								<img id="volume_image" src="assets/transparent.png" alt="Volume">
 							</div>
-							<div id="time_container">
-								<span class="player_time" id="curTime">--:--</span>
-								<input type="range" min="0" max="0" id="time_slider">
-								<span  class="player_time" id="duration">--:--</span>
-							</div>
-							<div id="controls_container">
-								<img class="control" id="previous" src="assets/previous.png" alt="Previous">
-								<img class="control" id="backFive" src="assets/back.png" alt="-5sec">
-								<img class="control" id="play" src="assets/start.png" alt="Play">
-								<img class="control hiddenControl" id="pause" src="assets/pause.png" alt="Pause">
-								<img class="control" id="forwardFive" src="assets/forward.png" alt="+5sec">
-								<img class="control" id="next" src="assets/next.png" alt="Next">
-							</div>
-							<div id='extras_container'>
-								<div id="volume_container" class='control'>
-									<input type="range" min="0" max="100" value="100" id="volume">
-									<div id="volume_image_container">
-										<img id="volume_image" src="assets/mute.png" alt="Volume">
-									</div>
-								</div>
-								<img class="control" id="repeat" src="assets/repeat_1.png" alt="Repeat">
-								<img class="control" id="shuffle" src="assets/shuffle_0.png" alt="Shuffle">
-								<img class="control" id="options" src="assets/options.png" alt="Edit Media Info">
-								<span class="control active" id="player_lyrics_autoscroll">Autoscroll</span>
-							</div>
+							<img class="control one" id="repeat" src="assets/transparent.png" alt="Repeat">
+							<img class="control" id="shuffle" src="assets/transparent.png" alt="Shuffle">
+							<img class="control" id="options" src="assets/transparent.png" alt="Edit Media Info">
+							<span class="control active" id="player_lyrics_autoscroll">Autoscroll</span>
+						</div>
+						<div class='controlsButtons'>
+							<img class="control hideButton" id="previous" src="assets/transparent.png" alt="Previous">
+							<img class="control hideButton" id="backFive" src="assets/transparent.png" alt="-5sec">
+							<img class="control" id="playpause" src="assets/transparent.png" alt="Play">
+							<img class="control hideButton" id="forwardFive" src="assets/transparent.png" alt="+5sec">
+							<img class="control hideButton" id="next" src="assets/transparent.png" alt="Next">
 						</div>
 					</div>
 				</div>

@@ -67,22 +67,25 @@
 
 		if ($row['medium']==0) {
 			if ($row['dynamicLyricsToggle'] == 1) {
-				$lyricsResults = printDynamicLyrics($row['dynamicLyrics']);
+				$lyricsResults = printDynamicLyrics($row['dynamicLyrics'],$row['medium']);
 				$row['lyrics'] = $lyricsResults['lyrics'];
 				$row['dynamic_lyrics_starting_times'] = $lyricsResults['startTimes'];
 			} else {
-				$lyrics = '<span class="lyric_segment lyric_segment_-1 noText"></span>';
-				$lyrics_array = explode("\r\n", $row["simpleLyrics"]);
-				foreach ($lyrics_array as $lyric_segment) {	
-					$lyrics .= '<span class="lyric_segment lyric_segment_-1 noText">' . $lyric_segment . '</span>';
+				if (strlen(trim($row['simpleLyrics'])) || $row['simpleLyrics'] == null) $row['lyrics'] = null;
+				else {
+					$lyrics = '<span class="lyric_segment lyric_segment_-1 noText"></span>';
+					$lyrics_array = explode("\r\n", $row["simpleLyrics"]);
+					foreach ($lyrics_array as $lyric_segment) {	
+						$lyrics .= '<span class="lyric_segment lyric_segment_-1 noText">' . $lyric_segment . '</span>';
+					}
+					$lyrics .= '<span class="lyric_segment lyric_segment_-1 noText"></span>';
+					$row['lyrics'] = '<span class="lyric_segment lyric_segment_0 noText"></span>' . $lyrics . '<span class="lyric_segment lyric_segment_0 noText"></span>';
 				}
-				$lyrics .= '<span class="lyric_segment lyric_segment_-1 noText"></span>';
-				$row['lyrics'] = '<span class="lyric_segment lyric_segment_0 noText"></span>' . $lyrics . '<span class="lyric_segment lyric_segment_0 noText"></span>';
 				$row['dynamic_lyrics_starting_times'] = null;
 			}
-		} else if ($row['medium'] == 1) {
+		} else {
 			if ($row['dynamicLyricsToggle'] == 1) {
-				$lyricsResults = printDynamicLyrics($row['dynamicLyrics']);
+				$lyricsResults = printDynamicLyrics($row['dynamicLyrics'],$row['medium']);
 				$row['lyrics'] = $lyricsResults['lyrics'];
 				$row['dynamic_lyrics_starting_times'] = $lyricsResults['startTimes'];
 			} else {

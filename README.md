@@ -171,15 +171,15 @@ This new version mostly focuses on improvements made to the back-end of the musi
 ###### Version 5.31
 1. PHP updates:
 	- Changed time format of dynamic lyric storage
-		- Originally, times for each dynamic lyric segment were stored as a MM:SS._ _ _ format. While this made it easier for the text to be readable when editing dynamic lyrics, it required a lot of micromanagement to convert them into pure millisecond format, which the audio and video players use.
-		- Now it is flipped - times are stored as pure milliseconds and are converted into the MM:SS._ _ _ format only when editing dynamic lyrics.
+		- **Originally:** Times for each dynamic lyric segment were stored as a MM:SS._ _ _ format. While this made it easier for the text to be readable when editing dynamic lyrics, it required a lot of micromanagement to convert them into pure millisecond format, which the audio and video players use.
+		- **Now:** It is flipped - times are stored as pure milliseconds and are converted into the MM:SS._ _ _ format only when editing dynamic lyrics.
 		- Functions that convert pure milliseconds to MM:SS format now allow for milliseconds to be added at the end, fully returning a string formatted as MM:SS._ _ _
 		- Function that prints out dynamic lyrics into a player-friendly HTML format no longer need to convert from MM:SS._ _ _ format
 	- Images from audio files with artwork embedded now extract artwork when adding media files into database initially
-		- Previously, all artwork for art was not extracted from audio files when adding them into the database - they defaulted to what was essentially NULL
+		- **Originally:** All artwork for art was not extracted from audio files when adding them into the database - they defaulted to what was essentially NULL
 			- When the song was clicked for the first time, an AJAX call was made to extract the artwork from the audio file, then that artwork was saved into the database
 			- this functionality barely even worked anyways... most of the time, the PHP script would return a base64 encoded string with no data
-		- Now, artwork can be properly extracted from the audio file at the moment of insertion into the database, thereby removing the need to extract artwork when songs are played for the first time
+		- **Now:** Artwork can be properly extracted from the audio file at the moment of insertion into the database, thereby removing the need to extract artwork when songs are played for the first time
 	- Fixed a bug where the PHP function "mkdir()" was accidentally typed as "makeDir()"
 2. CSS updates:
 	- When the audio player selects a lyric segment to highlight, the text increases in size and top/bottom padding instead of left-padding (which looked awkward since the lyrics were text-aligned to the center...)
@@ -218,3 +218,26 @@ File Upload System Updated - now supports drag-and-drop
 2. All forms have been turned into objects that pseudo-inherent global functions
 	- 5 new functions each return an object list representing a form's inputs and necessary functions.
 	- This is an attempt to make the Simple Music Player take the form of a framework library instead of its own product.
+
+###### Version 5.34
+1. JavaScript Debugging and Removal of Video Player-specific Controls
+	- **Originally:** The audio player and the video player were completely different HTML elements, each having different event handlers to their controls that basically did the same thing.
+		- **Now:** All video player controls have been removed - audio player controls now work globally among both the audio and video player.
+	- **Originally:** Event handlers were appended to elements via jQuery, and most HTML element references were done via jQuery
+		- **Now:** most HTML references and event handler appending are now done via pure JavaScript - this is in an attempt to remove dependency on jQuery, though this is a work-in-progress.
+	- All forms now are initiated via functions
+	- Several keyboard keys initiate certain function calls, such as:
+		- **M:** mute/unmute the player
+		- **Backspace:** the previous media that was played
+		- **Enter:** the next media that should be played
+		- **Left Arrow:** Back 5 seconds
+		- **Right Arrow:** Forward 5 seconds
+		- **Space:** Pause/play the current media
+
+3. Styling Changes:
+	- Player controls now utilize image sprites ([https://www.w3schools.com/css/css_image_sprites.asp](https://www.w3schools.com/css/css_image_sprites.asp)), reducing the number of assets that need to be loaded into the player per page reload.
+	- Player controls now are designed to fit better across a variety of backgrounds, as well as the black background of the video player.
+	- Current time of the current media being played has been moved next to the duration on the right
+	- Video player still features its own title and artist text at the top of the page (whereas the audio player's title and artist text is still right above the time slider) - the video player's title and artist text are colored white
+	- If an audio media is played and no lyrics are stored, then the lyrics are not present on-screen, instead the image art takes center stage until another piece of media with lyrics is selected
+	- When a video media is being played, the controls and title/artist disappear after 3 seconds of inactivity to better let the user view the video.

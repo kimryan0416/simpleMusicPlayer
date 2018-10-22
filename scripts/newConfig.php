@@ -3,6 +3,10 @@
 	ini_set('post_max_size','96M');
 	ini_set('upload_max_filesize','96M');
 
+	$headers = getallheaders();
+	if ($headers["Content-Type"] == "application/json")
+    	$_POST = json_decode(file_get_contents("php://input"), true) ?: [];
+
 	/* -- ----------------------------- */
 	/* DB-related Functions 		 	*/
 	/* -- ----------------------------- */
@@ -116,7 +120,7 @@
 		if ( (is_array($arr) && count($arr)>0) || ( is_object($arr) && !empty((array)$arr) ) ) $returnArr['data'] = $arr;
 		return closePHP($returnArr);
 	}
-	function printDynamicLyrics($dynamicLyrics) {
+	function printDynamicLyrics($dynamicLyrics,$medium=0) {
 		$lyricsArray = explode('||realNEWLINE||',$dynamicLyrics);
 		$lyrics='';
 		$lyricsStartingTimes=array();
@@ -126,7 +130,7 @@
 			$startTime='';
 			$noText='';
 			if (preg_match("/\[([0-9]*)\]({.*?})?/",$segmentArray[0],$segmentTime)){
-				if (!isset($segmentTime[2])||$segmentTime[2]=='') $segmentStyle='black'; 
+				if (!isset($segmentTime[2])||$segmentTime[2]=='') $segmentStyle = ($medium == 0) ? 'black' : 'white'; 
 				else {
 					$segmentStyle=str_replace(array('{','}'),array('',''),$segmentTime[2]);
 					if ($segmentStyle=='yellow') $segmentStyle='rgb(254,223,0)';

@@ -1,5 +1,6 @@
 <?php
 	require_once('newConfig.php');
+	
 	$db = ( $db == null ) ? initSqliteDB('database.sqlite', 'init.sql') : $db;
 	if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
@@ -9,8 +10,8 @@
 		return;
 	}
 
-	$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
-	if (!isset($id)) {
+	$id = filter_var($_POST['id'], FILTER_VALIDATE_INT);
+	if (!$id) {
 		print(returnError($db,'Proper ID not received'));
 		return;
 	}
@@ -88,29 +89,6 @@
 				// $lyrics_segment_time[1] - [2] = time in minutes and seconds
 				// $lyrics_segment_time[3] = .nnn
 				// $lyrics_segment_time[4] = nnn
-
-				// We check if the time has 0 or 3 digits in the nnn section
-				//if ( !isset($lyrics_segment_time[4]) || $lyrics_segment_time[4] == '' ) $lyrics_segment_time[4] = '0';
-						
-				//$lyrics_time = $lyrics_segment_time[1] . ':' . $lyrics_segment_time[2] . '.' . $lyrics_segment_time[4];
-			//}
-			//else $lyrics_time = '';		// Fill in the beginning with [59:59]
-			//$lyrics_array_to_print[$index]['time'] = $lyrics_time;
-
-			// Now, we extract styling
-			/*
-			$lyrics_style = '';
-			if ( preg_match("/{(.*?)}/", $lyric_segment_parts[0], $lyrics_segment_styling) ) {
-				// $lyrics_segment_time[0] = styling, including brackets
-				// $lyrics_segment_time[1] = styling, not including brackets
-
-				// if we got here, then there is styling
-				$lyrics_style = $lyrics_segment_styling[1];
-			} 
-			else $lyrics_style = '';	// Fill in the beginning with [59:59]
-
-			$lyrics_array_to_print[$index]['style'] = $lyrics_style;
-			*/
 			$lyrics_array_to_print[$index]['style'] = ( preg_match("/{(.*?)}/", $lyric_segment_parts[0], $lyrics_segment_styling) ) ? $lyrics_segment_styling[1] : '';
 		}
 
@@ -138,14 +116,6 @@
 			// $lyrics_segment_time[1] - [2] = time in minutes and seconds
 			// $lyrics_segment_time[3] = .nnn
 			// $lyrics_segment_time[4] = nnn
-			/*
-			$lyrics_array_to_print[$index]['time'] = '';
-			if ( preg_match("/\[([0-5][0-9]):([0-5][0-9])(.([0-9]{0,3}))?\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) {
-				// We check if the time has 0 or 3 digits in the nnn section
-				$lyrics_segment_time[4] = ( !isset($lyrics_segment_time[4]) || $lyrics_segment_time[4] == '' ) ?  '000' : $lyrics_segment_time[4];
-				$lyrics_array_to_print[$index]['time'] = $lyrics_segment_time[1] . ':' . $lyrics_segment_time[2] . '.' . $lyrics_segment_time[4];
-			}
-			*/
 			$lyrics_array_to_print[$index]['time'] = ( preg_match("/\[([0-9]+)\]/", $lyric_segment_parts[0], $lyrics_segment_time) ) ? revertFromMilliseconds((int)$lyrics_segment_time[1]) : '';
 
 			// Now, we extract styling
@@ -163,4 +133,5 @@
 
 	print(returnSuccess($db,'Success',array('info'=>$row)));
 	return;
+
 ?>

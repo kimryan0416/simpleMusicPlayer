@@ -43,7 +43,7 @@
 		}
 
 		$upload_dir = 'art/';
-		$file = $_FILES[count($_FILES)-1];
+		$file = $_FILES['file'];
 
 		$ext = pathinfo(basename($file['name']), PATHINFO_EXTENSION);	// grab the extension of the file we are using
 		$newArtId = null;
