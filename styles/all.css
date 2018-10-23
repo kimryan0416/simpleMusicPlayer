@@ -60,7 +60,7 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 	.cancel:hover {	cursor:pointer;	box-shadow: 0px 0px 2px 2px rgba(0,0,0,0.5);	}
 .important {	color:red;	}
 .inner {	position:relative;	display: block;	width:100%;	height:100%;	box-sizing: border-box;	}
-.toggle {	position:absolute;	z-index: 2;	top:10px;	right:-90px;	display:block;	width:auto;	height:25px;	line-height: 15px;	box-sizing: border-box;	padding-top:5px;	padding-bottom:5px;	padding-left:10px;	padding-right:10px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.3);	border-radius: 10px;	background-color:white;	color:black;	font-size:12px;	-webkit-transition: font-size 200ms linear;	-ms-transition: font-size 200ms linear;	transition: font-size 200ms linear;	}
+.toggle {	position:absolute;	z-index: 2;	top:0;	right:-80px;	display:block;	width:auto;	height:30px;	line-height: 20px;	box-sizing: border-box;	padding-top:5px;	padding-bottom:5px;	padding-left:10px;	padding-right:10px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.3);	border-radius: 30px;	background-color:rgb(70,70,70);	color:rgb(183,183,183);	font-size:12px;	-webkit-transition: font-size 200ms linear;	-ms-transition: font-size 200ms linear;	transition: font-size 200ms linear;	}
 	.toggle:hover {	cursor:pointer;	font-size:13px;	}
 .dropdown {		position: relative;	z-index: 3;	}
 	.dropdown .dropdownPlaceholder {	display:block;	width:100%;	height:100%;	border:1px solid rgb(230,230,230);	font-size: 12px;	box-sizing: border-box;	}
@@ -79,13 +79,14 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 .content {	height:100%;	box-sizing: border-box;	}
 #left {	position:absolute;	z-index: 2;	top:0;	left:0;	display:block;	height:100%;	width: 400px;	font-size:12px;	-webkit-transition: left 200ms ease-in;	-ms-transition: left 200ms ease-in;	transition: left 200ms ease-in;	}
 	#left.closed {	left:-400px;	}
-	#leftHeader {	position:absolute;	z-index: 5;	top:10px;	display:block;	height:50px;	border-bottom:1px solid rgb(230,230,230);	background-color:white;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	width:90%;	left:0;	right:0;	margin:auto;	height:auto;	padding:10px;	box-sizing: border-box;	border-radius: 30px;	}
+	#leftHeader {	position:absolute;	z-index: 5;	top:10px;	display:block;	height:50px;	background-color:rgb(70,70,70);	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	width:90%;	left:0;	right:0;	margin:auto;	height:auto;	padding:10px;	box-sizing: border-box;	border-radius: 30px;	}
+	#innerLeftHeader {	position:relative;	width:100%;	height:100%;	box-sizing: border-box;	padding-right:90px;	}
 	#leftHeader .dropdown {	display:inline-block;	vertical-align: middle;	height:30px;	}
 		#leftHeader .dropdown.settings {	width:30px;	}
-			#leftHeader .dropdown.settings .dropdownPlaceholder {	padding:5px;	box-sizing: border-box;	border-radius: 15px;	}
+			#leftHeader .dropdown.settings .dropdownPlaceholder {	padding:5px;	box-sizing: border-box;	border-radius: 15px;	background-color:white;	}
 				#leftHeader .dropdown.settings .dropdownItems {	display:block;	width:110px;	}
 				#leftHeader .dropdown.settings .dropdownContents .dropdownItems .dropdownItem:hover {	cursor:pointer;	background-color:rgb(240,240,240);	text-decoration: underline;	}
-		#leftHeader .dropdown.search {	width:30px;	font-size: 0;	background-color:white;	-webkit-transition: width 200ms ease-in;	-ms-transition: width 200ms ease-in;	transition: width 200ms ease-in;	}
+		#leftHeader .dropdown.search {	width:30px;	font-size: 0;	background-color:rgb(70,70,70);	-webkit-transition: width 200ms ease-in;	-ms-transition: width 200ms ease-in;	transition: width 200ms ease-in;	}
 			#leftHeader .dropdown.search:hover {	width:200px;	}
 			#leftHeader .dropdown.search .dropdownPlaceholder {	border-radius: 15px;	}
 				#leftHeader .dropdown.search:hover .dropdownPlaceholder {	background-color:white;	}
@@ -100,11 +101,11 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 							#leftHeader .dropdown.search .dropdownItems .dropdownItem .searchAlbum .searchSong .searchSongText .searchSongTitle {	display:block;	width:138px;	height:15px;	font-weight: bold;	overflow:hidden;	text-overflow: ellipsis;	white-space: nowrap;	}
 							#leftHeader .dropdown.search .dropdownItems .dropdownItem .searchAlbum .searchSong .searchSongText .searchSongArtist {	display:block;	width:138px;	height:15px;	font-style:italic;	overflow:hidden;	text-overflow: ellipsis;	white-space: nowrap;	}
 	.content.left {		padding-top:60px;	overflow-y:scroll;	padding-left:5%;	padding-right:5%;	padding-bottom:60px;	}
-		.item.albumArtist {	width:90%;	padding:20px;	margin-top:30px;	margin-bottom:30px;	background-color:white;	border-radius: 30px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
-		.container.album {	width:90%;	padding:20px;	margin-bottom:30px;	background-color:rgba(255,255,255,0.2);	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	background-color:white;	}
+		.item.albumArtist {	width:90%;	padding:20px;	margin-top:30px;	margin-bottom:30px;	background-color:rgb(70,70,70);	color:white;	border-radius: 30px;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
+		.container.album {	width:90%;	padding:20px;	margin-bottom:30px;	background-color:rgba(255,255,255,0.5);	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
 		.item.album {	border-bottom:1px solid rgb(200,200,200);	margin-bottom:0;	}
 		.item.album h2{	margin-top:10px;	margin-bottom: 10px;	}
-		.container.albumArt {	max-width: 200px;	max-height: 200px;	margin:auto;	overflow:hidden;	}
+		.container.albumArt {	max-width: 200px;	max-height: 200px;	margin:auto;	overflow:hidden;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
 			.item.albumArt {	max-height: 100%;	max-width: 100%;	}
 			.item.addAlbumArt_button {	position:absolute;	bottom:-100px;	left:0;	right:0;	width:80%;	padding:10px;	background-color: rgba(150,150,150,0.8);	color:white;	border-radius: 20px;	-webkit-transition: bottom 200ms ease-in;	-ms-transition: bottom 200ms ease-in;	transition: bottom 200ms ease-in;	}
 				.container.albumArt .addAlbumArt_button {	cursor:pointer;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	}
@@ -132,9 +133,9 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 				#addMediaDropArea .addMediaItem .addMediaText .addMediaTitle {	height:	20px;	line-height:20px;	margin-top:5px;	font-weight:bold;	font-size:1.2em;	}
 				#addMediaDropArea .addMediaItem .addMediaText .addMediaSize {	height:10px;	line-height: 10px;	margin-bottom:5px;	font-style:italic;	}
 	
-	.container.editLyricsContainer {	padding-top:100px;	margin-bottom:0;	padding-bottom:0;	}
+	.container.editLyricsContainer {	margin-bottom:0;	padding-bottom:0;	}
 	.item.editLyrics {	width:100%;	font-size:10px;	}
-		.item.editLyrics.header {	position:absolute;	top:0;	left:0;	height:100px;	}
+		.item.editLyrics.header {	position:relative;	left:0;	height:100px;	}
 	.container.editLyrics {	display:none;	height:400px;	border:1px solid rgba(230,230,230);	padding:20px;	overflow-y:scroll;	}
 		.container.editLyrics.selected {	display:block;	}
 	.item.editLyricsLabel {	width:100px;	height:30px;	line-height: 30px;	}
@@ -192,17 +193,7 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 #video_embed_container {	display:block;		position:absolute;	box-sizing: border-box;	width:100%;	padding-left:50px;	padding-right:50px; 	height: auto;		left:0;		right:0; 	top:50%;	transform: translateY(-50%);		margin-left:auto;		margin-right:auto;		}
 #video_embed_inner_container {	display:block;	position:relative;	width:100%;	height:0%;	padding-bottom:51%;	}
 #video_embed, #localVideo {	position:absolute;	left:0;	top:0;	width:100%;	height:100%;	z-index: 4;}
-#videoTitleAndArtist {
-	display:none;
-	position:absolute;
-	z-index: 5;
-	top:0;
-	left:0;
-	box-sizing: border-box;
-	padding:50px;
-	color:white;
-	text-shadow: 0px 0px 3px rgb(0,0,0);
-}
+#videoTitleAndArtist {	display:none;	position:absolute;	z-index: 5;	top:0;	left:0;	box-sizing: border-box;	padding:50px;	color:white;	text-shadow: 0px 0px 3px rgb(0,0,0);	}
 #video_lyrics_container {	display:block;	position:absolute;	z-index: 5;		bottom:150px;	left:0;	right:0;	height:45px;	width:100%;	padding-left:50px;	padding-right:50px;	box-sizing: border-box;	color:white;	}
 #video_lyrics_inner_container	{	display:block;	position:relative;	width:100%;	height:100%;	color:white;	}
 #video_lyrics_container .lyric_segment {	display:none;	position:absolute;	width:100%;		text-align: center;		height:auto;	max-height: 50px;	top:50%;	transform:translateY(-50%);	left:0;	right:0;	margin-left:auto;	margin-right:auto;		font-size:20px;	font-weight: bold;	text-shadow: 0px 0px 3px rgb(0,0,0);	}

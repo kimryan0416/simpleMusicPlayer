@@ -2,7 +2,6 @@
 	require_once('scripts/newConfig.php');
 	// open connection to database
 	if (!$db = initSqliteDB('scripts/database.sqlite', 'scripts/init.sql') ) die('ERROR WITH DATABASE CONNECTION');
-	if ( !file_exists('upload_directory/') && !mkdir('upload_directory/') ) die("ERROR SETTING UP \"upload_directory/\"");
 	if ( !file_exists('media/') && !mkdir('media/') ) die ("ERROR SETTING UP \"media/\"");
 	if ( !file_exists('art/') && !mkdir('art/') ) die("ERROR SETTING UP \"art\"");
 	/*
@@ -82,25 +81,27 @@
 		<canvas id='background'></canvas>
 		<div id="left">
 			<div class='inner'>
-				<span class='toggle left' id='toggleLeft'>Toggle List</span>
 				<div id='leftHeader'>
-					<div class='dropdown settings'>
-						<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">
-						<div class="dropdownContents">
-							<div class='dropdownArrow'></div>
-							<div class='dropdownItems'>
-								<!--<span id="addMedia" class="dropdownItem settings">Add Song</span>-->
-								<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
-								<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+					<div id='innerLeftHeader'>
+						<span class='toggle left' id='toggleLeft'><<</span>
+						<div class='dropdown settings'>
+							<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">
+							<div class="dropdownContents">
+								<div class='dropdownArrow'></div>
+								<div class='dropdownItems'>
+									<!--<span id="addMedia" class="dropdownItem settings">Add Song</span>-->
+									<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
+									<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+								</div>
 							</div>
 						</div>
-					</div>
-					<div class='dropdown search'>
-						<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>
-						<input class='dropdownPlaceholder input' type="text" id="searchInput" placeholder="Type Here">
-						<div class='dropdownContents'>
-							<div class='dropdownArrow'></div>
-							<div class='dropdownItems' id='searchResults'></div>
+						<div class='dropdown search'>
+							<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>
+							<input class='dropdownPlaceholder input' type="text" id="searchInput" placeholder="Type Here">
+							<div class='dropdownContents'>
+								<div class='dropdownArrow'></div>
+								<div class='dropdownItems' id='searchResults'></div>
+							</div>
 						</div>
 					</div>
 				</div>

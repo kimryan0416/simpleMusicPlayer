@@ -9,13 +9,8 @@
 		return;
 	}
 
-	$online = filter_var($_POST['online'], FILTER_VALIDATE_BOOLEAN);
-	if ( !isset($online) ) {
-		print(returnError($db,'Proper ONLINE not received'));
-		return;
-	}
-
-	$where = (!$online) ? ' AND T5.medium != 1 ' : ' ';
+	//print(returnError($db,'getAll - testing before query',array('GET'=>$_GET,'POST'=>$_POST)));
+	//return;
 
 	$query = 'SELECT 
 		T1.album_artist_id AS albumArtistID,
@@ -44,9 +39,8 @@
 		LEFT JOIN art AS T7 ON T6.art_id = T7.id
 		LEFT JOIN albumToart AS T8 ON T1.album_id = T8.album_id
 		LEFT JOIN art AS T9 ON T8.art_id = T9.id
-		WHERE (T5.title IS NOT NULL OR T5.url IS NOT NULL)'
-		.$where
-		.'ORDER BY albumArtistName, albumName, title';
+		WHERE (T5.title IS NOT NULL OR T5.url IS NOT NULL) 
+		ORDER BY albumArtistName, albumName, title';
 
 	try {
 		$music = execQuery($db, $query)->fetchAll();
@@ -56,13 +50,16 @@
 		return;
 	}
 
+	//print(returnError($db,'getAll - testing after query',array('music'=>$music)));
+	//return;
+
+	$embedIDs = array();
+
 	foreach ($music as $row) {
 		$albumArtistName = $row['albumArtistName'] != null ? $row['albumArtistName'] : 'Unknown Album Artist';
-		$content[$albumArtistName] = ($content[$albumArtistName] == null) ? array('name'=>$albumArtistName,'albums'=>array()) : $content[$albumArtistName];
 		$albumName = $row['albumName'] != null ? $row['albumName'] : 'Unknown Album';
 		$albumArt = $row['albumArt'] != null ? $row['albumArt'] : 'assets/default_album_art.jpg';
 		$albumID = $row['albumID'];
-		$content[$albumArtistName]['albums'][$albumName] = ($content[$albumArtistName]['albums'][$albumName]==null) ? array('art'=>$albumArt,'id'=>$albumID,'songs'=>array()) : $content[$albumArtistName]['albums'][$albumName];
 		$row['url'] = myUrlDecode($row['url']);
 
 		if ($row['medium']==0) {
@@ -71,10 +68,10 @@
 				$row['lyrics'] = $lyricsResults['lyrics'];
 				$row['dynamic_lyrics_starting_times'] = $lyricsResults['startTimes'];
 			} else {
-				if (strlen(trim($row['simpleLyrics'])) || $row['simpleLyrics'] == null) $row['lyrics'] = null;
+				if (strlen(trim($row['simpleLyrics'])) == 0 || $row['simpleLyrics'] == null) $row['lyrics'] = null;
 				else {
 					$lyrics = '<span class="lyric_segment lyric_segment_-1 noText"></span>';
-					$lyrics_array = explode("\r\n", $row["simpleLyrics"]);
+					$lyrics_array = explode("\r\n", $row['simpleLyrics']);
 					foreach ($lyrics_array as $lyric_segment) {	
 						$lyrics .= '<span class="lyric_segment lyric_segment_-1 noText">' . $lyric_segment . '</span>';
 					}
@@ -92,35 +89,31 @@
 				$row['lyrics'] = '';
 				$row['dynamic_lyrics_starting_times'] = null;
 			}
+			if ($row['medium'] == 1) array_push($embedIDs, $row['id']);
 		}
 		$row['startPadding'] = ($row['startPadding']!=null) ? $row['startPadding'] : 0;
 		$row['endPadding'] = ($row['endPadding'] != null) ? $row['endPadding'] :  convertToMilliseconds($row['duration']);
-		$content[$albumArtistName]['albums'][$albumName]['songs'][] = array(
-			'id' => $row['id'],
-			'title' => $row['title'],
-			'artist' => $row['artist'],
-			'medium' => $row['medium'],
-			'url' => $row['url']
-		);
 		$raw[$row['id']] = array(
 			'id' => $row['id'],
 			'title' => $row['title'],
 			'artist' => $row['artist'],
-			'album' => $row['albumName'],
-			'album_id' => $row['albumID'],
+			'album' => $albumName,
+			'album_id' => $albumID,
 			'medium' => $row['medium'],
 			'url' => $row['url'],
 			'duration' => $row['duration'],
 			'lyrics' => $row['lyrics'],
 			'dynamic_lyrics_toggle' => $row['dynamicLyricsToggle'],
 			'dynamic_lyrics_starting_times' => $row['dynamic_lyrics_starting_times'],
-			'album_artist' => $row['albumArtistName'],
+			'album_artist' => $albumArtistName,
 			'album_artist_id' => $row['albumArtistID'],
 			'art' => $row['art'],
+			'albumArt' => $albumArt,
 			'start_padding' => $row['startPadding'],
 			'end_padding' => $row['endPadding']
 		);
 	}
-	print(returnSuccess($db,'Success getting all media',array('sorted_data'=>$content,'raw_data'=>$raw)));
+	print(returnSuccess($db,'Success getting all media',array('list'=>$raw,'embedIDs'=>$embedIDs)));
 	return;
+	
 ?>

@@ -3,9 +3,9 @@
 	ini_set('post_max_size','96M');
 	ini_set('upload_max_filesize','96M');
 
-	$headers = getallheaders();
-	if ($headers["Content-Type"] == "application/json")
-    	$_POST = json_decode(file_get_contents("php://input"), true) ?: [];
+	//$headers = getallheaders();
+	//if ($headers["Content-Type"] == "application/json")
+    //	$_POST = json_decode(file_get_contents("php://input"), true) ?: [];
 
 	/* -- ----------------------------- */
 	/* DB-related Functions 		 	*/
@@ -47,7 +47,6 @@
 	}
 	function cleanArtTable($db=null) {
 		$thisDB = (!$db) ? initSqliteDB('database.sqlite','init.sql') : $db;
-		//$thisDB->beginTransaction();
 		$query = 'SELECT T1.id AS id FROM art AS T1 
 			LEFT JOIN songTOart AS T2 ON T1.id = T2.art_id
 			LEFT JOIN albumToart AS T3 ON T1.id = T3.art_id
@@ -60,14 +59,9 @@
 			$deleteString = join(',',$artIdsToDelete);
 			$deleteQuery = 'DELETE FROM art WHERE id IN ('.$deleteString.')';
 			execQuery($thisDB,$deleteQuery);
-			//$results = execQuery($thisDB, $query)->fetchAll();
-			//var_dump($deleteString);
-			//var_dump($results);
 		}
-		//$thisDB->rollback();
 		return;
 	}
-	//cleanArtTable();
 
 	/* -- ----------------------------- */
 	/* Encoding and Decoding Content 	*/

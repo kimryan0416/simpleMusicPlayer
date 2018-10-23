@@ -233,7 +233,6 @@ File Upload System Updated - now supports drag-and-drop
 		- **Left Arrow:** Back 5 seconds
 		- **Right Arrow:** Forward 5 seconds
 		- **Space:** Pause/play the current media
-
 3. Styling Changes:
 	- Player controls now utilize image sprites ([https://www.w3schools.com/css/css_image_sprites.asp](https://www.w3schools.com/css/css_image_sprites.asp)), reducing the number of assets that need to be loaded into the player per page reload.
 	- Player controls now are designed to fit better across a variety of backgrounds, as well as the black background of the video player.
@@ -241,3 +240,28 @@ File Upload System Updated - now supports drag-and-drop
 	- Video player still features its own title and artist text at the top of the page (whereas the audio player's title and artist text is still right above the time slider) - the video player's title and artist text are colored white
 	- If an audio media is played and no lyrics are stored, then the lyrics are not present on-screen, instead the image art takes center stage until another piece of media with lyrics is selected
 	- When a video media is being played, the controls and title/artist disappear after 3 seconds of inactivity to better let the user view the video.
+###### Version 5.34
+1. Bug Fixes:
+	- When editing a piece of media that is 1) currently playing, and 2) is a video:
+		1. Updates to the ``Title`` and ``Artist`` now appropriately update after submitting an edit
+			- Problem occurred due to forgetting to update alongside Version 5.33 custom JS function ``UpdateCurrent()``, which updates a piece of media if it was edited while being played.
+		2. Lyrics no longer default to ``black`` font color
+			- problem occurred due to forgetting a parameter when calling the custom PHP function ``printDynamicLyrics`` which determined if the lyrics should default to black or white font color depending on current media type
+	- When uploading new media, default lyrics are blank instead of "No Lyrics Provided"
+		- This is due to the fact that the player no longer displays the lyric containers for both video and audio if no lyrics come with a media.
+	- Keyboard commands from V5.33 now properly operate
+		- Problem occurred due to false positive IF condition 		
+			- IF falsely believed that if the current target was an input that wasn't a range then the command would run, but this must be that if the input WAS a range then it was okay to run the command
+			- false positive caused commands to run even when current event target was an input of type 'text'
+2. Changes to custom ``getAllMedia()`` JS function
+	- JavaScript now handles sorting of list of media items retrieved from database - this was originally performed by PHP handler ``getAllMedia.php``
+		- This allows for greater control of which media items should be removed from printing depending on certain criteria.
+3. Changes to Uploading Media Form
+	- Successful uploads have their items in the drop area of the form removed immediately after success - only the media items that could not be uploaded are left in the drop area for either deletion or replacement.
+	- Should all files be uploaded properly, then an ``alert()`` indicating success is launched
+4. Stylistic Changes:
+	- Left header now follows similar color styling to player controls, as well as album artist header text
+	- Toggle for left bar changed to arrow ``<<`` and changed background color to fit with altered left header style
+	- Album art for albums now sport a box shadow to help differentiate greyer album art from background
+	- Album background color now altered to be slightly transparent
+	- Videos now fit such that their maximum width does not expand beyond padding of their parent HTML container.

@@ -10,7 +10,7 @@
 	}
 
 	$arrayToSend['data'] = array();
-	$specificId = filter_input(INPUT_POST, 'albumId', FILTER_VALIDATE_INT);
+	$specificId = filter_input(INPUT_POST,'albumId', FILTER_VALIDATE_INT);
 	
 	$query = 'SELECT * FROM art WHERE id >= 0 ORDER BY id';
 	try {
@@ -20,7 +20,7 @@
 		print(returnError($db,$query,$exception));
 		return;
 	}
-	if ( count($result) == 0 ) $arrayToSend["data"] = null;
+	if ( count($result) == 0 ) $arrayToSend['data'] = null;
 	else if ( count($result) > 0 ) {
 		foreach ( $result as $row ) $arrayToSend["data"][$row["id"]] = $row['src'];
 	}
@@ -29,7 +29,7 @@
 		return;
 	}
 
-	if ($specificId != false) {
+	if ( isset($specificId) || $specificId != false ) {
 		$query = "SELECT src FROM albumToart AS T1 INNER JOIN art AS T2 ON T1.art_id = T2.id WHERE T1.album_id = :albumId";
 		try {
 			$result = execQuery($db, $query, array(':albumId'=>$specificId))->fetchAll();

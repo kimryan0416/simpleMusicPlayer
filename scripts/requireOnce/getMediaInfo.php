@@ -57,10 +57,10 @@
 	$row['url'] = myUrlDecode($row['url']);
 	if ($row['medium'] == 0) {
 		if ($row['dynamic_lyrics_toggle'] == 1) {
-			$lyricsResults = printDynamicLyrics($row['dynamicLyrics']);
+			$lyricsResults = printDynamicLyrics($row['dynamicLyrics'],$row['medium']);
 			$row['lyrics'] = $lyricsResults['lyrics'];
 			$row['dynamic_lyrics_starting_times'] = $lyricsResults['startTimes'];
-		} else {
+		} else if ($row['simpleLyrics'] && strlen(trim($row['simpleLyrics'])) > 0) {
 			$lyrics = "<span class='lyric_segment lyric_segment_-1 noText'></span>";
 			$lyrics_array = explode("\r\n", $row["simpleLyrics"]);
 			foreach ($lyrics_array as $lyric_segment) {
@@ -72,7 +72,7 @@
 		}
 	} else if ($row["medium"] == 1 || $row["medium"] == 2 ) {
 		if ($row["dynamic_lyrics_toggle"] == 1) {
-			$lyricsResults = printDynamicLyrics($row['dynamicLyrics']);
+			$lyricsResults = printDynamicLyrics($row['dynamicLyrics'],$row['medium']);
 			$row['lyrics'] = $lyricsResults['lyrics'];
 			$row['dynamic_lyrics_starting_times'] = $lyricsResults['startTimes'];
 		} else {
