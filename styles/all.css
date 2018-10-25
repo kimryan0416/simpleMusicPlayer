@@ -122,7 +122,7 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 			.item.options {	display:none;	position:absolute;	height:4px;	width:auto;	right:10px;	top:50%;	transform: translateY(-50%);	padding:5px;	background-color:white;	border-radius: 4px;	box-sizing: initial;	z-index: 2;	}
 				.item.song:hover .item.options {	display:block;	}
 				.item.song:hover .item.options:hover {	box-shadow: 0px 0px 2px 2px rgba(0,0,0,0.5);	}
-		#addMediaDropArea .addMediaItem {	position:relative;	box-sizing:border-box;	display:block;	height: 40px;	padding-left:30px;	width:100%;	font-size:0;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	border-radius: 10px;	margin-bottom:10px;	}
+		#addMediaDropArea .addMediaItem {	position:relative;	box-sizing:border-box;	display:block;	height:auto;	min-height: 40px;	padding-left:30px;	width:100%;	font-size:0;	box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);	border-radius: 10px;	margin-bottom:10px;	}
 			#addMediaDropArea .addMediaItem.failed {	color:red;	}
 			#addMediaDropArea .addMediaItem .addMediaItemCancel	{	font-size:8px;	height:16px;	width:16px;	line-height: 6px;	top:5px;	right:5px;	}
 			#addMediaDropArea .addMediaItem .addMediaArt {	position:absolute;	top:0;	left:0;	display:block;	width:30px;	height:40px;	}
@@ -132,7 +132,8 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 				#addMediaDropArea .addMediaItem .addMediaText span {	display:block;	width:100%;	overflow:hidden;	text-overflow: ellipsis;	white-space: nowrap;	}
 				#addMediaDropArea .addMediaItem .addMediaText .addMediaTitle {	height:	20px;	line-height:20px;	margin-top:5px;	font-weight:bold;	font-size:1.2em;	}
 				#addMediaDropArea .addMediaItem .addMediaText .addMediaSize {	height:10px;	line-height: 10px;	margin-bottom:5px;	font-style:italic;	}
-	
+			#addMediaDropArea .addMediaItem .addMediaError {	display:block;	width:100%;	font-size:10px;	text-align: left;	box-sizing: border-box;	padding-left:5px;	padding-right:10px;	padding-bottom:10px;}
+
 	.container.editLyricsContainer {	margin-bottom:0;	padding-bottom:0;	}
 	.item.editLyrics {	width:100%;	font-size:10px;	}
 		.item.editLyrics.header {	position:relative;	left:0;	height:100px;	}
@@ -161,15 +162,11 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 #media_container {	display:inline-block;	vertical-align: top;	position:relative;	z-index: 2;	width:100%;	height:100%;	font-size:initial;	-webkit-transition: width 200ms linear;	-ms-transition: width 200ms linear;	transition: width 200ms linear;	}
 #video_container {	position:relative;	display:none;	width:100%;	height:100%;	}
 
-.playerTitleAndArtist {
-	position:relative;
-	width:100%;
-	height:auto;
-}
+.playerTitleAndArtist {	position:relative;	width:100%;	height:auto;	}
 .playerTitle {	height:auto;	margin-bottom:5px;	width:80%;	order:2;	}
 .playerArtist {	font-style: italic;	height:auto;	}
 
-#media_container.video { background-color:black; }
+/*#media_container.video { background-color:black; }*/
 #media_container.video #player_container {	display:none;	}
 #media_container.video #video_container {	display:block;	}
 #media_container.video #audioTitleAndArtist {	display:none;	}
@@ -205,8 +202,8 @@ form {	position:relative;	z-index: 2;	display:none;	width:90%;	height: 100%;	mar
 #playerInfo {	position:absolute;	bottom:0;	left:0;	z-index: 3;	display:flex;	flex-direction: column-reverse;	justify-content: flex-end;	height:auto;	width:100%;	padding:50px;	font-size: initial;	text-align: left;	box-sizing: border-box;	order:2;	flex-grow: 0;	}
 #playerInfo.lock {	opacity:1 !important;	}
 #audioTitleAndArtist {	display:flex;	order:4;	flex-direction:column-reverse;	justify-content:flex-end;	margin-bottom:20px;	color:black;	text-shadow: 0px 0px 3px rgb(255,255,255);	}
-#time_container {	position:relative;	display:block;	width:100%;		height:30px;	box-sizing:border-box;	padding-right:150px;	font-size:0;	background-color:rgb(70,70,70); box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.5);	color:rgb(183,183,183);		border-radius:20px;	order:3;	}
-#time_container input {	display:inline-block;	vertical-align: middle;		width:100%;	box-sizing: border-box;	height:30px;	line-height: 30px;	}
+#time_container {	position:relative;	display:block;	width:100%;		height:30px;	box-sizing:border-box;	padding-right:150px;	padding-left:10px;	font-size:0;	background-color:rgb(70,70,70); box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.5);	color:rgb(183,183,183);		border-radius:20px;	order:3;	}
+#time_container input {	display:inline-block;	vertical-align: middle;		width:100%;	box-sizing: border-box;	height:30px;	line-height: 30px;	margin:0;	}
 #time_container .playerTimes {	position:absolute;	right:0;	top:0;	font-size:12px;	width:150px;	text-align: center;	height:100%;	}
 #time_container .player_time {	display:inline;	font-size:initial;	height:30px;	line-height: 30px;	width:auto;	}
 #curTime {	text-align: left;	}

@@ -3,39 +3,49 @@
 	$db = ( $db == null ) ? initSqliteDB('database.sqlite', 'init.sql') : $db;
 	if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
-	$get = ( $get!=null ) ? $get : filter_input(INPUT_GET,'get',FILTER_VALIDATE_INT);
-	if ( !isset($get) || ( $get!=6 && $get!='updateAlbumArt' ) ) {
+	$get = ( $get!=null ) ? $get : filter_var($_GET['get'],FILTER_VALIDATE_INT);
+	if ( !$get || ( $get!=6 && $get!='updateAlbumArt' ) ) {
 		print(returnError($db,'updateAlbumArt - Proper GET not received'));
 		return;
 	}
 
 	$image_types = array('jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG');
+	$commands = array('alternative','upload');
 
-	$album_id = filter_input(INPUT_GET, 'album_id', FILTER_VALIDATE_INT);
-	$iconEditSet = filter_input(INPUT_GET, 'iconEditSet', FILTER_VALIDATE_INT);
-
-	if (!isset($album_id) || !$album_id) {
-		print(returnError($db,'updateAlbumArt - Improper album id'));
+	if ( !isset($_POST['album_id']) || !isset($_POST['command']) ) {
+		print(returnError($db,'updateAlbumArt - Either "album_id" or "command" not received',array('album_id'=>$_POST['album_id'],'command'=>$_POST['command'])));
 		return;
 	}
-	else if (!isset($iconEditSet)) {
-		print(returnError($db,'updateAlbumArt - Proper iconEditSet not received'));
+	$album_id = filter_var( $_POST['album_id'], FILTER_VALIDATE_INT );
+	$command = filter_var( $_POST['command'], FILTER_SANITIZE_STRING );
+	if ( !$command || !in_array($command, $commands) || ($album_id != 0 && $album_id == false) ) {
+		print(returnError($db,'updateAlbumArt - album_id and/or command received, but not expected',array('album_id'=>$album_id,'command'=>$command)));
 		return;
 	}
 
-	// if $iconEditSet == 0, then an alternative art was used and a new one was not uploaded
+	// if command == 'alternative', then an alternative art was used and a new one was not uploaded
 	// If this is the case, we merely have to grab the art id from the formdata
-	if ( $iconEditSet == 0 ) $art_id = filter_input(INPUT_POST, 'alternate_art_for_album_art_edit', FILTER_SANITIZE_STRING);
-	else if ( $iconEditSet == 1 ) {
+	if ( $command == 'alternative' ) {
+		if ( !isset($_POST['alternate_art_for_album_art_edit']) ) {
+			print(returnError($db,'updateAlbumArt - alternative art id not received',array('alternativeId'=>$_POST['alternate_art_for_album_art_edit'])));
+			return;
+		}
+		$art_id = filter_var($_POST['alternate_art_for_album_art_edit'], FILTER_VALIDATE_INT );
+		if ( $art_id != 0 && $art_id == false ) {
+			print(returnError($db,'updateAlbumArt - alternative art id received, but not expected',array('alternativeId'=>$art_id)));
+			return;
+		}
+	}
+	else if ( $command == 'upload' ) {
 		// if $iconEditSet == 1, then a new piece of artwork was uploaded
 		// If this is the case, we must insert the new image into our "art" table and grab the insert id
 		$upload_dir = 'art/';
-		if ( !isset($_FILES) || count($_FILES) == 0 ) {
-			print(returnError($db,'FILES not received'));
+		if ( !isset($_FILES['file']) ) {
+			print(returnError($db,'updateAlbumArt - file not received'));
 			return;
 		}
 				
-		$file = $_FILES[count($_FILES)-1];
+		$file = $_FILES['file'];
 		// We'll be randomly-generating an 8-long numeric string to use as the new album art's name
 					
 		$ext = strtolower(pathinfo(basename($file['name']), PATHINFO_EXTENSION));	
@@ -84,7 +94,7 @@
 		}
 	}
 	else {
-		print(returnError($db,'updateAlbumArt - iconEditSet received, but unexpected value'));
+		print(returnError($db,'updateAlbumArt - neither upload or alternative command received',array('album_id'=>$_POST['album_id'],'command'=>$_POST['command'])));
 		return;
 	}
 

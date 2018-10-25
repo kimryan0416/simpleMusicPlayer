@@ -3,15 +3,19 @@
 	$db = ( $db == null ) ? initSqliteDB('database.sqlite', 'init.sql') : $db;
 	if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
-	$get = ( $get!=null ) ? $get : filter_input(INPUT_GET,'get',FILTER_VALIDATE_INT);
-	if (!isset($get) || ($get!=2&&$get!='updateCurrent') ) {
+	$get = ( $get!=null ) ? $get : filter_var($_GET['get'],FILTER_VALIDATE_INT);
+	if (!$get || ($get!=2&&$get!='updateCurrent') ) {
 		print(returnError($db,'Proper GET not received'));
 		return;
 	}
 
-	$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
-	if (!isset($id)) {
-		print(returnError($db, 'Proper ID not received'));
+	if ( !isset($_POST['id'])) {
+		print(returnError($db, 'Proper ID not received',array('id'=>$_POST['id'])));
+		return;
+	}
+	$id = filter_var($_POST['id'], FILTER_VALIDATE_INT);
+	if ( $id != 0 && $id == false ) {
+		print(returnError($db, 'Proper ID not received',array('id'=>$id)));
 		return;
 	}
 

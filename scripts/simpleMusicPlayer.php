@@ -41,20 +41,24 @@
 		require_once('requireOnce/updateAlbumArt.php');
 	}
 
+	/*
 	// updateMediaArt.php
 	else if ( $get==7 || $get == 'updateArt' ) {
 		require_once('requireOnce/updateMediaArt.php');
 	}
+	*/
 
 	// embedInput.php
 	else if ( $get==8 || $get == 'addEmbed' ) {
 		require_once('requireOnce/embedInput.php');
 	}
 
+	/*
 	// getImageArt.php
 	else if ( $get==9 || $get == 'getImageArt' ) {
 		require_once('requireOnce/getImageArt.php');
 	}
+	*/
 
 	// createLoop.php
 	else if ( $get==10 || $get == 'loop') {

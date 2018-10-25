@@ -3,32 +3,26 @@
 	$db = ( $db == null ) ? initSqliteDB('database.sqlite', 'init.sql') : $db;
 	if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
-	$get = ( $get!=null ) ? $get : filter_input(INPUT_GET,'get',FILTER_VALIDATE_INT);
-	if ( !isset($get) || ( $get!=8 && $get!='addEmbed' ) ) {
+	$get = ( $get!=null ) ? $get : filter_var($_GET['get'],FILTER_VALIDATE_INT);
+	if ( !$get || ( $get!=8 && $get!='addEmbed' ) ) {
 		print(returnError($db,'addEmbed - Proper GET not received'));
 		return;
 	}
 
 	$errors_array = array();
 
-	$input = filter_input(INPUT_GET,'input',FILTER_VALIDATE_INT);
-	if (!isset($input)||$input!=1) {
-		print(returnError($db,'addEmbed - Proper INPUT not received'));
-		return;
-	}
+	$title = filter_var( $_POST['video_title_input'], FILTER_SANITIZE_STRING );
+	$artist = filter_var( $_POST['video_artist_input'], FILTER_SANITIZE_STRING );
+	$album = filter_var( $_POST['video_album_input'], FILTER_SANITIZE_STRING );
+	$album_artist = filter_var( $_POST['video_album_artist_input'], FILTER_SANITIZE_STRING );
+	$composer = filter_var( $_POST['video_composer_input'], FILTER_SANITIZE_STRING );
+	$url = filter_var( $_POST['video_url_input'], FILTER_SANITIZE_STRING );
 
-	$title = filter_input(INPUT_POST, 'video_title_input', FILTER_SANITIZE_STRING);
-	$artist = filter_input(INPUT_POST, 'video_artist_input', FILTER_SANITIZE_STRING);
-	$album = filter_input(INPUT_POST, 'video_album_input', FILTER_SANITIZE_STRING);
-	$album_artist = filter_input(INPUT_POST, 'video_album_artist_input', FILTER_SANITIZE_STRING);
-	$composer = filter_input(INPUT_POST, 'video_composer_input', FILTER_SANITIZE_STRING);
-	$url = filter_input(INPUT_POST, 'video_url_input', FILTER_SANITIZE_STRING);
-
-	if ( strlen(trim($title)) == 0 ) $errors_array['title'] = 'You must enter a title';
-	if ( strlen(trim($artist)) == 0 ) $errors_array['artist'] = 'You must enter an artist';
-	if ( strlen(trim($album)) == 0 ) $errors_array['album'] = 'You must enter an album';	
-	if ( strlen(trim($album_artist)) == 0 ) $errors_array['album_artist'] = 'You must enter an album artist';
-	if ( strlen(trim($url)) == 0 ) $errors_array['url'] = 'You must enter an iframe URL';
+	if ( !$title || strlen(trim($title)) == 0 ) $errors_array['title'] = 'You must enter a title';
+	if ( !$artist || strlen(trim($artist)) == 0 ) $errors_array['artist'] = 'You must enter an artist';
+	if ( !$album || strlen(trim($album)) == 0 ) $errors_array['album'] = 'You must enter an album';	
+	if ( !$album_artist || strlen(trim($album_artist)) == 0 ) $errors_array['album_artist'] = 'You must enter an album artist';
+	if ( !$url || strlen(trim($url)) == 0 ) $errors_array['url'] = 'You must enter an iframe URL';
 
 	if ( count($errors_array) > 0 ) {
 		print(returnError($db,'Errors detected in your embed input',array('inputErrors'=>$errors_array)));

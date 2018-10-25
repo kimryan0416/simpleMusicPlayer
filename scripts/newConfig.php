@@ -10,6 +10,8 @@
 	/* -- ----------------------------- */
 	/* DB-related Functions 		 	*/
 	/* -- ----------------------------- */
+
+	/* --- Functions 'execQuery()' and 'initSqliteDB()' adapted from sample code provided by Kyle J. Harms --- */
 	function execQuery($db, $sql, $params = array()) {
 		$query = $db->prepare($sql);
 		if ($query and $query->execute($params)) {
@@ -42,6 +44,7 @@
 		}
 		return NULL;
 	}
+	
 	function returnOnlyIDs($arrValue) {
 		if ($arrValue['id'] > 0 ) return $arrValue['id'];
 	}

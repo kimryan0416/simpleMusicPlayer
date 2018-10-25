@@ -5,12 +5,26 @@ This is the readme for the **Simple Music Player**, a HTML/JavaScript/PHP applic
 The **SMP** utilizes the following coding langauges:
 * HTML5
 * CSS3
-* JavaScript (jQuery)
+* JavaScript
 * PHP 7.*
 * SQLite
 
-This is currently **Version 5.1** of the **SMP**. You can view the changelog at the end of this document.
+This is currently **Version 5.35** of the **SMP**. You can view the changelog at the end of this document.
 
+## Installation
+
+The SMP can operate on any localhost server that is able to process SQLite and PHP. It is recommended that the file organization within the root folder is kept as-is - adjusting file locations may cause errors to occur in the player
+
+When the player is opened for the first time within a browser, any missing files and directories will be initialized by the player automatically. These files and directories include:
+* ``scripts/database.sql`` - the SQLite-based database file that contains all information required by the SMP
+* ``media/`` - the directory that contains all the local media files uploaded into the SMP by the user
+* ``art/`` - the directory that contains all the local artwork images uploaded into the SMP by the user
+
+### Restarting the SMP
+
+If you wish to restore the SMP to its original state prior to any installations, you must delete the file ``scripts/database.sql``. Deletion of this file will cause the SMP to re-initialize a new SQL file to use as a database, thereby resetting the player.
+
+From there, old files kept in the ``media/`` directory can be reinserted into the SMP again. If you wish to restart the ``media/`` directory, you must simply remove the directory from the root directory of the SMP - the SMP will re-initalize this directory upon reloading the page on the browser. The same applies to the ``art/`` directory.
 
 
 ## **Changelog**
@@ -265,3 +279,40 @@ File Upload System Updated - now supports drag-and-drop
 	- Album art for albums now sport a box shadow to help differentiate greyer album art from background
 	- Album background color now altered to be slightly transparent
 	- Videos now fit such that their maximum width does not expand beyond padding of their parent HTML container.
+
+###### Version 5.35
+1. jQuery ``$.ajax()`` replaced with Pure JavaScript ``XMLHttpRequest()``
+	- In order to remove the SMP from its jQuery dependency, the ``$.ajax()`` command offered by jQuery has been replaced by the ``XMLHttpRequest()`` API offered by JavaScript
+	- The affected functions are:
+		1. ``getAllMedia()``
+		2. ``createLoop()``
+		3. ``populateAlternativeArtContainer()``
+		4. ``editIcon()``
+		5. ``submitEdit()``
+		6. ``startAlbumArtEdit()``
+		7. ``submitAlbumArtEdit()``
+		8. ``submitEmbed()``
+		9. ``updateCurrent()``
+		10. ``addMedia()``
+	- As a result of the transfer from ``$.ajax()`` to ``XMLHttpRequest()``, several massive changes were made to the following:
+		1. Editing Media:
+			- values that were originally retrieved via ``GET`` are now sent via ``POST`` for protection.
+			- If the user submits an edit that does not require uploading new artwork, the JS skips the process of sending an ``XMLHttpRequest`` to the server
+				- Originally, regardless if the user was uploading new artwork or not, an ``$.ajax`` request was sent to the server, and the server would track whether to skip the upload process or commence an upload
+			- Based on whether the user is editing the media without uploading new artwork, the user is editing while uploading new artwork, or the user is deleting the media being edited, the form takes in a new entry named ``command`` that tells the server to take the appropriate action.
+		2. Updating Album Artwork
+			- values that were originally retrieved via ``GET`` are now sent via ``POST`` for protection.
+			- If the user submits by selecting an already-existing artwork instead of uploading new artwork, the JS makes this consideration and removes the file from the FormData() that is sent to the server - otherwise, the JS removes the alternative input instead
+			- A variable called ``iconEditSet``, which was used to track if a new file was uploaded or not, has been removed completely
+			- Based on whether the user is updating the album artwork with or without uploading new artwork, the form takes in a new entry named ``command`` that tells the server to take the appropriate action.
+		3. Adding Media:
+			- Promises now used to handle asynchronous XML requests and check whether all files have been successfully uploaded or not.
+2. Bug Fixes:
+	- When editing a media, selecting an alternative artwork now appropriately replaces the current album artwork selected on the left to the chosen artwork.
+	- When editing a video, the form does not leave an empty space where the simple/dynamic lyrics toggle was originally
+	- When updating album artwork, the file that is newly uploaded will now properly add to the FormData being sent to the server
+	- Made proper adjustments to printing artwork onto the screen by creating conditionals to detect if the art src for a piece of media was in 64byte or a simple URL.
+3. Other Miscellaneous Changes
+	- Complete removal of JS custom functions ``getImageArt()`` and ``saveMediaArt()`` due to ``addMedia.php`` handling album artwork during process of upload.
+		- Consequentially, PHP files ``getImageArt.php`` and ``saveMediaArt.php`` removed, as these are no longer required by the SMP.
+	- Adjusted CSS of time slider by removing margins and vertically-centering time slider.

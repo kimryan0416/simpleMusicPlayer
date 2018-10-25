@@ -73,9 +73,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<title>SimpleMusicPlayer</title>
 		<link rel="stylesheet" type="text/css" href="styles/all.css">
-		<script src="scripts/jquery-3.3.1.min.js"></script>
+		<!--<script src="scripts/jquery-3.3.1.min.js"></script>-->
 		<script src="https://www.youtube.com/iframe_api"></script>
-		<script src="scripts/script.js"></script>
 	</head>
 	<body>
 		<canvas id='background'></canvas>
@@ -417,4 +416,5 @@
 			</div>
 		</div>
 	</body>
+	<script src="scripts/script.js"></script>
 </html>

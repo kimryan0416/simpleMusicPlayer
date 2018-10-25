@@ -40,6 +40,12 @@
 	*/
 	
 	$file = $_FILES['file'];
+
+	if ( $file == null ) {
+		print(returnError($db,'File size exceeds 96MB limit'));
+		return;
+	}
+
 	$tempFileName = $file['tmp_name'];
 	$thisFileInfo = $getID3->analyze($tempFileName);
 	getid3_lib::CopyTagsToComments($thisFileInfo);
@@ -52,7 +58,7 @@
 
 	if ( !array_key_exists($extension, $media_types) ) {
 		// This error means the file is an image but is not a jpg or png, so the uploader has to choose another icon
-		print(returnError($db,'mediaAdd - File is not mp3, m4a, or mp4',array('returnedExtension'=>$extension,'pathParts'=>$path_parts)));
+		print(returnError($db,'File is not mp3, m4a, or mp4',array('returnedExtension'=>$extension,'pathParts'=>$path_parts)));
 		return;
 	}
 
@@ -65,7 +71,7 @@
 		$artist = html_entity_decode(trim($artist),ENT_COMPAT,'UTF-8');
 
 	// Need to set song - to - art relationship - initially set to null if $art is null
-	$art = (isset($thisFileInfo['comments']['picture'][0])) ? 'data:'.$thisFileInfo['comments']['picture'][0]['image_mime'].';charset=utf-8;base64,'.base64_encode($thisFileInfo['comments']['picture'][0]['data']) : null;
+	$art = (isset($thisFileInfo['comments']['picture'][0])) ? 'data:'.$thisFileInfo['comments']['picture'][0]['image_mime'].';charset=utf-8;base64,'.base64_encode($thisFileInfo['comments']['picture'][0]['data']) : 'assets/default_album_art.jpg';
 
 	if ( isset ($song_info['album_artist_sort_order']) ) $album_artist = html_entity_decode($song_info['album_artist_sort_order'][0],ENT_COMPAT,'UTF-8');
 	else if ( isset ($song_info['album_artist']) ) $album_artist = html_entity_decode($song_info['album_artist'][0],ENT_COMPAT,'UTF-8');
