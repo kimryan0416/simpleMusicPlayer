@@ -29,12 +29,12 @@ From there, old files kept in the ``media/`` directory can be reinserted into th
 
 ## **Changelog**
 
-### **Version 5**
+### **Version 0.5**
 
-#### Version 5.0 - The Bug-Fixing Build:
+#### Version 0.5.0 - The Bug-Fixing Build:
 Version 5.0 was a step up from the latest version of Version 4 and is mostly comprised of bug fixes and code cleanups.
 
-##### Version 5.00
+##### Version 0.5.00
 1. Main ``script.js`` JavaScript reduced in complexity
 	- ~1800+ lines => 1530 lines
 	- Unused functions and code removed
@@ -49,10 +49,10 @@ Version 5.0 was a step up from the latest version of Version 4 and is mostly com
 	- Art assets such as loop buttons and shuffle buttons now alter color properly based on whether if player is playing audio or video
 	- Player in general no longer lags under long stretches of time due to memory leakages being fixed
 
-#### Version 5.1 - The SQLite Build:
+#### Version 0.5.1 - The SQLite Build:
 Version 5.1 improves code and load time significantly due to moving to an SQLite database - requests now no longer require MySQL servers! Anybody who can run a PHP server with SQLite installed now can utilize the player.
 
-##### Version 5.10
+##### Version 0.5.10
 1. Conversion from MySQL to SQLite
 	- Load time significantly improved over MySQL runtime
 	- Player can now run on any server with only PHP and SQLite installed (which comes default with most Apache servers with PHP)
@@ -68,21 +68,21 @@ Version 5.1 improves code and load time significantly due to moving to an SQLite
 	- When pushing to Github, personal databases and media files no longer are pushed either - significantly easier to update without uploading massive amounts of media
 	- Redundant and unused files and directories deleted from Github pushing process + have been deleted from the Github Repo
 
-##### Version 5.11
+##### Version 0.5.11
 1. Modified mobile version for use with SQLite player
 
-##### Version 5.12
+##### Version 0.5.12
 1. Remove JavaScript redundant code & function-ized common code sequences, specifically code that creates new DOM elements
 2. Modified Search function - searches now show suggestions below search bar instead of relying on clicking "Enter" to cycle through song items
 3. Removed redundant script files no longer being used
 
-#### Version 5.2 - The Editor And Styling Build:
+#### Version 0.5.2 - The Editor And Styling Build:
 Version 5.2 replaces a lot of extraneous code by utilizing functions and erasing now-nonfunctional code. As a result, improvements have been made to the general stability of the build.
 Major stylistic changes have also been made, with major changes made to the general look of the player, info editor, and list of songs.
 Back-end adjustments mainly include altering how dynamic lyrics are managed by the editor, fixes to code that previewed new art when uploading new artwork, etc.
 New functions have been added into the build, including the ability to save and toggle between simple lyrics and dynamic lyrics, being able to transfer simple lyrics into dynamic lyrics and vice versa, and being able to add new dynamic lyric segments before and after particular lyric segments that have already been added into the lyrics editor.
 
-##### Version 5.20
+##### Version 0.5.20
 1. Styling changes:
 	- General changes:
 		- Using classes, many repetitious elements have been commonly styled and therefore reduced in number of overwritten CSS code
@@ -122,7 +122,7 @@ New functions have been added into the build, including the ability to save and 
 		- Adjusted queries to reflect database alterations mentioned above
 		- Combined ``getAllArtForEdit.php`` and ``getAlbumArtForEdit.php`` into single file - beginning process of combining extraneous files
 
-###### Version 5.21
+###### Version 0.5.21
 1. Further Styling Changes
 	- ALL elements originally on the RIGHT side of the screen (editor and album artwork editor) moved to the LEFT side, alongside the embed form and song list.
 	- Normalized all form element styling using classes - all common form elements (i.e. text inputs, half segments, textareas, cancel buttons, submit buttons) now utilize common css using classes with exceptions made with ID's or unique combinations classes
@@ -155,10 +155,10 @@ New functions have been added into the build, including the ability to save and 
 	- originally separate objects of their own, the ``editForm`` and ``editAlbumArtForm`` objects moved into the ``globalPlayer`` parent object as ``editMediaForm`` and ``editAlbumArtForm`` respectively
 	- variable names starting to replace underscore ``_`` with naming convention of ``lowercaseUppercase``
 
-##### Version 5.3 - Back-End Update:
+##### Version 0.5.3 - Back-End Update:
 This new version mostly focuses on improvements made to the back-end of the music player - namely PHP-based improvements - as well as continuing alterations to the JavaScript and CSS coding of the website. Major PHP improvements include creating a runner file that is able to access all the other PHP files via ``require`` or ``require_once`` based on the ``GET`` inputs it gets from any AJAX calls made to it, the function-ization of error-reporting and success-reporting when printing back to the JavaScript, the implementation of ``Transactions`` to prevent adjustments to the SQLite database when an error has occurred, and the the ability to clean up artwork that is not being used anymore (due to possible duplications that could occur when uploading new artwork). JavaScript improvements include removal of extraneous code and small adjustments to global variables, functions, and objects. CSS updates include changing class organization such that further repetitious, extraneous code is removed. Updates will explain this in further detail.
 
-###### Version 5.30
+###### Version 0.5.30
 1. PHP Updates:
 	- When making AJAX calls to interact with the SQLite database, all AJAX calls interact with a new ``simpleMusicPlayer.php`` that is able to interpret what needs to be done via a ``GET`` input received from the AJAX call and ``require_once`` or ``require`` the particular PHP file that can do the appropriate actions.
 		- All other PHP files moved into ``requireOnce`` directory
@@ -182,7 +182,7 @@ This new version mostly focuses on improvements made to the back-end of the musi
 			- This was done due to the realization that all forms in the Simple Music Player tend to follow a similar HTML hierarchy that also happened to correspond eerily similarly to the nesting behavior of the song list elements.
 		- Only the player-based HTML elements did not receive any updates to their CSS - this is expected to change relatively soon, however.
 
-###### Version 5.31
+###### Version 0.5.31
 1. PHP updates:
 	- Changed time format of dynamic lyric storage
 		- **Originally:** Times for each dynamic lyric segment were stored as a MM:SS._ _ _ format. While this made it easier for the text to be readable when editing dynamic lyrics, it required a lot of micromanagement to convert them into pure millisecond format, which the audio and video players use.
@@ -204,7 +204,7 @@ This new version mostly focuses on improvements made to the back-end of the musi
 			- This meant that images sourced with base64 encoded data did not show up
 		- Now, conditional statements now check for the image source type and adjust accordingly - images sourced by files have the additional data appended, while base64 images do not
 
-###### Version 5.32
+###### Version 0.5.32
 File Upload System Updated - now supports drag-and-drop
 - Initially, uploading files into the SMP required placing files into a ``upload_directory`` folder present within the root directory of the SMP.
 	- This was not user-friendly because this does not allow users to upload via some interface in the SMP directly.
@@ -222,7 +222,7 @@ File Upload System Updated - now supports drag-and-drop
 	- When files are uploading, new ``loading.gif`` image indicates which files are being currently processed by the website
 	- Any files that cannot be uploaded are kept in the form's file list and highlighted in red, alongside an ``alert()`` message popping up; successful files are removed from the form's file list.
 
-###### Version 5.33
+###### Version 0.5.33
 1. Dynamic Lyrics Bug-Fixing
 	- Original bug: If a piece of media has dynamic lyrics, the player would highlight from the beginning through all lyric segments until it reaches the current lyric segment after adjustment of the time slider
 		- Occasionally, dynamic lyrics would loop until the end, preventing the proper lyric segment to be highlighted.
@@ -233,7 +233,7 @@ File Upload System Updated - now supports drag-and-drop
 	- 5 new functions each return an object list representing a form's inputs and necessary functions.
 	- This is an attempt to make the Simple Music Player take the form of a framework library instead of its own product.
 
-###### Version 5.34
+###### Version 0.5.34
 1. JavaScript Debugging and Removal of Video Player-specific Controls
 	- **Originally:** The audio player and the video player were completely different HTML elements, each having different event handlers to their controls that basically did the same thing.
 		- **Now:** All video player controls have been removed - audio player controls now work globally among both the audio and video player.
@@ -254,7 +254,7 @@ File Upload System Updated - now supports drag-and-drop
 	- Video player still features its own title and artist text at the top of the page (whereas the audio player's title and artist text is still right above the time slider) - the video player's title and artist text are colored white
 	- If an audio media is played and no lyrics are stored, then the lyrics are not present on-screen, instead the image art takes center stage until another piece of media with lyrics is selected
 	- When a video media is being played, the controls and title/artist disappear after 3 seconds of inactivity to better let the user view the video.
-###### Version 5.34
+###### Version 0.5.34
 1. Bug Fixes:
 	- When editing a piece of media that is 1) currently playing, and 2) is a video:
 		1. Updates to the ``Title`` and ``Artist`` now appropriately update after submitting an edit
@@ -280,7 +280,7 @@ File Upload System Updated - now supports drag-and-drop
 	- Album background color now altered to be slightly transparent
 	- Videos now fit such that their maximum width does not expand beyond padding of their parent HTML container.
 
-###### Version 5.35
+###### Version 0.5.35
 1. jQuery ``$.ajax()`` replaced with Pure JavaScript ``XMLHttpRequest()``
 	- In order to remove the SMP from its jQuery dependency, the ``$.ajax()`` command offered by jQuery has been replaced by the ``XMLHttpRequest()`` API offered by JavaScript
 	- The affected functions are:
@@ -316,3 +316,44 @@ File Upload System Updated - now supports drag-and-drop
 	- Complete removal of JS custom functions ``getImageArt()`` and ``saveMediaArt()`` due to ``addMedia.php`` handling album artwork during process of upload.
 		- Consequentially, PHP files ``getImageArt.php`` and ``saveMediaArt.php`` removed, as these are no longer required by the SMP.
 	- Adjusted CSS of time slider by removing margins and vertically-centering time slider.
+
+---
+#### Version 1.0 - Official Release on Github!
+
+This marks Version 1.0 being released as a package on Github!
+No significant changes were made here; this is merely an official release version to mark the first stable version of the SMP.
+
+##### Version 1.0.1 - Bug Fixes, Control Changes, and Stylistic Changes
+
+This marks Version 1.0.1, which consists of multiple bug fixes and stylistic changes to the SMP.
+
+1. Bug Fixes:
+	-  Fixed bug where album artists would be printed onto the DOM in reverse alphabetical order
+	- Fixed bug where Google Chrome could not find parent node of Video Embed &lt;div&gt;
+2. Control Changes:
+	- Control to hide/show Song List column now inside top header, instead of on the right of the Song List column
+	- Editing media item now require right-clicking the media item in the Song List and clicking "Edit Media".
+		- Song edit button commonly found on right of media item inside Song List now officially gone
+3. Stylistic Changes
+	- Fully committed for Night look appearance at this juncture
+		- Will release version to alternate between light and dark versions later
+		- Default background light gray - headers and important sections now dark gray
+	- Header that was originally contained only within Song List now spans whole width of browser
+	- Song List appearance drastically changed:
+		- Removal of most "border-radius" CSS - now in middle of converting to straight-edge appearance
+		- Removal of majority of "box-shadow" CSS - now in middle of converting to no shadows
+		- Album artwork in Song List made smaller in size
+		- Most text now left-aligned
+		- With removal of icon within each media item in Song List to call editMedia() function, icons for video and YouTube embed-based media items now moved to the right side
+		- Album names now moved to the right of album art
+		- Album Artist names made slightly smaller in size
+		- Song List now more compact in appearance
+	- Some icons altered:
+		- Settings icon in top header now uses same sprite as that of the Player's Extras icon that appears when the screen in narrow
+		- Search icon now uses new sprite
+	- Color changes (additional)
+		- Blue colors usually used for "submit" buttons for forms now converted to default button color (dark gray)
+		- Currently-playing media item in Song List has slightly darker appearance to make easier to read with white text
+		- borders for most input forms now removed completely
+	- Miscellaneous Changes:
+		- Lyrics textbox when editing media now fits whole height of browser to prevent massive amounts of scrolling due to small height
