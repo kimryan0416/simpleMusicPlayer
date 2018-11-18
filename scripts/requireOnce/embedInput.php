@@ -4,7 +4,7 @@
 	if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
 	$get = ( $get!=null ) ? $get : filter_var($_GET['get'],FILTER_VALIDATE_INT);
-	if ( !$get || ( $get!=8 && $get!='addEmbed' ) ) {
+	if ( !$get || ( $get!=7 && $get!='addEmbed' ) ) {
 		print(returnError($db,'addEmbed - Proper GET not received'));
 		return;
 	}

@@ -328,3 +328,33 @@ This marks Version 1.0.1, which consists of multiple bug fixes and stylistic cha
 		- borders for most input forms now removed completely
 	- Miscellaneous Changes:
 		- Lyrics textbox when editing media now fits whole height of browser to prevent massive amounts of scrolling due to small height
+
+### Version 1.0.2 - Minor Bug Fixes + Function Updates, Further Stylistic Changes, Staging for New Update
+
+This marks version 1.0.2, which consists of minor bug fixes and updates to existing functions. Stylistic changes also made to SMP. This also allows for staging of some new features, TBA.
+1. Bug Fixes
+	- Reorganized some function calls to make order of operations more seamless
+	- Re-added "openMedia()" function inside "songClicked()", which is called when a piece of media is clicked
+2. Function Updates
+	- **2** new functions:
+		- ``setLoop``: function used to set up loop functionality of SMP, can take either a value to set the loop at or default to using ``globalPlayer``'s pre-set loop value
+		- ``setShuffle``: function used to set up shuffle functionality of SMP, which can take either a value to set the shuffle at or default to using ``globalPlayer``'s pre-set shuffle value
+	- SMP Song List now is default closed at startup - opens once all data from ``getAllMedia()`` is received and processed.
+	- Song List can be modified to be either on the left or right side of the screen
+		- Use ``settings.json`` (explained below at #4) to change ``listPos`` variable (boolean: ``true`` = right side, ``false`` = left side)
+	- Queue order changed:
+		- Originally, current media ID was the first item in the queue
+		- Now, current media ID is the last item in the queue **if looped** - otherwise (aka no loop), queue is empty.
+3. Further Stylistic Changes
+	- ``Border-Radius`` CSS mostly removed from most elements
+	- Some form divs widened to fit width 100%
+	- **Add Media Form** - item divs stylized to fit aesthetic of rest of SMP
+	- Album Artwork in Player side of SMP adjusted:
+		- If a song does not have lyrics, Album Artwork is widened to fill empty space
+		- If a song has lyrics, Album Artwork is returned to its original smaller size
+4. Staging for New Update
+	- New update requires new functionality: **global user settings**. To stage for this update, the SMP requires the ability to grab settings data from ``settings.json`` and utilize it within the SMP
+		- This is why ``setLoop`` and ``setShuffle`` were created
+	- New PHP page: ``getSettings`` - not implemented, but theoretically pulls settings from JSON file ``settings.json``
+	- New ``$thisFileDir`` variable within PHP for checking location of ``settings.json`` file.
+	- SMP grabs settings file from ``settings.json`` when calling function ``getAllMedia()`` used when the SMP first loads - the settings are then integrated into the SMP thusly

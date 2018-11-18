@@ -10,6 +10,10 @@
 		print(returnError($db,'GET not received'));
 		return;
 	}
+	$thisFileDir = dirname(__FILE__);
+	if (substr($thisFileDir, -1) == '/') {
+		$thisFileDir = substr($thisFileDir,0,-1);
+	}
 
 	// getAllMedia.php;
 	if ($get==1||$get=='getAll') {
@@ -41,22 +45,22 @@
 		require_once('requireOnce/updateAlbumArt.php');
 	}
 
-	/*
-	// updateMediaArt.php
-	else if ( $get==7 || $get == 'updateArt' ) {
-		require_once('requireOnce/updateMediaArt.php');
-	}
-	*/
-
 	// embedInput.php
-	else if ( $get==8 || $get == 'addEmbed' ) {
+	else if ( $get==7 || $get == 'addEmbed' ) {
 		require_once('requireOnce/embedInput.php');
 	}
 
 	/*
-	// getImageArt.php
-	else if ( $get==9 || $get == 'getImageArt' ) {
-		require_once('requireOnce/getImageArt.php');
+	// getSettings.php
+	else if ( $get==8 || $get == 'getSettings' ) {
+		require_once('requireOnce/setSettings.php');
+	}
+	*/
+
+	/*
+	// setSettings.php
+	else if ( $get==9 || $get == 'setSettings' ) {
+		require_once('requireOnce/setSettings.php');
 	}
 	*/
 

@@ -4,6 +4,16 @@
 	if (!$db = initSqliteDB('scripts/database.sqlite', 'scripts/init.sql') ) die('ERROR WITH DATABASE CONNECTION');
 	if ( !file_exists('media/') && !mkdir('media/') ) die ("ERROR SETTING UP \"media/\"");
 	if ( !file_exists('art/') && !mkdir('art/') ) die("ERROR SETTING UP \"art\"");
+	if ( !file_exists('scripts/settings.json') ) {
+		$settings = array(
+			'listPos'=>false,
+			'loop'=>1,
+			'shuffle'=>0
+		);
+		$fp = fopen('scripts/settings.json', 'w');
+		fwrite($fp, json_encode($settings));
+		fclose($fp);
+	}
 	/*
 	$content = array();
 	$query = 'SELECT 
@@ -81,7 +91,7 @@
 			<span class='contextItem' id='contextOptions'>Edit Details</span>
 		</div>
 		<div id='bodyHeader'>
-			<div id='innerLeftHeader'>
+			<div id='innerHeader'>
 				<div class='dropdown settings'>
 					<!--<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">-->
 					<img class="dropdownPlaceholder" id='headerSettings' src="assets/transparent.png" alt="Settings">
@@ -90,10 +100,11 @@
 						<div class='dropdownItems'>
 							<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
 							<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+							<!--<span id='openEditSettings' class='dropdownItem settings'>Edit Settings</span>-->
 						</div>
 					</div>
 				</div>
-				<span class='toggle left' id='toggleLeft'>Toggle Song List</span>
+				<span class='toggle' id='toggleList'>Toggle Song List</span>
 				<div class='dropdown search'>
 					<!--<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>-->
 					<img class='dropdownPlaceholder overlay' id='headerSearch' src='assets/transparent.png' alt='Search'>
@@ -107,11 +118,10 @@
 			</div>
 		</div>
 		<div id='body'>
-			<div id="left">
+			<div id="list" class='left closed'>
 				<div class='inner'>
-					<!--<span class='toggle left' id='toggleLeft'><<</span>-->
-					<div class='content left' id="leftContent">
-						<div id='leftSongs' class='closed'>
+					<div class='content list' id="listContent">
+						<div id='listSongs' class='closed'>
 							<?php 
 							/*
 								foreach($content as $index=>$album_artist) {
@@ -333,17 +343,43 @@
 							<div class='item innerForm'>
 								<div class='container innerForm'>
 									<div class='container segmentContainer'>
-										<span class='item label'>Select Media to upload (or drag and drop into this window)</span>
+										<span class='item label'>Select Media to upload</span>
 										<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
-										<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
 									</div>
-									<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
+									<div class='container segmentContainer'>
+										<span class='item label'>OR, drag and drop into the window below</span>
+										<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
+										<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
+									</div>
 								</div>
 							</div>
 							<div class='item submitContainer'>
 								<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
 							</div>
 						</form>
+<!--
+<form id='editSettingsForm' name='editSettingsForm' method='post' enctype="multipart/form-data">
+	<div class='item header'>
+		<div class='container header'>
+			<span class='cancel' id="closeEditSettingsForm">X</span>
+			<h2 class='item formTitle'>Edit Global Settings</h2>
+		</div>
+	</div>
+	<div class='item innerForm'>
+		<div class='container innerForm'>
+			<div class='container segmentContainer'>
+				<span class='item label'></span>
+				<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
+				<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
+			</div>
+			<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
+		</div>
+	</div>
+	<div class='item submitContainer'>
+		<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
+	</div>
+</form>
+-->
 					</div>
 				</div>
 			</div>
