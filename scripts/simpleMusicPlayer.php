@@ -50,19 +50,15 @@
 		require_once('requireOnce/embedInput.php');
 	}
 
-	/*
 	// getSettings.php
 	else if ( $get==8 || $get == 'getSettings' ) {
-		require_once('requireOnce/setSettings.php');
+		require_once('requireOnce/getSettings.php');
 	}
-	*/
 
-	/*
 	// setSettings.php
 	else if ( $get==9 || $get == 'setSettings' ) {
 		require_once('requireOnce/setSettings.php');
 	}
-	*/
 
 	// createLoop.php
 	else if ( $get==10 || $get == 'loop') {

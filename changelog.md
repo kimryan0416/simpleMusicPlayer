@@ -329,9 +329,9 @@ This marks Version 1.0.1, which consists of multiple bug fixes and stylistic cha
 	- Miscellaneous Changes:
 		- Lyrics textbox when editing media now fits whole height of browser to prevent massive amounts of scrolling due to small height
 
-### Version 1.0.2 - Minor Bug Fixes + Function Updates, Further Stylistic Changes, Staging for New Update
+### Version 1.0.2 *alpha* - Minor Bug Fixes + Function Updates, Further Stylistic Changes, Staging for New Update
 
-This marks version 1.0.2, which consists of minor bug fixes and updates to existing functions. Stylistic changes also made to SMP. This also allows for staging of some new features, TBA.
+This marks version 1.0.2 *alpha*, which consists of minor bug fixes and updates to existing functions. Stylistic changes also made to SMP. This also allows for staging of some new features, TBA.
 1. Bug Fixes
 	- Reorganized some function calls to make order of operations more seamless
 	- Re-added "openMedia()" function inside "songClicked()", which is called when a piece of media is clicked
@@ -358,3 +358,21 @@ This marks version 1.0.2, which consists of minor bug fixes and updates to exist
 	- New PHP page: ``getSettings`` - not implemented, but theoretically pulls settings from JSON file ``settings.json``
 	- New ``$thisFileDir`` variable within PHP for checking location of ``settings.json`` file.
 	- SMP grabs settings file from ``settings.json`` when calling function ``getAllMedia()`` used when the SMP first loads - the settings are then integrated into the SMP thusly
+
+### Version 1.0.2 *beta* - New "Edit Settings" Form Scaffolding
+This marks version 1.0.2 *beta*, which consists of the introduction of a basic "Edit Settings" Form and the scaffolding to prepare for the official Version 1.0.3.
+
+Version 1.0.2 *alpha* prepared a ``settings.json`` file that was used to store global SMP settings such as Song List Position and default Loop options.
+
+Version 1.0.2 *beta* involves the creation and basic JS and PHP processing for a form that allows the editing of these global functions.
+
+The only settings that can be changed at this point is the Song List position (either left or right) - further settings that can be changed will be added later.
+
+New Functions:
+* JavaScript:
+	* ``initializeEditSettingsForm()`` -  initializes the form for editing SMP global settings
+	* ``openEditSettingsForm()`` - closes all other forms and Song List, and opens the "Edit Settings" form
+	* ``closeEditSettingsForm()`` - closes the "Edit Settings" and opens the Song List form
+* PHP
+	* ``getSettings.php`` - gets the settings from ``settings.json``
+	* ``setSettings.php`` - saves the new settings from the "Edit Settings" form into ``settings.json``

@@ -100,7 +100,7 @@
 						<div class='dropdownItems'>
 							<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
 							<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
-							<!--<span id='openEditSettings' class='dropdownItem settings'>Edit Settings</span>-->
+							<span id='openEditSettingsForm' class='dropdownItem settings'>Edit Settings</span>
 						</div>
 					</div>
 				</div>
@@ -357,7 +357,6 @@
 								<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
 							</div>
 						</form>
-<!--
 <form id='editSettingsForm' name='editSettingsForm' method='post' enctype="multipart/form-data">
 	<div class='item header'>
 		<div class='container header'>
@@ -365,21 +364,26 @@
 			<h2 class='item formTitle'>Edit Global Settings</h2>
 		</div>
 	</div>
-	<div class='item innerForm'>
-		<div class='container innerForm'>
-			<div class='container segmentContainer'>
-				<span class='item label'></span>
-				<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
-				<input class='inputFile' type="file" id='addMediaFormInput' name='addMediaFormInput'>
+	<div class='container segmentContainer'>
+		<span class='item label'>Song List Position<span class='important'>*</span></span>
+		<p class='item text'>The position of the Song List on the screen.</p>
+		<div class='item listPosContainer'>
+			<div class='item listPosItem'>
+				<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosLeft" value='0'>
+				<label class='item songListLabel hover' for='songListPosLeft'></label>
+				<img class='songListPreview' id='songListPreviewLeft' src='assets/transparent.png' alt='List Position Left Preview'>
 			</div>
-			<div class='container segmentContainer dropArea' id='addMediaDropArea'></div>
+			<div class='item listPosItem'>
+				<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosRight" value='1'>
+				<label class='item songListLabel hover' for='songListPosRight'></label>
+				<img class='songListPreview' id='songListPreviewRight' src='assets/transparent.png' alt='List Position Right Preview'>
+			</div>
 		</div>
 	</div>
 	<div class='item submitContainer'>
-		<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
+		<input class='item submitItem submit hover' type="submit" id="editSettingsFormSubmit" name="editSettingsFormSubmit" value="Change Settings">
 	</div>
 </form>
--->
 					</div>
 				</div>
 			</div>

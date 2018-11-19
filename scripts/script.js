@@ -1244,6 +1244,7 @@ function openEdit() {
 	embedForm.closeForm();
 	editAlbumArtForm.closeForm();
 	addMediaForm.closeForm();
+	editSettingsForm.closeForm();
 
 	editMediaForm.openForm();
 
@@ -1256,7 +1257,7 @@ function openEdit() {
 function closeEdit() {
 	getAllMedia(false,true);
 	setTimeout(()=>{
-		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editAlbumArtForm.status ) {
+		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editAlbumArtForm.status && !editSettingsForm.status ) {
 			document.getElementById('list').classList.add('closed');
 		}
 		video_player.lyrics_parent.classList.remove('lock');
@@ -1404,6 +1405,7 @@ function openAlbumArtEdit() {
 	embedForm.closeForm();
 	editMediaForm.closeForm();
 	addMediaForm.closeForm();
+	editSettingsForm.closeForm();
 	
 	editAlbumArtForm.openForm();
 
@@ -1414,7 +1416,7 @@ function openAlbumArtEdit() {
 function closeAlbumArtEdit() {
 	getAllMedia(false,true);
 	setTimeout(()=>{
-		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editMediaForm.status ) {
+		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editMediaForm.status && !editSettingsForm.status ) {
 			document.getElementById('list').classList.add('closed');
 		}
 		editAlbumArtForm.closeForm();
@@ -1487,6 +1489,7 @@ function openEmbed() {
 	editMediaForm.closeForm();
 	editAlbumArtForm.closeForm()
 	addMediaForm.closeForm();
+	editSettingsForm.closeForm();
 
 	embedForm.openForm();
 
@@ -1497,7 +1500,7 @@ function openEmbed() {
 function closeEmbed() {
 	getAllMedia(false,true);
 	setTimeout(()=>{
-		if (!editMediaForm.status && !editAlbumArtForm.status && !addMediaForm.status && !globalPlayer.listOpen) {
+		if (!editMediaForm.status && !editAlbumArtForm.status && !addMediaForm.status && !globalPlayer.listOpen && !editSettingsForm.status ) {
 			document.getElementById('list').classList.add('closed');
 		}
 		embedForm.closeForm();
@@ -1687,6 +1690,7 @@ function openAdd() {
 	editMediaForm.closeForm();
 	editAlbumArtForm.closeForm();
 	embedForm.closeForm();
+	editSettingsForm.closeForm();
 	
 	addMediaForm.openForm();
 
@@ -1697,10 +1701,476 @@ function openAdd() {
 function closeAdd() {
 	getAllMedia(false, true);
 	setTimeout(()=>{
-		if (!editMediaForm.status && !editAlbumArtForm.status && !embedForm.status && !globalPlayer.listOpen) {
+		if (!editMediaForm.status && !editAlbumArtForm.status && !embedForm.status && !globalPlayer.listOpen && !editSettingsForm.status ) {
 			document.getElementById('list').classList.add('closed');
 		}
 		addMediaForm.closeForm();
+		globalPlayer.listSongs.style.display = 'block';
+	},500);
+}
+
+
+function initializeEditSettingsForm(I) {
+	var F = {};
+
+	/* --- VARIALBE/REFERENCE SETUP --- */
+	F.status = (I && I.status) ? I.status : false;
+	F.open = (I && I.open) ? I.open : document.getElementById('openEditSettingsForm');
+	F.close = (I && I.close) ? I.close : document.getElementById('closeEditSettingsForm');
+	F.form = (I && I.form) ? I.form : document.getElementById('editSettingsForm');
+
+	F.listPosLeft = (I && I.listPosLeft) ? I.listPosLeft : document.getElementById('songListPosLeft');
+	F.listPosRight = (I && I.listPosRight) ? I.listPosRight : document.getElementById('songListPosRight');
+/*
+	F.songId = (I && I.songId) ? I.songId : document.getElementById('id_edit');
+	F.medium = (I && I.medium) ? I.medium : document.getElementById('medium_edit');
+	F.title = (I && I.title) ? I.title : document.getElementById('titleEdit');
+	F.artist = (I && I.artist) ? I.artist : document.getElementById('artistEdit');
+	F.artDisplay = (I && I.artDisplay) ? I.artDisplay : document.getElementById('editArtDisplay');
+	F.art = (I && I.art) ? I.art : document.getElementById('artEdit');
+	F.alternativeArtContainer = (I && I.alternativeArtContainer) ? I.alternativeArtContainer : document.getElementById('editArtAlternativesContainer');
+	F.alternativeArtActivator = (I && I.alternativeArtActivator) ? I.alternativeArtActivator : document.getElementById('editArtAlternativesActivator');
+	F.alternativeArtArray = (I && I.alternativeArtArray) ? I.alternativeArtArray : null;
+	F.album = (I && I.album) ? I.album : document.getElementById('albumEdit');
+	F.albumArtist = (I && I.albumArtist) ? I.albumArtist : document.getElementById('albumArtistEdit');
+	F.composer = (I && I.composer) ? I.composer : document.getElementById('composerEdit');
+	F.paddingContainer = ( I && I.paddingContainer) ? I.paddingContainer : document.getElementById('editPaddingContainer');
+	F.startPadding = (I && I.startPadding) ? I.startPadding : document.getElementById('startPaddingEdit');
+	F.endPadding = (I && I.endPadding) ? I.endPadding : document.getElementById('endPaddingEdit');
+	F.videoIdContainer = (I && I.videoIdContainer) ? I.videoIdContainer : document.getElementById('editVideoIdContainer');
+	F.videoId = (I && I.videoId) ? I.videoId : document.getElementById('videoIdEdit');
+	F.lyricsSettings = (I && I.lyricsSettings) ? I.lyricsSettings : document.getElementById('editLyricsSettings');
+	F.lyricsSettingsSimple = (I && I.lyricsSettingsSimple) ? I.lyricsSettingsSimple : document.getElementById('editLyricsSimpleLabel');
+	F.lyricsSettingsDynamic = (I && I.lyricsSettingsDynamic) ? I.lyricsSettingsDynamic : document.getElementById('editLyricsDynamicLabel');
+	F.lyricsSettingsSimpleRadio = (I && I.lyricsSettingsSimpleRadio) ? I.lyricsSettingsSimpleRadio : document.getElementById('editLyricsSimpleRadio');
+	F.lyricsSettingsDynamicRadio = (I && I.lyricsSettingsDynamicRadio) ? I.lyricsSettingsDynamicRadio : document.getElementById('editLyricsDynamicRadio');
+	F.lyricsSimpleContainer = (I && I.lyricsSimpleContainer) ? I.lyricsSimpleContainer : document.getElementById('editLyricsSimpleContainer');
+	F.simpleLyrics = (I && I.simpleLyrics) ? I.simpleLyrics : document.getElementById('simple_lyrics_edit');
+	F.lyricsDynamicContainer = (I && I.lyricsDynamicContainer) ? I.lyricsDynamicContainer : document.getElementById('editLyricsDynamicContainer');
+	F.dynamicLyricsInnerContainer = (I && I.dynamicLyricsInnerContainer) ? I.dynamicLyricsInnerContainer : document.getElementById('dynamicLyricsEditInnerContainer');
+	F.dynamicLyricsIndex = -1;
+	F.dynamicLyricsAddSegment = (I && I.dynamicLyricsAddSegment) ? I.dynamicLyricsAddSegment : document.getElementById('dynamicLyricsEditAdd');
+	F.convertLyricsActivator = (I && I.convertLyricsActivator) ? I.convertLyricsActivator : document.getElementById('convertLyricsActivator');
+*/
+	F.submit = (I && I.submit) ? I.submit : document.getElementById('editSettingsFormSubmit');
+/*
+	F.openedLyrics = 0;
+	F.iconEdit = null;
+*/
+
+	/* --- FUNCTIONS --- */
+	F.openForm = (I && I.openForm) ? I.openForm : function() {
+		F.form.style.display = 'block';
+		F.status = true;
+	}
+	F.closeForm = (I && I.closeForm) ? I.closeForm : function() {
+		F.form.style.display = 'none';
+		F.status = false;
+		//F.iconEdit = null
+	}
+
+	F.startEdit = (I && I.startEdit) ? I.startEdit : function(id) {
+		F.form.reset();
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST','scripts/simpleMusicPlayer.php?get=8');
+		//xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+		xhr.onload = function() {
+			if (xhr.status === 200) {
+				var response = JSON.parse(xhr.responseText);
+				if (response.success) {
+					F.prepareEdit(response['data']);
+				}
+				else {
+					alert(response.message);
+					console.log(response.data);
+				}
+			}
+			else if (xhr.status !== 200) {
+				alert('Request failed.  Returned status of ' + xhr.status);
+			}
+		};
+		xhr.send();
+	}
+/*
+	F.make = (I && I.make) ? I.make : make;
+	F.updateCurrent = (I && I.updateCurrent) ? I.updateCurrent : updateCurrent;
+	F.setBackground = (I && I.setBackground) ? I.setBackground : setBackground;
+*/
+	F.prepareEdit = (I && I.prepareEdit) ? I.prepareEdit : function(arr) {
+		if (arr.listPos) {
+			F.listPosRight.checked = true;
+			F.listPosLeft.checked = false;
+		} else {
+			F.listPosLeft.checked = true;
+			F.listPosRight.checked = false;
+		}
+		/*
+		F.title.value = arr.title;
+		F.artist.value = arr.artist;
+		F.album.value = arr.album_name;
+		F.albumArtist.value = arr.album_artist_name;
+		F.composer.value = arr.composer;
+
+		F.alternativeArtContainer.querySelectorAll('.item').forEach(item=>{
+			item.parentNode.removeChild(item);
+		});
+		F.alternativeArtActivator.style.display = 'block';
+		F.artDisplay.src = (arr.art != null) ? arr.art +'#'+ new Date().getTime() : 'assets/default_album_art.jpg';
+
+		while (F.dynamicLyricsInnerContainer.firstChild) F.dynamicLyricsInnerContainer.removeChild(F.dynamicLyricsInnerContainer.firstChild);
+	
+		if ( arr.medium == 0 ) {
+			F.videoIdContainer.style.display = 'none';
+			F.lyricsSettings.style.display = 'block';
+			F.convertLyricsActivator.style.display = 'block';
+
+			F.paddingContainer.style.display = 'block';
+			F.startPadding.value = arr.start_padding;
+			F.endPadding.value = arr.end_padding;
+
+			F.simpleLyrics.value = arr.simpleLyrics;
+			var seg = arr.dynamicLyrics;
+			if (seg.length > 0) {
+				for (var lyricSeg in seg) {
+					F.dynamicLyricsIndex = parseInt(lyricSeg);
+					F.dynamicLyricsInnerContainer.appendChild(F.dynamicLyricSegmentForEdit(lyricSeg, seg[lyricSeg]['time'], seg[lyricSeg]['style'], seg[lyricSeg]['no_text'], seg[lyricSeg]['text']));
+				}
+			}
+			if (arr.dynamic_lyrics_toggle == 1) {
+				F.lyricsSettingsSimpleRadio.checked = false;
+				F.lyricsSettingsDynamicRadio.checked = true;
+				F.lyricsSimpleContainer.classList.remove('selected');
+				F.lyricsDynamicContainer.classList.add('selected');
+				F.convertLyricsActivator.innerHTML = '=> Import from Simple Lyrics';
+				F.openedLyrics = 1;
+			} else {
+				F.lyricsSettingsSimpleRadio.checked = true;
+				F.lyricsSettingsDynamicRadio.checked = false;
+				F.lyricsSimpleContainer.classList.add('selected');
+				F.lyricsDynamicContainer.classList.remove('selected');
+				F.convertLyricsActivator.innerHTML = 'Import from Dynamic Lyrics <=';
+				F.openedLyrics = 0;
+			}
+		}
+		else {
+			F.paddingContainer.style.display = 'none';
+
+			if (arr.medium == 1) {
+				F.videoId.value = arr.url;
+				F.videoIdContainer.style.display = 'block';
+			} 
+			else F.videoIdContainer.style.display = 'none';
+			F.lyricsSettings.style.display = 'none';
+			F.lyricsSettingsSimpleRadio.checked = false;
+			F.lyricsSettingsDynamicRadio.checked = true;
+			F.lyricsSimpleContainer.classList.remove('selected');
+			F.lyricsDynamicContainer.classList.add('selected');
+			F.convertLyricsActivator.style.display = 'none';
+			F.openedLyrics = 1;
+			var seg = arr.dynamicLyrics;
+			if (seg.length > 0) {
+				for (var lyricSeg in seg) {
+					F.dynamicLyricsIndex = parseInt(lyricSeg);
+					F.dynamicLyricsInnerContainer.appendChild(F.dynamicLyricSegmentForEdit(lyricSeg, seg[lyricSeg]['time'], seg[lyricSeg]['style'], seg[lyricSeg]['no_text'], seg[lyricSeg]['text']));
+				}
+			}
+		}
+		*/
+	}
+/*
+	F.convertLyrics = function() {
+		var current = F.openedLyrics;
+		var allSegments = [];
+		var thisString = '';
+		if (current == 0) {
+			F.form.querySelectorAll('.dynamicLyricsEdit').forEach(elmnt=>{
+				allSegments.push(elmnt.value);
+			});
+			thisString = allSegments.join('\n');
+			F.simpleLyrics.value = thisString;
+			return;
+		}
+		else if (current == 1) {
+			thisString = F.simpleLyrics.value;
+			allSegments = thisString.split('\n\n');
+			while (F.dynamicLyricsInnerContainer.firstChild) F.dynamicLyricsInnerContainer.removeChild(F.dynamicLyricsInnerContainer.firstChild);
+			allSegments.forEach(function(d,index) {
+				F.dynamicLyricsInnerContainer.appendChild(F.dynamicLyricSegmentForEdit(index, '', '', '', d));
+				F.dynamicLyricsIndex = index;
+			});
+			return;
+		}
+		else return;
+	}
+	F.populateAlternativeArtContainer = function() {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET','scripts/simpleMusicPlayer.php?get=4');
+		xhr.onload = function() {
+			if (xhr.status === 200) {
+				var response = JSON.parse(xhr.responseText);
+				if (response.success) {
+					if (response['data']['data'] != null) {
+						F.alternativeArtContainer.querySelectorAll('.item').forEach(item=>{
+							item.parentNode.removeChild(item);
+						});
+						F.alternativeArtArray = response.data;
+						F.alternativeArtActivator.style.display = 'none';
+						var html, img, input, label;
+						for (var index in response['data']['data']) {
+							img = ( response['data']['data'][index].startsWith('data') ) ? response['data']['data'][index] : response['data']['data'][index]+'?'+new Date().getTime();
+							html = F.make(['div',{class:'item alternate'},['img',{class:'item previewItem',src:img,alt:''}]]);
+							input = F.make(['input',{type:'radio',class:'inputRadio alternateRadio',id:'alternate_art_'+index,name:'alternate_art',value:index}]);
+							input.addEventListener('change',function() {
+								F.iconEdit = null;
+							});
+							label = F.make(['label',{for:'alternate_art_'+index,class:'item previewLabel hover','data-id':index}]);
+							label.addEventListener('click',function() {
+								F.iconEdit = null;
+								var alternative_id = this.dataset.id;
+								F.artDisplay.src = F.alternativeArtArray['data'][alternative_id];
+							});
+							html.appendChild(input)
+							html.appendChild(label);
+							F.alternativeArtContainer.appendChild(html);
+			       		}	
+					}
+					else F.alternativeArtActivator.innerHTML = 'No alternate album art available';
+				}
+				else {
+					alert(response.message);
+					console.log(response.data);
+				}
+			}
+			else if (xhr.status !== 200) {
+				alert('Request failed.  Returned status of ' + xhr.status +'\n Status Text: ' + xhr.statusText);
+			}
+		}
+		xhr.send();
+	}
+
+	F.removeLyricSegment = (I && I.removeLyricSegment) ? I.removeLyricSegment : function(segId) {
+		var removeThis = document.getElementById('dynamic_lyrics_segment_'+segId);
+		removeThis.parentNode.removeChild(removeThis);	
+	}
+	F.addLyricSegment = (I && I.addLyricSegment) ? I.addLyricSegment : function() {
+		F.dynamicLyricsIndex = parseInt(F.dynamicLyricsIndex) + 1;
+		F.dynamicLyricsInnerContainer.appendChild(F.dynamicLyricSegmentForEdit(F.dynamicLyricsIndex, '', '', false, ''));
+	}
+	F.dynamicLyricSegmentForEdit = (I && I.dynamicLyricSegmentForEdit) ? I.dynamicLyricSegmentForEdit : function(id, time = '', style = '', notext = true, text = '') {
+		//var lyricSegHTML = F.make(['div',{id:'dynamic_lyrics_segment_'+id,class:'item dynamicSegment'},['span',{class:'cancel dynamicLyricsSegmentRemove','data-id':id},'X'],['div',{class:'container dynamicSegment'},['span',{class:'item dynamicSegmentItem hover dynamicLyricsSegmentAddAbove'},'Add Segment Above'],['div',{class:'item dynamicSegmentItem'},['input',{class:'item inputText dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}],['input',{class:'item inputText dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}]],['div',{class:'item dynamicSegmentItem'},['input',{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}],['input',{id:'dynamic_lyrics_notext_'+id,class:'inputRadio dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}],['label',{class:'item inputLabel noTextLabel hover',for:'dynamic_lyrics_notext_'+id},'No Text']],['div',{class:'item dynamicSegmentItem'},['textarea',{class:'item editInput dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}]],['span',{'class':'item dynamicSegmentItem hover dynamicLyricsSegmentAddBelow'},'Add Segment Below']]]);
+		var lyricSegHTML = F.make(['div',{id:'dynamic_lyrics_segment_'+id,class:'item dynamicSegment'}]);
+		var removeSeg = F.make(['span',{class:'cancel dynamicLyricsSegmentRemove','data-id':id},'X']);
+		removeSeg.addEventListener('click',function() {
+			F.removeLyricSegment(this.dataset.id);
+		});
+
+		var lyricInnerSeg = F.make(['div',{class:'container dynamicSegment'}]);
+		var arr = [
+			F.make(['span',{class:'item dynamicSegmentItem hover dynamicLyricsSegmentAddAbove'},'Add Segment Above']),
+			F.make(['div',{class:'item dynamicSegmentItem'},['input',{class:'item inputText dynamicLyricsTime',type:'text',name:'dynamic_lyrics_times[]',placeholder:'Start Time',value:time}],['input',{class:'item inputText dynamicLyricsStyle',type:'text',name:'dynamic_lyrics_styles[]',placeholder:'Color',value:style}]]),
+			F.make(['div',{class:'item dynamicSegmentItem'},['input',{id:'dynamic_lyrics_notext_'+id+'Hidden',type:'hidden',value:'0',name:'dynamic_lyrics_notexts[]'}],['input',{id:'dynamic_lyrics_notext_'+id,class:'inputRadio dynamicLyricsNotext',type:'checkbox',value:'1',name:'dynamic_lyrics_notexts[]',checked:notext}],['label',{class:'item inputLabel noTextLabel hover',for:'dynamic_lyrics_notext_'+id},'No Text']]),
+			F.make(['div',{class:'item dynamicSegmentItem'},['textarea',{class:'item editInput dynamicLyricsEdit',name:'dynamic_lyrics_edits[]',placeholder:'Lyric Segment',rows:'4',html:text}]]),
+			F.make(['span',{'class':'item dynamicSegmentItem hover dynamicLyricsSegmentAddBelow'},'Add Segment Below'])
+		];
+		arr[0].addEventListener('click',function() {
+			F.dynamicLyricsIndex += 1;
+			var newSeg = F.dynamicLyricSegmentForEdit(F.dynamicLyricsIndex);
+			F.dynamicLyricsInnerContainer.insertBefore(newSeg,this.parentNode.parentNode);
+		});
+		arr[arr.length-1].addEventListener('click',function() {
+			F.dynamicLyricsIndex += 1;
+			var newSeg = F.dynamicLyricSegmentForEdit(F.dynamicLyricsIndex);
+			F.dynamicLyricsInnerContainer.insertBefore(newSeg,this.parentNode.parentNode.nextSibling);
+		});
+
+		lyricSegHTML.appendChild(removeSeg);
+		arr.forEach(el=>{
+			lyricInnerSeg.appendChild(el);
+		});
+		lyricSegHTML.appendChild(lyricInnerSeg);
+
+		return lyricSegHTML;
+	}
+	F.serializeArray = function(form) {
+		var objects = [];  
+		if (typeof form == 'object' && form.nodeName.toLowerCase() == 'form') {  
+			var fields = form.getElementsByTagName("input");  
+			for(var i=0;i<fields.length;i++){  
+				objects[objects.length] = { name: fields[i].getAttribute('name'), value: fields[i].getAttribute('value') };  
+			}  
+		}  
+		return objects;  
+	}
+	F.prepareIconEdit = function(event) {
+		F.iconEdit = event.target.files[0];
+		var url = event.target.value;
+		var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+		if (event.target.files && event.target.files[event.target.files.length-1] && (ext == 'PNG' || ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'JPEG' || ext == 'JPG')) {
+			var reader = new FileReader();
+			reader.readAsDataURL(event.target.files[event.target.files.length-1]);
+			reader.onload = function (e) {	
+				F.artDisplay.src = e.target.result;
+			}
+		} 
+		else F.artDisplay.src = 'assets/default_album_art.jpg';
+	}
+	F.editIcon = function(event) {
+		event.stopPropagation(); 	// Stop stuff happening
+		event.preventDefault(); 	// Totally stop stuff happening
+		
+		var file = F.iconEdit;
+		if (file == null) {
+			F.submitEdit(F.songId.value,0);
+			return;
+		}
+		var data = new FormData();
+		data.append('file',file);
+		data.append('id_edit',F.songId.value);
+		data.append('command','icon');
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST','scripts/simpleMusicPlayer.php?get=5');
+		xhr.onload = function() {
+			if (xhr.status == 200) {
+				var response = JSON.parse(xhr.responseText);
+				if (response.success){
+					F.submitEdit(F.songId.value,1);
+				}
+				else {
+					alert(response.message);
+					console.log(response.data);
+				}
+			}
+			else alert('Request failed.  Returned status of ' + xhr.status +'\n Status Text: ' + xhr.statusText);
+		};
+		xhr.send(data);
+	}
+*/
+	F.submitEdit = function(event) {
+		event.stopPropagation(); 	// Stop stuff happening
+		event.preventDefault(); 	// Totally stop stuff happening
+
+		var formData = new FormData(F.form);
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST','scripts/simpleMusicPlayer.php?get=9');
+		xhr.onload = function() {
+			if (xhr.status == 200) {
+				var response = JSON.parse(xhr.responseText);
+				if (response.success){
+					var res = response.data;
+					console.log(res);
+					globalPlayer.loop = res['loop'];
+					globalPlayer.shuffle = res['shuffle'];
+					if (res['listPos']) {
+						globalPlayer.listContainer.classList.add('right');
+						globalPlayer.listContainer.classList.remove('left');
+					} else {
+						globalPlayer.listContainer.classList.add('left');
+						globalPlayer.listContainer.classList.remove('right');
+					}
+					setLoop(globalPlayer.loop);
+					setShuffle(globalPlayer.shuffle);
+					alert("Global settings edited!");
+				}
+				else {
+					alert(response.message);
+					console.log(response.data);
+				}
+			}
+			else {
+				alert('Request failed.  Returned status of ' + xhr.status +'\n Status Text: ' + xhr.statusText);
+			}
+		};
+		xhr.send(formData);
+	}
+/*
+	F.resetPlayerAfterEdit = function() {
+		F.setBackground('assets/default_player_background.jpg', globalPlayer.background);
+
+		globalPlayer.currentPlayer.title.classList.remove('smallerTitle');
+		globalPlayer.currentPlayer.title.innerHTML = 'Choose a Song';
+		globalPlayer.currentPlayer.artist.innerHTML = 'Artist';
+		while(globalPlayer.currentPlayer.lyrics.firstChild) globalPlayer.currentPlayer.lyrics.removeChild(globalPlayer.currentPlayer.lyrics.firstChild);
+		globalPlayer.currentPlayer.durationDisplay.innerHTML = '--:--';
+		globalPlayer.currentPlayer.timeDisplay.innerHTML = '--:--';
+		globalPlayer.currentPlayer.timeSlider.value = 0;
+		globalPlayer.currentPlayer.playButton.classList.remove('playing');
+
+		globalPlayer.currentSong = -1;
+		globalPlayer.currentAlbumArtist = -1;
+		globalPlayer.currentAlbum = -1;
+		globalPlayer.dynamic_lyrics_toggle = false;
+		globalPlayer.dynamic_lyrics_starting_times = null;
+		globalPlayer.canPlay = false;
+		globalPlayer.current_time_index = -1;
+		globalPlayer.current_time = -1;
+		globalPlayer.currentMediaType = -1;
+		globalPlayer.startPadding = 0;
+		globalPlayer.endPadding = 3599999;	
+		globalPlayer.queue.length = 0;
+
+		if (globalPlayer.currentMediaType == 0) {
+			globalPlayer.currentPlayer.container.classList.remove('closed');
+			globalPlayer.currentPlayer.art.src = 'assets/default_album_art.jpg';
+			globalPlayer.currentPlayer.lyrics.innerHTML = "<span class='lyric_segment noText'></span><span class='lyric_segment'><i>Lyrics go Here</i></span><span class='lyric_segment'></span>";
+		} else {
+			globalPlayer.currentPlayer.container.classList.add('closed');
+			audio_player.playButton.classList.remove('playing');
+		}
+	}
+*/
+
+	/* --- CLICK EVENTS --- */
+/*
+	F.alternativeArtActivator.addEventListener('click', F.populateAlternativeArtContainer);
+	F.dynamicLyricsAddSegment.addEventListener('click', F.addLyricSegment);
+	F.lyricsSettingsSimple.addEventListener('click', function() {
+		F.lyricsDynamicContainer.classList.remove('selected');
+		F.lyricsSimpleContainer.classList.add('selected');
+		F.convertLyricsActivator.innerHTML = 'Import from Dynamic Lyrics <=';
+		F.openedLyrics = 0;
+	});
+	F.lyricsSettingsDynamic.addEventListener('click', function() {
+		F.lyricsSimpleContainer.classList.remove('selected');
+		F.lyricsDynamicContainer.classList.add('selected');
+		F.convertLyricsActivator.innerHTML = '=> Import from Simple Lyrics';
+		F.openedLyrics = 1;
+	});
+	F.convertLyricsActivator.addEventListener('click',F.convertLyrics);
+	F.art.addEventListener('change', F.prepareIconEdit);
+	F.delete.addEventListener('click', function() {	
+		F.submitEdit(F.songId.value, 0, 1);	
+	});
+*/
+	//F.submit.addEventListener('click', F.editIcon);
+	F.submit.addEventListener('click', F.submitEdit);
+
+	return F;
+}
+function openEditSettingsForm() {
+	globalPlayer.listSongs.style.display = 'none';
+	embedForm.closeForm();
+	editAlbumArtForm.closeForm();
+	addMediaForm.closeForm();
+	editMediaForm.closeForm();
+
+	editSettingsForm.openForm();
+
+	video_player.lyrics_parent.classList.add('lock');
+	globalPlayer.controls.container.classList.add('lock');
+	if (!globalPlayer.listOpen) {
+		document.getElementById('list').classList.remove('closed');
+	}
+}
+function closeEditSettingsForm() {
+	getAllMedia(false,true);
+	setTimeout(()=>{
+		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editAlbumArtForm.status && !editMediaForm.status ) {
+			document.getElementById('list').classList.add('closed');
+		}
+		video_player.lyrics_parent.classList.remove('lock');
+		globalPlayer.controls.container.classList.remove('lock');
+		editSettingsForm.closeForm();
 		globalPlayer.listSongs.style.display = 'block';
 	},500);
 }
@@ -1770,6 +2240,7 @@ editMediaForm = initializeEditMediaForm();
 editAlbumArtForm = initializeEditAlbumArtForm();
 embedForm = initializeEmbedForm();
 addMediaForm = initializeAddMediaForm();
+editSettingsForm = initializeEditSettingsForm();
 audio_player = {
 	container: document.getElementById('player_container'),
 	html: document.getElementById('audio'),
@@ -1920,6 +2391,15 @@ addMediaForm.close.addEventListener('click',closeAdd);
 
 /* Edit Form-related functions */
 editMediaForm.close.addEventListener('click', closeEdit);
+
+/* Edit Global Setttings-related functions */
+editSettingsForm.open.addEventListener('click',()=>{
+	if (!editSettingsForm.status) {
+		editSettingsForm.startEdit();
+		openEditSettingsForm();
+	}
+});
+editSettingsForm.close.addEventListener('click',closeEditSettingsForm);
 
 /* Player-related functions */
 globalPlayer.controls.playButton.addEventListener('click', function() {

@@ -4,8 +4,8 @@
     if ( !$begunTransaction || $begunTransaction == false) $db->beginTransaction();
 
     $get = ( $get!=null ) ? $get : filter_input(INPUT_GET,'get',FILTER_VALIDATE_INT);
-    if ( !isset($get) || ( $get!=8 && $get!='getSettings' ) ) {
-        print(returnError($db,'getSettings - Proper GET not received'));
+    if ( !isset($get) || ( $get!=9 && $get!='setSettings' ) ) {
+        print(returnError($db,'setSettings - Proper GET not received'));
         return;
     }
     if ( !isset($thisFileDir) ) {
@@ -32,9 +32,28 @@
             $settingsPath = '../';
     }
 
-    $fp = file_get_contents($settingsPath.'settings.json');
-    $settings = json_decode($fp,true);
+    $listPos = filter_input(INPUT_POST, 'songListPos', FILTER_VALIDATE_INT);
+    if ( !isset($listPos) || ($listPos != 0 && $listPos == false) ) {
+        print(returnError($db,'setSettings - songListPos either unset or not an integer',array('listPos'=>$listPos)));
+        return;
+    } else if ( $listPos != 0 && $listPos != 1 ) {
+        print(returnError($db,'setSettings - songListPos NOT one of the preset positions possible',array('listPos'=>$listPos)));
+        return;
+    }
 
-    print(returnSuccess($db,'Success getting settings',$settings));
+    if ($listPos == 0) $listPos = false;
+    else $listPos = true;
+
+    $toSave = array(
+        'listPos'=>$listPos,
+        'loop'=>1,
+        'shuffle'=>0
+    );
+
+    $fp = fopen($settingsPath.'settings.json', 'w');
+    fwrite($fp, json_encode($toSave));
+    fclose($fp);
+
+    print(returnSuccess($db,'Success getting settings',$toSave));
     return;
 ?>
