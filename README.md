@@ -15,9 +15,7 @@ The **SMP** utilizes the following coding langauges:
 You can view the changelog inside ``changelog.md``.
 
 ### Latest Stable Version:
-The latest stable release of the SMP is **Version 1.0.1**.
-### Most Recent Pre-Release Version:
-The most recent pre-release version is **Version 1.0.2 *beta***
+The latest stable release of the SMP is **Version 1.0.2**.
 
 ---
 
@@ -47,12 +45,25 @@ The SMP's UI is determined as such:
 ![ui.png](assets/readmeImages/ui.png)
 
 #### **1) Body Header** - The header bar that spans the top of the screen.
-This header bar contains 3 functions:
+This header bar contains 4 parts:
 * *Settings (Gear icon)*: Lets you adding local media and youtube videos as embed to your local version of the SMP. Also lets you change global settings of the whole SMP (i.e Song List position)
 
-* *Toggle Song List*: Toggles the appearance of the Song List column (#2)
+* *Song List*: Toggles the appearance of the Song List column (#2)
 
 * *Search Bar*: Lets you access a search bar to look up media and play them from the search bar for quick access.
+
+* *Player Buttons*: lets you control the player. Available buttons include:
+	* *Pause*
+	* *Play*
+	* *Forward +5 seconds*
+	* *Backward -5 seconds*
+	* *Previous media (if looped or shuffled)*
+	* *Next media (if looped or shuffled*)
+	* *Volume level*
+	* *Loop single media, loop album, or no loop*
+	* *Shuffle album, or no shuffle*
+	* *Edit current media*
+	* *Autoscroll dynamic lyrics / toggle lyrics (if video)*
 
 #### **2) Song List** - The column that contains all the media added to your local version of the SMP.
 The Song List has several functions:
@@ -68,20 +79,7 @@ The Song List has several functions:
 	* Edit Global Settings
 
 #### **3) Player** - The main container for the audio and video player
-Allows for the following functions:
-* Control the current media, including:
-	* *pause*
-	* *play*
-	* *forward +5 seconds*
-	* *backward -5 seconds*
-	* *previous media (if looped or shuffled)*
-	* *next media (if looped or shuffled*)
-* Change player settings:
-	* Volume
-	* Loop single media, loop album, or no loop
-	* Shuffle album, or no shuffle
-	* Edit current media
-	* Autoscroll dynamic lyrics / toggle lyrics (if video)
+
 * Audio player and Video player are hidden/shown depending on what kind of media is being played
 * Audio media shows **album artwork** and **lyrics** (if lyrics are available with the current media)
 

@@ -6,6 +6,19 @@ var mousePos = {
 	y: 0
 };
 
+/*
+var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'violet',
+    progressColor: 'purple',
+    barWidth:2
+});
+wavesurfer.load('media/1.m4a');
+wavesurfer.on('ready', function () {
+    //wavesurfer.play();
+    console.log("balls");
+});
+*/
 
 /* Youtube Setup - If no online connection detected, then all youtube embedded entries are not available */
 function onYouTubeIframeAPIReady() {
@@ -14,6 +27,49 @@ function onYouTubeIframeAPIReady() {
 }
 function getMousePos(e) {
 	return {x:e.clientX,y:e.clientY};
+}
+function setHeaderPos(headerPos = 'top', listPos = 'left') {
+	var header = document.getElementById('bodyHeader');
+	globalPlayer.headerPos = headerPos;
+	header.classList.add('hidden');
+
+	switch(headerPos) {
+		case 'top':
+			header.classList.remove('bottom');
+			globalPlayer.listContainer.classList.remove('headerBottom');
+			break;
+		case 'bottom':
+			header.classList.add('bottom');
+			globalPlayer.listContainer.classList.add('headerBottom');
+			break;
+		default:
+			header.classList.remove('bottom');
+			globalPlayer.listContainer.classList.remove('headerBottom');
+	}
+
+	console.log(listPos);
+	globalPlayer.listPos = listPos;
+	switch(listPos) {
+		case 'left':
+			header.classList.remove('listRight');
+			globalPlayer.listContainer.classList.add('left');
+			globalPlayer.listContainer.classList.remove('right');
+			break;
+		case 'right':
+			header.classList.add('listRight');
+			globalPlayer.listContainer.classList.add('right');
+			globalPlayer.listContainer.classList.remove('left');
+			break;
+		default:
+			header.classList.remove('listRight');
+			globalPlayer.listContainer.classList.add('left');
+			globalPlayer.listContainer.classList.remove('right');
+	}
+
+	setTimeout(()=>{
+		header.classList.remove('hidden');
+	},300);
+	return;
 }
 function isArray(a) {	return Object.prototype.toString.call(a) === "[object Array]";	}
 function formatBytes(a,b){if(0==a)return"0 Bytes";var c=1024,d=b||2,e=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],f=Math.floor(Math.log(a)/Math.log(c));return parseFloat((a/Math.pow(c,f)).toFixed(d))+" "+e[f]}
@@ -153,14 +209,39 @@ function onTimeUpdate(track, embedTime = null) {
 		globalPlayer.ignoreOnTimeUpdate = false;
 	}
 }
-
 function openMedia(id, newQueue = false) {
 	var data = globalPlayer.database[id];
 	preparePlayer(data);
 	if (data.medium == 0 || data.medium == 2) prepareLocalMedia(data);
 	if (newQueue) loadQueue();
 }
-
+function initializeSettings() {
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET','scripts/simpleMusicPlayer.php?get=8');
+	xhr.onload = function() {
+		if (xhr.status === 200) {
+			var response = JSON.parse(xhr.responseText);
+			if (response.success) {
+				var receivedSettings = response['data'];
+				globalPlayer.loop = receivedSettings['loop'];
+				globalPlayer.shuffle = receivedSettings['shuffle'];
+				globalPlayer.volume = parseInt(receivedSettings['volume']);
+				globalPlayer.headerPos = receivedSettings['headerPos'];
+				globalPlayer.listPos = receivedSettings['listPos'];
+				setLoop(globalPlayer.loop);
+				setShuffle(globalPlayer.shuffle);
+				volumeAdjust(globalPlayer.volume);
+				setHeaderPos(globalPlayer.headerPos, globalPlayer.listPos);
+			} else {
+				alert(response.message);
+				console.log(response);
+			}
+		} else {
+			alert('Request failed.  Returned status of ' + xhr.status);
+		}
+	}
+	xhr.send();
+}
 function getAllMedia(update = false, print = true, scrollTo = -1) {
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET','scripts/simpleMusicPlayer.php?get=1');
@@ -178,17 +259,7 @@ function getAllMedia(update = false, print = true, scrollTo = -1) {
 					});
 				}
 				globalPlayer.database = raw;
-				globalPlayer.loop = receivedSettings['loop'];
-				globalPlayer.shuffle = receivedSettings['shuffle'];
-				if (receivedSettings['listPos']) {
-					globalPlayer.listContainer.classList.add('right');
-					globalPlayer.listContainer.classList.remove('left');
-				} else {
-					globalPlayer.listContainer.classList.add('left');
-					globalPlayer.listContainer.classList.remove('right');
-				}
-				setLoop(globalPlayer.loop);
-				setShuffle(globalPlayer.shuffle);
+
 				if (globalPlayer.listContainer.classList.contains('closed')) globalPlayer.listContainer.classList.remove('closed');
 
 				for (var id in raw) {
@@ -1721,23 +1792,23 @@ function initializeEditSettingsForm(I) {
 
 	F.listPosLeft = (I && I.listPosLeft) ? I.listPosLeft : document.getElementById('songListPosLeft');
 	F.listPosRight = (I && I.listPosRight) ? I.listPosRight : document.getElementById('songListPosRight');
+	F.headerPosTop = (I && I.headerPosTop) ? I.headerPosTop : document.getElementById('headerPosTop');
+	F.headerPosBottom = (I && I.headerPosBottom) ? I.headerPosBottom : document.getElementById('headerPosBottom');
+	F.loopNone = (I && I.loopNone) ? I.loopNone : document.getElementById('loopDefaultNone');
+	F.loopOne = (I && I.loopOne) ? I.loopOne : document.getElementById('loopDefaultOne');
+	F.loopAll = (I && I.loopAll) ? I.loopAll : document.getElementById('loopDefaultAll');
+	F.shuffleOff = (I && I.shuffleOff) ? I.shuffleOff : document.getElementById('shuffleDefaultOff');
+	F.shuffleOn = (I && I.shuffleOn) ? I.shuffleOn : document.getElementById('shuffleDefaultOn');
+	F.volume = (I && I.volume) ? I.volume : document.getElementById('volumeDefaultRange');
+	F.volumePreview = (I && I.volumePreview) ? I.volumePreview : document.getElementById('volumeDefaultPreview');
 /*
-	F.songId = (I && I.songId) ? I.songId : document.getElementById('id_edit');
-	F.medium = (I && I.medium) ? I.medium : document.getElementById('medium_edit');
-	F.title = (I && I.title) ? I.title : document.getElementById('titleEdit');
-	F.artist = (I && I.artist) ? I.artist : document.getElementById('artistEdit');
-	F.artDisplay = (I && I.artDisplay) ? I.artDisplay : document.getElementById('editArtDisplay');
 	F.art = (I && I.art) ? I.art : document.getElementById('artEdit');
 	F.alternativeArtContainer = (I && I.alternativeArtContainer) ? I.alternativeArtContainer : document.getElementById('editArtAlternativesContainer');
 	F.alternativeArtActivator = (I && I.alternativeArtActivator) ? I.alternativeArtActivator : document.getElementById('editArtAlternativesActivator');
 	F.alternativeArtArray = (I && I.alternativeArtArray) ? I.alternativeArtArray : null;
-	F.album = (I && I.album) ? I.album : document.getElementById('albumEdit');
-	F.albumArtist = (I && I.albumArtist) ? I.albumArtist : document.getElementById('albumArtistEdit');
-	F.composer = (I && I.composer) ? I.composer : document.getElementById('composerEdit');
 	F.paddingContainer = ( I && I.paddingContainer) ? I.paddingContainer : document.getElementById('editPaddingContainer');
 	F.startPadding = (I && I.startPadding) ? I.startPadding : document.getElementById('startPaddingEdit');
 	F.endPadding = (I && I.endPadding) ? I.endPadding : document.getElementById('endPaddingEdit');
-	F.videoIdContainer = (I && I.videoIdContainer) ? I.videoIdContainer : document.getElementById('editVideoIdContainer');
 	F.videoId = (I && I.videoId) ? I.videoId : document.getElementById('videoIdEdit');
 	F.lyricsSettings = (I && I.lyricsSettings) ? I.lyricsSettings : document.getElementById('editLyricsSettings');
 	F.lyricsSettingsSimple = (I && I.lyricsSettingsSimple) ? I.lyricsSettingsSimple : document.getElementById('editLyricsSimpleLabel');
@@ -1797,17 +1868,58 @@ function initializeEditSettingsForm(I) {
 	F.setBackground = (I && I.setBackground) ? I.setBackground : setBackground;
 */
 	F.prepareEdit = (I && I.prepareEdit) ? I.prepareEdit : function(arr) {
-		if (arr.listPos) {
-			F.listPosRight.checked = true;
-			F.listPosLeft.checked = false;
-		} else {
-			F.listPosLeft.checked = true;
-			F.listPosRight.checked = false;
+		switch (arr.listPos) {
+			case 'left':
+				F.listPosLeft.checked = true;
+				F.listPosRight.checked = false;
+				break;
+			case 'right':
+				F.listPosRight.checked = true;
+				F.listPosLeft.checked = false;
+				break;
+			default:
+				F.listPosLeft.checked = true;
+				F.listPosRight.checked = false;
 		}
-		/*
-		F.title.value = arr.title;
-		F.artist.value = arr.artist;
-		F.album.value = arr.album_name;
+
+		if (arr.headerPos == 'bottom') {
+			F.headerPosBottom.checked = true;
+			F.headerPosTop.checked = false;
+		} else {
+			F.headerPosTop.checked = true;
+			F.headerPosBottom.checked = false;
+		}
+
+		switch(arr.loop) {
+			case 1:
+				F.loopOne.checked = true;
+				F.loopNone.checked = false;
+				F.loopAll.checked = false;
+				break;
+			case 2:
+				F.loopAll.checked = true;
+				F.loopNone.checked = false;
+				F.loopOne.checked = false;
+				break;
+			default:
+				F.loopNone.checked = true;
+				F.loopOne.checked = false;
+				F.loopAll.checked = false;
+		}
+
+		if (arr.shuffle == 1) {
+			F.shuffleOn.checked = true;
+			F.shuffleOff.checked = false;
+		} else {
+			F.shuffleOff.checked = true;
+			F.shuffleOn.checked = false;
+		}
+
+		var thisVol = (arr.volume != null && (typeof arr.volume === 'number' || typeof arr.volume === 'string') && (parseInt(arr.volume) >= 0 || parseInt(arr.volume) <= 100) ) ? parseInt(arr.volume) : 100;
+		F.volume.value = thisVol;
+		F.volumePreviewAdjust(thisVol);
+
+	/*
 		F.albumArtist.value = arr.album_artist_name;
 		F.composer.value = arr.composer;
 
@@ -2061,6 +2173,10 @@ function initializeEditSettingsForm(I) {
 					console.log(res);
 					globalPlayer.loop = res['loop'];
 					globalPlayer.shuffle = res['shuffle'];
+					if (globalPlayer.listPos != res['listPos'] || globalPlayer.headerPos != res['headerPos']) {
+						setHeaderPos(res['headerPos'],res['listPos']);
+					}
+					/*
 					if (res['listPos']) {
 						globalPlayer.listContainer.classList.add('right');
 						globalPlayer.listContainer.classList.remove('left');
@@ -2068,9 +2184,11 @@ function initializeEditSettingsForm(I) {
 						globalPlayer.listContainer.classList.add('left');
 						globalPlayer.listContainer.classList.remove('right');
 					}
-					setLoop(globalPlayer.loop);
-					setShuffle(globalPlayer.shuffle);
-					alert("Global settings edited!");
+					if (globalPlayer.headerPos != res['headerPos']) {
+						globalPlayer.headerPos = res['headerPos'];
+						setHeaderPos(globalPlayer.headerPos);
+					}
+					*/
 				}
 				else {
 					alert(response.message);
@@ -2082,6 +2200,20 @@ function initializeEditSettingsForm(I) {
 			}
 		};
 		xhr.send(formData);
+	}
+	F.volumePreviewAdjust = function(val) {
+		console.log(val);
+		if (val > 0 && val <= 50) {
+			F.volumePreview.classList.add('half');
+			F.volumePreview.classList.remove('full');
+		} else if (val > 50 && val <= 100) {
+			F.volumePreview.classList.add('full');
+			F.volumePreview.classList.remove('half');
+		} else {
+			F.volumePreview.classList.remove('full');
+			F.volumePreview.classList.remove('half');
+		}
+		return;
 	}
 /*
 	F.resetPlayerAfterEdit = function() {
@@ -2142,6 +2274,9 @@ function initializeEditSettingsForm(I) {
 		F.submitEdit(F.songId.value, 0, 1);	
 	});
 */
+	F.volume.addEventListener('input',function() {
+		F.volumePreviewAdjust(this.value);
+	});
 	//F.submit.addEventListener('click', F.editIcon);
 	F.submit.addEventListener('click', F.submitEdit);
 
@@ -2163,7 +2298,6 @@ function openEditSettingsForm() {
 	}
 }
 function closeEditSettingsForm() {
-	getAllMedia(false,true);
 	setTimeout(()=>{
 		if (!globalPlayer.listOpen && !embedForm.status && !addMediaForm.status && !editAlbumArtForm.status && !editMediaForm.status ) {
 			document.getElementById('list').classList.add('closed');
@@ -2204,6 +2338,8 @@ globalPlayer = {
 		toggleFull: document.getElementById('toggleFullScreen')
 	},
 	listOpen:true,
+	listPos:'left',
+	headerPos:'top',
 	mouseTimeout: null, 
 	mouseInterval: null,
 	currentPlayer:null,
@@ -2266,6 +2402,7 @@ video_player = {
 
 /* Initialization Functions */
 globalPlayer.currentPlayer = audio_player;
+initializeSettings();
 setBackground(null, globalPlayer.background);
 getAllMedia();
 

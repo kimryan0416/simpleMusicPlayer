@@ -120,40 +120,7 @@
 		);
 	}
 
-	$settings = array();
-	$settingsPath = '../';
-	
-	$docRoot = $_SERVER['DOCUMENT_ROOT'];
-	if (substr($docRoot, -1) != '/') {
-		$docRoot .= '/';
-	}
-	$subPath = preg_replace('~' . $docRoot . '~i', '', $thisFileDir);
-	$pathParts = pathinfo($subPath);
-	$thisBasename = $pathParts['basename'];
-	switch($thisBasename) {
-		case 'scripts':
-			$settingsPath = './';
-			break;
-		case 'requireOnce':
-			$settingsPath = '../';
-		default:
-			$settingsPath = '../';
-	}
-
-	if ( !file_exists($settingsPath.'settings.json') ) {
-		$settings = array(
-			'listPos'=>false,
-			'loop'=>1,
-			'shuffle'=>0
-		);
-		$fp = fopen($settingsPath.'settings.json', 'w');
-		fwrite($fp, json_encode($settings));
-		fclose($fp);
-	} else {
-		$fp = file_get_contents($settingsPath.'settings.json');
-		$settings = json_decode($fp,true);
-	}
-	print(returnSuccess($db,'Success getting all media',array('list'=>$raw,'embedIDs'=>$embedIDs,'settings'=>$settings)));
+	print(returnSuccess($db,'Success getting all media',array('list'=>$raw,'embedIDs'=>$embedIDs)));
 	return;
 	
 ?>

@@ -376,3 +376,30 @@ New Functions:
 * PHP
 	* ``getSettings.php`` - gets the settings from ``settings.json``
 	* ``setSettings.php`` - saves the new settings from the "Edit Settings" form into ``settings.json``
+
+---
+
+## **Version 1.0.2 - New Global Settings**
+Version 1.0.2 mostly entails the creation and implementation of global settings that users can edit and customize on their own local machines.
+
+A new file, ``settings.json``, contains local settings that the SMP reads and interprets, prior to loading anything else. The new default settings are so:
+
+| Setting | Type | Default | Description |
+| ------- | ---- | ------- | ----------- |
+| ``listPos`` | string | "left" | Which side the Song List is located on the screen ("left", or "right") |
+| ``headerPos`` | string | "top" | Which side the header bar is located on the screen ("top", or "bottom") |
+| ``loop`` | integer | 1 | Default loop configuration (0 = no looping, 1 = repeat, 2 = album loop) |
+| ``shuffle`` | integer | 0 | Default shuffle configuration (0 = shuffle off, 1 = shuffle on) |
+| ``volume`` | integer | 100 | Default volume level of player (between 0 and 100) |
+
+To edit these settings, a new option was added to the ``Gear`` icon in the header: "Edit Settings". Users can customize these settings for their custom use.
+
+Other changes are included here:
+* New "Edit Settings" form created to allow users to customize global settings
+* Player buttons now moved to Header - only scrollbar is left inside the player itself
+	* player buttons now can be accessed by scrolling horizontally if they cannot fit within the width of the header
+* Minor CSS adjustment to forms
+* CSS animations added to many elements to make transitions less jarring
+* New JavaScript function ``setHeaderPos()`` takes care of adjusting orientation of header and song list based on retrieved settings from ``settings.json``
+* New JavaScript function ``getSettings()`` retrieves settings from ``settings.json`` and is initialized upon startup by default.
+* PHP file ``getSettings.php`` handles cases of missing ``settings.json`` files, since it runs on startup by default

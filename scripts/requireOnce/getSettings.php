@@ -32,8 +32,21 @@
             $settingsPath = '../';
     }
 
-    $fp = file_get_contents($settingsPath.'settings.json');
-    $settings = json_decode($fp,true);
+    if ( !file_exists($settingsPath.'settings.json') ) {
+        $settings = array(
+            'listPos'=>'left',
+            'headerPos'=>'top',
+            'loop'=>1,
+            'shuffle'=>0,
+            'volume'=>100
+        );
+        $fp = fopen($settingsPath.'settings.json', 'w');
+        fwrite($fp, json_encode($settings));
+        fclose($fp);
+    } else {
+        $fp = file_get_contents($settingsPath.'settings.json');
+        $settings = json_decode($fp,true);
+    }
 
     print(returnSuccess($db,'Success getting settings',$settings));
     return;

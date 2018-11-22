@@ -6,6 +6,5 @@ SAMPLE/
 upload_directory/
 media/
 art/
-scripts/settings.json
 **/*.xlsx
 **/*.sqlite

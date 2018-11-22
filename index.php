@@ -4,16 +4,20 @@
 	if (!$db = initSqliteDB('scripts/database.sqlite', 'scripts/init.sql') ) die('ERROR WITH DATABASE CONNECTION');
 	if ( !file_exists('media/') && !mkdir('media/') ) die ("ERROR SETTING UP \"media/\"");
 	if ( !file_exists('art/') && !mkdir('art/') ) die("ERROR SETTING UP \"art\"");
+	/*
 	if ( !file_exists('scripts/settings.json') ) {
 		$settings = array(
-			'listPos'=>false,
+			'listPos'=>'left',
+			'headerPos'=>'top',
 			'loop'=>1,
-			'shuffle'=>0
+			'shuffle'=>0,
+			'volume'=>100
 		);
 		$fp = fopen('scripts/settings.json', 'w');
 		fwrite($fp, json_encode($settings));
 		fclose($fp);
 	}
+	*/
 	/*
 	$content = array();
 	$query = 'SELECT 
@@ -90,32 +94,79 @@
 		<div id='contextMenu'>
 			<span class='contextItem' id='contextOptions'>Edit Details</span>
 		</div>
-		<div id='bodyHeader'>
-			<div id='innerHeader'>
+		<div id='bodyHeader' class='hidden'>
+			<div id='listHeader'>
 				<div class='dropdown settings'>
 					<!--<img class="dropdownPlaceholder" src="assets/gear.png" alt="Settings">-->
 					<img class="dropdownPlaceholder" id='headerSettings' src="assets/transparent.png" alt="Settings">
 					<div class="dropdownContents">
-						<div class='dropdownArrow'></div>
-						<div class='dropdownItems'>
-							<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
-							<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
-							<span id='openEditSettingsForm' class='dropdownItem settings'>Edit Settings</span>
+						<div class='inner'>
+							<div class='dropdownArrow'></div>
+							<div class='dropdownItems'>
+								<span id='openAddMediaForm' class='dropdownItem settings'>Add Media</span>
+								<span id="openEmbed" class="dropdownItem settings">Add YT Video</span>
+								<span id='openEditSettingsForm' class='dropdownItem settings'>Edit Settings</span>
+							</div>
 						</div>
 					</div>
 				</div>
-				<span class='toggle' id='toggleList'>Toggle Song List</span>
+				<span class='toggle' id='toggleList'>Song List</span>
 				<div class='dropdown search'>
 					<!--<img class='dropdownPlaceholder overlay' src='assets/search.png' alt='Search'>-->
 					<img class='dropdownPlaceholder overlay' id='headerSearch' src='assets/transparent.png' alt='Search'>
 					<input class='dropdownPlaceholder input' type="text" id="searchInput" placeholder="Type Here">
 					<div class='dropdownContents'>
-						<div class='dropdownArrow'></div>
-						<div class='dropdownItems' id='searchResults'></div>
+						<div class='inner'>
+							<div class='dropdownArrow'></div>
+							<div class='dropdownItems' id='searchResults'></div>
+						</div>
 					</div>
 				</div>
 				<!--<span class='toggle left' id='toggleFullScreen'>Toggle Fullscreen</span>-->
 			</div>
+
+			<div id='extrasButtons'>
+					<div class='controlsButtons'>
+						<div class='control' id='previous'>
+							<img class='controlImage' id='previousImage' src='assets/transparent.png' alt='Previous'>
+						</div>
+						<div class='control' id='backFive'>
+							<img class='controlImage' id='backFiveImage' src='assets/transparent.png' alt='-5sec'>
+						</div>
+						<div class='control' id='playpause'>
+							<img class='controlImage' id='playpauseImage' src='assets/transparent.png' alt='Play/Pause'>
+						</div>
+						<div class='control' id='forwardFive'>
+							<img class='controlImage' id='forwardFiveImage' src='assets/transparent.png' alt='+5sec'>
+						</div>
+						<div class='control' id='next'>
+							<img class='controlImage' id='nextImage' src="assets/transparent.png" alt='Next'>
+						</div>
+					</div>
+					<div id="volume_container">
+						<input type="range" min="0" max="100" value="100" id="volume" />
+						<img id="volume_image" src="assets/transparent.png" alt="Volume">
+					</div>
+					<img class="control one" id="repeat" src="assets/transparent.png" alt="Repeat">
+					<img class="control" id="shuffle" src="assets/transparent.png" alt="Shuffle">
+					<img class="control" id="options" src="assets/transparent.png" alt="Edit Media Info">
+					<span class="active" id="player_lyrics_autoscroll">Autoscroll</span>
+			</div>
+			<!--
+				<div class='extrasButtons'>
+					<div class='dropdownPlaceholder control' id='playerOptions'>
+						<img class='controlImage' id='playerOptionsImage' src="assets/transparent.png" alt='Settings'>
+					</div>
+					<div id="volume_container">
+						<input type="range" min="0" max="100" value="100" id="volume" />
+						<img id="volume_image" src="assets/transparent.png" alt="Volume">
+					</div>
+					<img class="control one" id="repeat" src="assets/transparent.png" alt="Repeat">
+					<img class="control" id="shuffle" src="assets/transparent.png" alt="Shuffle">
+					<img class="control" id="options" src="assets/transparent.png" alt="Edit Media Info">
+					<span class="control active" id="player_lyrics_autoscroll">Autoscroll</span>
+				</div>
+			-->
 		</div>
 		<div id='body'>
 			<div id="list" class='left closed'>
@@ -364,19 +415,82 @@
 			<h2 class='item formTitle'>Edit Global Settings</h2>
 		</div>
 	</div>
-	<div class='container segmentContainer'>
-		<span class='item label'>Song List Position<span class='important'>*</span></span>
-		<p class='item text'>The position of the Song List on the screen.</p>
-		<div class='item listPosContainer'>
-			<div class='item listPosItem'>
-				<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosLeft" value='0'>
-				<label class='item songListLabel hover' for='songListPosLeft'></label>
-				<img class='songListPreview' id='songListPreviewLeft' src='assets/transparent.png' alt='List Position Left Preview'>
+	<div class='item innerForm'>
+		<div class='container segmentContainer'>
+			<span class='item label'>Song List Position</span>
+			<p class='item text'>The position of the Song List on the screen.</p>
+			<div>
+				<div class='item listPosItem'>
+					<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosLeft" value='left'>
+					<label class='item songListLabel hover' for='songListPosLeft'></label>
+					<img class='songListPreview' id='songListPreviewLeft' src='assets/transparent.png' alt='List Position Left Preview'>
+				</div>
+				<div class='item listPosItem'>
+					<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosRight" value='right'>
+					<label class='item songListLabel hover' for='songListPosRight'></label>
+					<img class='songListPreview' id='songListPreviewRight' src='assets/transparent.png' alt='List Position Right Preview'>
+				</div>
 			</div>
-			<div class='item listPosItem'>
-				<input type='radio' class='inputRadio songListRadio' name="songListPos" id="songListPosRight" value='1'>
-				<label class='item songListLabel hover' for='songListPosRight'></label>
-				<img class='songListPreview' id='songListPreviewRight' src='assets/transparent.png' alt='List Position Right Preview'>
+		</div>
+		<div class='container segmentContainer'>
+			<span class='item label'>Header Position</span>
+			<p class='item text'>The position of the Header on the screen.</p>
+			<div>
+				<div class='item headerPosItem'>
+					<input type='radio' class='inputRadio headerPosRadio' name="headerPos" id="headerPosTop" value='top'>
+					<label class='item headerPosLabel hover' for='headerPosTop'></label>
+					<img class='headerPosPreview' id='headerPosPreviewTop' src='assets/transparent.png' alt='Header Position Left'>
+				</div>
+				<div class='item headerPosItem'>
+					<input type='radio' class='inputRadio headerPosRadio' name="headerPos" id="headerPosBottom" value='bottom'>
+					<label class='item headerPosLabel hover' for='headerPosBottom'></label>
+					<img class='headerPosPreview' id='headerPosPreviewBottom' src='assets/transparent.png' alt='Header Position Bottom'>
+				</div>
+			</div>
+		</div>
+		<div class='container segmentContainer'>
+			<span class='item label'>Loop Default</span>
+			<p class='item text'>The default loop option upon loading the SMP.</p>
+			<div>
+				<div class='item loopItem'>
+					<input type='radio' class='inputRadio loopRadio' name="loopDefault" id="loopDefaultNone" value='none'>
+					<label class='item loopLabel hover' for='loopDefaultNone'></label>
+					<img class='loopPreview' id='loopDefaultNonePreview' src='assets/transparent.png' alt='No Loop'>
+				</div>
+				<div class='item loopItem'>
+					<input type='radio' class='inputRadio loopRadio' name="loopDefault" id="loopDefaultOne" value='one'>
+					<label class='item loopLabel hover' for='loopDefaultOne'></label>
+					<img class='loopPreview' id='loopDefaultOnePreview' src='assets/transparent.png' alt='Repeat'>
+				</div>
+				<div class='item loopItem'>
+					<input type='radio' class='inputRadio loopRadio' name="loopDefault" id="loopDefaultAll" value='all'>
+					<label class='item loopLabel hover' for='loopDefaultAll'></label>
+					<img class='loopPreview' id='loopDefaultAllPreview' src='assets/transparent.png' alt='Loop All'>
+				</div>
+			</div>
+		</div>
+		<div class='container segmentContainer'>
+			<span class='item label'>Shuffle Default</span>
+			<p class='item text'>The default shuffle option upon loading the SMP.</p>
+			<div>
+				<div class='item shuffleItem'>
+					<input type='radio' class='inputRadio shuffleRadio' name="shuffleDefault" id="shuffleDefaultOff" value='off'>
+					<label class='item shuffleLabel hover' for='shuffleDefaultOff'></label>
+					<img class='shufflePreview' id='shuffleDefaultOffPreview' src='assets/transparent.png' alt='No Shuffle'>
+				</div>
+				<div class='item shuffleItem'>
+					<input type='radio' class='inputRadio shuffleRadio' name="shuffleDefault" id="shuffleDefaultOn" value='on'>
+					<label class='item shuffleLabel hover' for='shuffleDefaultOn'></label>
+					<img class='shufflePreview' id='shuffleDefaultOnPreview' src='assets/transparent.png' alt='Shuffle'>
+				</div>
+			</div>
+		</div>
+		<div class='container segmentContainer'>
+			<span class='item label'>Volume Default</span>
+			<p class='item text'>The default volume level upon loading the SMP.</p>
+			<div id='volumeDefaultContainer'>
+				<input type="range" min="0" max="100" value="100" name='volumeDefault' id="volumeDefaultRange" />
+				<img id="volumeDefaultPreview" class='full' src="assets/transparent.png" alt="Volume">
 			</div>
 		</div>
 	</div>
@@ -389,6 +503,7 @@
 			</div>
 			<div id='main'>
 				<div id="media_container">
+					<!--<div id="waveform"></div>-->
 					<div id="video_container">
 						<div id="videoTitleAndArtist" class='playerTitleAndArtist'>
 							<div id="video_title_and_artist_inner_container">
@@ -438,30 +553,11 @@
 								<span class="player_time" id="curTime">--:--</span> / <span  class="player_time" id="duration">--:--</span>
 							</span>
 						</div>
-						<div id="controls_container">
-							<div class='extrasButtons'>
-								<img class="dropdownPlaceholder control" id='playerOptions' src="assets/transparent.png" alt="Settings">
-								<div id="volume_container" class='control'>
-									<input type="range" min="0" max="100" value="100" id="volume" />
-									<img id="volume_image" src="assets/transparent.png" alt="Volume">
-								</div>
-								<img class="control one" id="repeat" src="assets/transparent.png" alt="Repeat">
-								<img class="control" id="shuffle" src="assets/transparent.png" alt="Shuffle">
-								<img class="control" id="options" src="assets/transparent.png" alt="Edit Media Info">
-								<span class="control active" id="player_lyrics_autoscroll">Autoscroll</span>
-							</div>
-							<div class='controlsButtons'>
-								<img class="control hideButton" id="previous" src="assets/transparent.png" alt="Previous">
-								<img class="control hideButton" id="backFive" src="assets/transparent.png" alt="-5sec">
-								<img class="control" id="playpause" src="assets/transparent.png" alt="Play">
-								<img class="control hideButton" id="forwardFive" src="assets/transparent.png" alt="+5sec">
-								<img class="control hideButton" id="next" src="assets/transparent.png" alt="Next">
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</body>
+	<!--<script src="https://unpkg.com/wavesurfer.js"></script>-->
 	<script src="scripts/script.js"></script>
 </html>
