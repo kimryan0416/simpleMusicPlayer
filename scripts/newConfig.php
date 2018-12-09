@@ -127,7 +127,7 @@
 			$startTime='';
 			$noText='';
 			if (preg_match("/\[([0-9]*)\]({.*?})?/",$segmentArray[0],$segmentTime)){
-				if (!isset($segmentTime[2])||$segmentTime[2]=='') $segmentStyle = ($medium == 0) ? 'black' : 'white'; 
+				if (!isset($segmentTime[2])||$segmentTime[2]=='') $segmentStyle = ($medium == 0) ? 'white' : 'white'; 
 				else {
 					$segmentStyle=str_replace(array('{','}'),array('',''),$segmentTime[2]);
 					if ($segmentStyle=='yellow') $segmentStyle='rgb(254,223,0)';

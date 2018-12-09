@@ -15,7 +15,7 @@ The **SMP** utilizes the following coding langauges:
 You can view the changelog inside ``changelog.md``.
 
 ### Latest Stable Version:
-The latest stable release of the SMP is **Version 1.0.2**.
+The latest stable release of the SMP is **Version 1.0.3 *alpha* **.
 
 ---
 

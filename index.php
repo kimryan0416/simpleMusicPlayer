@@ -126,29 +126,10 @@
 			</div>
 
 			<div id='extrasButtons'>
-					<div class='controlsButtons'>
-						<div class='control' id='previous'>
-							<img class='controlImage' id='previousImage' src='assets/transparent.png' alt='Previous'>
-						</div>
-						<div class='control' id='backFive'>
-							<img class='controlImage' id='backFiveImage' src='assets/transparent.png' alt='-5sec'>
-						</div>
-						<div class='control' id='playpause'>
-							<img class='controlImage' id='playpauseImage' src='assets/transparent.png' alt='Play/Pause'>
-						</div>
-						<div class='control' id='forwardFive'>
-							<img class='controlImage' id='forwardFiveImage' src='assets/transparent.png' alt='+5sec'>
-						</div>
-						<div class='control' id='next'>
-							<img class='controlImage' id='nextImage' src="assets/transparent.png" alt='Next'>
-						</div>
-					</div>
 					<div id="volume_container">
 						<input type="range" min="0" max="100" value="100" id="volume" />
 						<img id="volume_image" src="assets/transparent.png" alt="Volume">
 					</div>
-					<img class="control one" id="repeat" src="assets/transparent.png" alt="Repeat">
-					<img class="control" id="shuffle" src="assets/transparent.png" alt="Shuffle">
 					<img class="control" id="options" src="assets/transparent.png" alt="Edit Media Info">
 					<span class="active" id="player_lyrics_autoscroll">Autoscroll</span>
 			</div>
@@ -217,11 +198,11 @@
 							<div class='item header'>
 								<div class='container header'>
 									<span class='cancel hover' id='closeEmbed'>X</span>
-									<h2 class='item formTitle'>Embed YouTube Video</h2>
+									<h2 class='formTitle'>Embed YouTube Video</h2>
 								</div>
 							</div>
-							<div class='item innerForm'>
-								<div class='container innerForm'>
+							<div class='outerInnerForm'>
+								<div class='innerInnerForm'>
 									<div class='container segmentContainer'>
 										<span class='item label'>Title<span class='important'>*</span></span>
 										<input class='item inputText' name='video_title_input' placeholder='Title of Video' required>
@@ -253,19 +234,19 @@
 									</div>
 								</div>
 							</div>
-							<div class='item submitContainer'>
-								<input type='submit' class='item submitItem submit hover' name='video_input_submit' value='Add Video'>
+							<div class='submitContainer'>
+								<input type='submit' class='submitItem submit hover' name='video_input_submit' value='Add Video'>
 							</div>
 						</form>
 						<form id="editMediaForm" name="edit_media_form" method="post">
 							<div class='item header'>
 								<div class='container header'>
 									<span class='cancel hover' id="closeEdit">X</span>
-									<h2 class='item formTitle'>Edit Media Info</h2>
+									<h2 class='formTitle'>Edit Media Info</h2>
 								</div>
 							</div>
-							<div class='item innerForm'>
-								<div class='container innerForm'>
+							<div class='outerInnerForm'>
+								<div class='innerInnerForm'>
 									<div class='container segmentContainer'>
 										<span class='item label'>Title:<span class='important'>*</span></span>
 										<input class='item inputText' type='text' id='titleEdit' name='title_edit' placeholder='Title'>
@@ -346,22 +327,22 @@
 									</div>
 								</div>
 							</div>
-							<div class='item submitContainer'>
+							<div class='submitContainer'>
 								<input type="hidden" id="id_edit" name="id_edit" value="-1">
 								<input type="hidden" id="medium_edit" name="medium_edit" value="-1">
-								<input class='item submitItem submit hover' type="submit" id="submitEdit" name="submit_edit" value="Submit Changes" form='editMediaForm'>
-								<span class='item submitItem delete hover' id='deleteSong'>Delete Media</span>
+								<input class='submitItem submit hover' type="submit" id="submitEdit" name="submit_edit" value="Submit Changes" form='editMediaForm'>
+								<span class='submitItem delete hover' id='deleteSong'>Delete Media</span>
 							</div>
 						</form>
 						<form id='editAlbumArtForm' name="edit_album_art_form" method="post">
 							<div class='item header'>
 								<div class='container header'>
 									<span class='cancel' id="closeAlbumArtEdit">X</span>
-									<h2 class='item formTitle'>Edit Album Artwork</h2>
+									<h2 class='formTitle'>Edit Album Artwork</h2>
 								</div>
 							</div>
-							<div class='item innerForm'>
-								<div class='container innerForm'>
+							<div class='outerInnerForm'>
+								<div class='innerInnerForm'>
 									<div class='container segmentContainer' id='editAlbumArtPreviewContainer'>
 										<div class='item preview'>
 											<input class='inputFile' type="file" id="edit_album_art_form_input" name="edit_album_art_form_input">
@@ -380,19 +361,19 @@
 									</div>
 								</div>
 							</div>
-							<div class='item submitContainer'>
-								<input class='item submitItem submit hover' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
+							<div class='submitContainer'>
+								<input class='submitItem submit hover' type="submit" id="edit_album_art_form_submit" name="edit_album_art_form_submit" value="Submit Changes">
 							</div>
 						</form>
 						<form id='addMediaForm' name='addMediaForm' method='post' enctype="multipart/form-data">
 							<div class='item header'>
 								<div class='container header'>
 									<span class='cancel' id="closeAddMediaForm">X</span>
-									<h2 class='item formTitle'>Add Media</h2>
+									<h2 class='formTitle'>Add Media</h2>
 								</div>
 							</div>
-							<div class='item innerForm'>
-								<div class='container innerForm'>
+							<div class='outerInnerForm'>
+								<div class='innerInnerForm'>
 									<div class='container segmentContainer'>
 										<span class='item label'>Select Media to upload</span>
 										<label class='item button hover' for='addMediaFormInput' id='addMediaFormInputOverlay'>Select Media</label>
@@ -404,18 +385,18 @@
 									</div>
 								</div>
 							</div>
-							<div class='item submitContainer'>
-								<input class='item submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
+							<div class='submitContainer'>
+								<input class='submitItem submit hover' type="submit" id="addMediaFormSubmit" name="addMediaFormSubmit" value="Submit Media">
 							</div>
 						</form>
 <form id='editSettingsForm' name='editSettingsForm' method='post' enctype="multipart/form-data">
 	<div class='item header'>
 		<div class='container header'>
 			<span class='cancel' id="closeEditSettingsForm">X</span>
-			<h2 class='item formTitle'>Edit Global Settings</h2>
+			<h2 class='formTitle'>Edit Global Settings</h2>
 		</div>
 	</div>
-	<div class='item innerForm'>
+	<div class='outerInnerForm'>
 		<div class='container segmentContainer'>
 			<span class='item label'>Song List Position</span>
 			<p class='item text'>The position of the Song List on the screen.</p>
@@ -494,8 +475,8 @@
 			</div>
 		</div>
 	</div>
-	<div class='item submitContainer'>
-		<input class='item submitItem submit hover' type="submit" id="editSettingsFormSubmit" name="editSettingsFormSubmit" value="Change Settings">
+	<div class='submitContainer'>
+		<input class='submitItem submit hover' type="submit" id="editSettingsFormSubmit" name="editSettingsFormSubmit" value="Change Settings">
 	</div>
 </form>
 					</div>
@@ -505,21 +486,23 @@
 				<div id="media_container">
 					<!--<div id="waveform"></div>-->
 					<div id="video_container">
-						<div id="videoTitleAndArtist" class='playerTitleAndArtist'>
-							<div id="video_title_and_artist_inner_container">
-								<h1 id="videoTitle" class='playerTitle'></h1>
-								<span id="videoArtist" class='playerArtist'></span>
+						<div class='inner'>
+							<div id="videoTitleAndArtist" class='playerTitleAndArtist'>
+								<div id="video_title_and_artist_inner_container">
+									<h1 id="videoTitle" class='playerTitle'></h1>
+									<span id="videoArtist" class='playerArtist'></span>
+								</div>
 							</div>
-						</div>
-						<div id="video_lyrics_container">
-							<div id="video_lyrics_inner_container"></div>
-						</div>
-						<div id="video_embed_container">
-							<div id="video_embed_inner_container">
-								<div id="video_embed"></div>
-								<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdate(this);">
-									Your browser does not support the audio element.
-								</video>
+							<div id="video_lyrics_container">
+								<div id="video_lyrics_inner_container"></div>
+							</div>
+							<div id="video_embed_container">
+								<div id="video_embed_inner_container">
+									<div id="video_embed"></div>
+									<video id="localVideo" src="" preload="none" ontimeupdate="onTimeUpdate(this);">
+										Your browser does not support the audio element.
+									</video>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -528,30 +511,71 @@
 							Your browser does not support the audio element.
 						</audio>
 						<div id="player_main_div">
-							<div id="player_art_and_lyrics">
-								<div class='table_wrapper' id="player_art_container">
-									<img id="player_art" src="assets/default_album_art.jpg" alt="">
+							<div class='inner' id='playerMainDivInner'>
+								<div id="player_art_and_lyrics">
+									<div class='inner' id='playerArtAndLyricsInner'>
+										<div class="table_wrapper" id="player_lyrics_container">
+											<p id="player_lyrics">
+												<span class="lyric_segment noText"></span>
+												<span class="lyric_segment"><i>Lyrics go Here</i></span>
+												<span class="lyric_segment"></span>
+											</p>
+										</div>
+										<div class='table_wrapper' id="player_art_container">
+											<img id="player_art" src="assets/default_album_art.jpg" alt="">
+										</div>
+									</div>
 								</div>
-								<div class="table_wrapper" id="player_lyrics_container">
-									<p id="player_lyrics">
-										<span class="lyric_segment noText"></span>
-										<span class="lyric_segment"><i>Lyrics go Here</i></span>
-										<span class="lyric_segment"></span>
-									</p>
-								</div>
+							</div>
+						</div>
+						<div class='inner'>
+							<div id='audioTitleAndArtist' class='playerTitleAndArtist'>
+								<h1 id="audioTitle" class='playerTitle'>Choose a Song</h1>
+								<span id="audioArtist" class='playerArtist'>Artist</span>
 							</div>
 						</div>
 					</div>
 					<div id="playerInfo">
-						<div id='audioTitleAndArtist' class='playerTitleAndArtist'>
-							<h1 id="audioTitle" class='playerTitle'>Choose a Song</h1>
-							<span id="audioArtist" class='playerArtist'>Artist</span>
-						</div>
 						<div id="time_container">
-							<input type="range" min="0" max="0" id="time_slider">
-							<span class='playerTimes'>
-								<span class="player_time" id="curTime">--:--</span> / <span  class="player_time" id="duration">--:--</span>
-							</span>
+							<span class="player_time" id="curTime">--:--</span>
+							<div class='inner' id='inputTimeContainer'>
+								<input type="range" min="0" max="0" id="time_slider">
+							</div>
+							<span  class="player_time" id="duration">--:--</span>
+							<!--<div class='playerTimes'></div>-->
+						</div>
+						<div class='controlsButtons'>
+							<div class='mobileControl' id='mobileShuffle'>
+								<img class='controlImage' id='mobileShuffleImage' src='assets/transparent.png' alt='Shuffle'>
+							</div>
+							<div class='control' id='shuffle'>
+								<img class='controlImage' id="shuffleImage" src="assets/transparent.png" alt="Shuffle">
+							</div>
+							<div class='control notClickable'></div>
+							<div id='mainControls'>
+								<div class='control' id='previous'>
+									<img class='controlImage' id='previousImage' src='assets/transparent.png' alt='Previous'>
+								</div>
+								<div class='control' id='backFive'>
+									<img class='controlImage' id='backFiveImage' src='assets/transparent.png' alt='-5sec'>
+								</div>
+								<div class='control' id='playpause'>
+									<img class='controlImage' id='playpauseImage' src='assets/transparent.png' alt='Play/Pause'>
+								</div>
+								<div class='control' id='forwardFive'>
+									<img class='controlImage' id='forwardFiveImage' src='assets/transparent.png' alt='+5sec'>
+								</div>
+								<div class='control' id='next'>
+									<img class='controlImage' id='nextImage' src="assets/transparent.png" alt='Next'>
+								</div>
+							</div>
+							<div class='control notClickable'></div>
+							<div class='control one' id='repeat'>
+								<img class="controlImage" id="repeatImage" src="assets/transparent.png" alt="Repeat">
+							</div>
+							<div class='mobileControl one' id='mobileLoop'>
+								<img class='controlImage' id='mobileLoopImage' src='assets/transparent.png' alt='Loop'>
+							</div>
 						</div>
 					</div>
 				</div>

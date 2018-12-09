@@ -403,3 +403,12 @@ Other changes are included here:
 * New JavaScript function ``setHeaderPos()`` takes care of adjusting orientation of header and song list based on retrieved settings from ``settings.json``
 * New JavaScript function ``getSettings()`` retrieves settings from ``settings.json`` and is initialized upon startup by default.
 * PHP file ``getSettings.php`` handles cases of missing ``settings.json`` files, since it runs on startup by default
+
+## Version 1.0.3 *alpha* - Updates to CSS
+In preparation for Version 1.0.3, some updates have been made to the underlying CSS of the SMP.
+
+* Media queries in CSS are now used to alternate between mobile UI and browser UI - this mainly involves using Flex Boxes modified to run across all prominent browsers (i.e. Firefox, Chrome, and IE).
+
+* Buttons have moved around such that now the main important buttons are added back into the SMP's main player - other functions and buttons (i.e. volume, editing button, lyric autoscroll) are still located in the header bar.
+
+* Lyrics now appear on TOP of album artwork and are toggable via clicking the artwork. Media without lyrics do not have the lyrics display opened by default, while those with lyrics have their lyrics display opened by default.

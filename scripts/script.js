@@ -103,7 +103,15 @@ function make(desc) {
 	}
 	return el;
 }
-
+function getWidth() {
+  return Math.max(
+    document.body.scrollWidth,
+    document.documentElement.scrollWidth,
+    document.body.offsetWidth,
+    document.documentElement.offsetWidth,
+    document.documentElement.clientWidth
+  );
+}
 /* Get the duration or current time of a song in minutes:seconds instead of just seconds	*/
 function readableDuration(milliseconds) {
 	var sec = milliseconds / 1000;
@@ -175,7 +183,8 @@ function onTimeUpdate(track, embedTime = null) {
 	if (globalPlayer.currentMediaType == 1 && !globalPlayer.currentPlayer.lock_time_slider) globalPlayer.controls.timeSlider.value = curMillisec;
 	else globalPlayer.controls.timeSlider.value = curMillisec;
 
-	if (globalPlayer.dynamic_lyrics_toggle && globalPlayer.scrollToLyrics && globalPlayer.dynamic_lyrics_starting_times != null && !globalPlayer.ignoreOnTimeUpdate) {
+	//console.log(window.innerWidth);
+	if ( (window.innerWidth > 500) && globalPlayer.dynamic_lyrics_toggle && globalPlayer.scrollToLyrics && globalPlayer.dynamic_lyrics_starting_times != null && !globalPlayer.ignoreOnTimeUpdate) {
 		if ( (curMillisec < globalPlayer.current_time) || (curMillisec >= globalPlayer.dynamic_lyrics_starting_times[globalPlayer.current_time_index + 1]) ) {
 			document.querySelectorAll('.lyric_segment.selected').forEach(el=>{
 				el.classList.remove('selected');
@@ -209,6 +218,7 @@ function onTimeUpdate(track, embedTime = null) {
 		globalPlayer.ignoreOnTimeUpdate = false;
 	}
 }
+
 function openMedia(id, newQueue = false) {
 	var data = globalPlayer.database[id];
 	preparePlayer(data);
@@ -503,14 +513,20 @@ function setLoop(value) {
 		case 0:
 			globalPlayer.controls.loopButton.classList.remove('one');
 			globalPlayer.controls.loopButton.classList.remove('all');
+			globalPlayer.controls.mobileLoopButton.classList.remove('one');
+			globalPlayer.controls.mobileLoopButton.classList.remove('all');
 			break;
 		case 1:
 			globalPlayer.controls.loopButton.classList.add('one');
 			globalPlayer.controls.loopButton.classList.remove('all');
+			globalPlayer.controls.mobileLoopButton.classList.add('one');
+			globalPlayer.controls.mobileLoopButton.classList.remove('all');
 			break;
 		case 2:
 			globalPlayer.controls.loopButton.classList.remove('one');
 			globalPlayer.controls.loopButton.classList.add('all');
+			globalPlayer.controls.mobileLoopButton.classList.remove('one');
+			globalPlayer.controls.mobileLoopButton.classList.add('all');
 			break;
 		default:
 			console.log('globalPlayer.loop not a possible number');
@@ -519,8 +535,14 @@ function setLoop(value) {
 }
 function setShuffle(value) {
 	globalPlayer.shuffle = (value != null && typeof value === 'number') ? value : (globalPlayer.shuffle == 1) ? 0 : 1;
-	if (globalPlayer.shuffle == 1) globalPlayer.controls.shuffleButton.classList.add('on');
-	else globalPlayer.controls.shuffleButton.classList.remove('on');
+	if (globalPlayer.shuffle == 1) {
+		globalPlayer.controls.shuffleButton.classList.add('on');
+		globalPlayer.controls.mobileShuffleButton.classList.add('on');
+	}
+	else {
+		globalPlayer.controls.shuffleButton.classList.remove('on');
+		globalPlayer.controls.mobileShuffleButton.classList.remove('on');
+	}
 	loadQueue();
 }
 
@@ -552,20 +574,20 @@ function preparePlayer(arr) {
 		globalPlayer.currentPlayer.art.src = (arr['art']) ? (arr['art'].startsWith('data')) ? arr['art'] : arr['art'] + '#'+new Date().getTime() : 'assets/default_album_art.jpg';
 		globalPlayer.controls.autoscrollButton.innerText = 'Autoscroll';
 		if (globalPlayer.canPlay == true) {
-			globalPlayer.currentPlayer.lyrics.innerHTML = (arr['lyrics']) ? arr['lyrics'] : '';
+			globalPlayer.currentPlayer.lyrics.innerHTML = (arr['lyrics']) ? arr['lyrics'] : "<span class='lyric_segment noText'></span><span class='lyric_segment'>No lyrics available</span><span class='lyric_segment noText'></span>";
 			globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.clientHeight;
 		} 
 		else {
 			globalPlayer.currentPlayer.lyrics.innerHTML = "<span class='lyric_segment noText'></span><span class='lyric_segment'>Loading Audio...</span><span class='lyric_segment noText'></span>";
 			globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.clientHeight;
 		}
-		if (arr['lyrics'] == null) {
-			globalPlayer.currentPlayer.lyrics.parentNode.style.display = 'none';
-			globalPlayer.currentPlayer.art.parentNode.classList.add('wider');
+		if (arr['lyrics'] != null) {
+			globalPlayer.currentPlayer.lyrics.parentNode.classList.add('opened')
+			//globalPlayer.currentPlayer.art.parentNode.classList.remove('wider');
 		}
 		else {
-			globalPlayer.currentPlayer.art.parentNode.classList.remove('wider');
-			globalPlayer.currentPlayer.lyrics.parentNode.style.display = 'block';
+			//globalPlayer.currentPlayer.art.parentNode.classList.add('wider');
+			globalPlayer.currentPlayer.lyrics.parentNode.classList.remove('opened');
 		}
 
 	} else {
@@ -673,7 +695,7 @@ function loadLocalMedia(id, url, lyrics){
 	globalPlayer.currentPlayer.html.dispatchEvent(evt);
 	globalPlayer.currentPlayer.html.oncanplay = function() {
     	if (!globalPlayer.canPlay) {
-			globalPlayer.currentPlayer.lyrics.innerHTML = lyrics;
+			globalPlayer.currentPlayer.lyrics.innerHTML = (lyrics && lyrics.length > 0) ? lyrics : (globalPlayer.currentMediaType == 0) ? "<span class='lyric_segment noText'></span><span class='lyric_segment'>No lyrics available</span><span class='lyric_segment noText'></span>" : '' ;
 			if (globalPlayer.currentMediaType == 0) globalPlayer.lyricsHeight = globalPlayer.currentPlayer.lyrics.clientHeight;
 			globalPlayer.canPlay = true;
     	}
@@ -851,6 +873,7 @@ function autoscrollToggle() {
 		else {
 			// If we flipped from FALSE to TRUE, then we must re-allow scrolling
 			globalPlayer.controls.autoscrollButton.classList.add('active');
+			onTimeUpdate(globalPlayer.currentPlayer.html);
 		}
 	}
 }
@@ -2328,6 +2351,8 @@ globalPlayer = {
 		nextButton: document.getElementById('next'),
 		loopButton: document.getElementById('repeat'),
 		shuffleButton: document.getElementById('shuffle'),
+		mobileLoopButton: document.getElementById('mobileLoop'),
+		mobileShuffleButton: document.getElementById('mobileShuffle'),
 		backFiveButton: document.getElementById('backFive'),
 		forwardFiveButton: document.getElementById('forwardFive'),
 		volumeSlider: document.getElementById('volume'),
@@ -2384,7 +2409,7 @@ audio_player = {
 	artist: document.getElementById('audioArtist'),
 	lyrics: document.getElementById('player_lyrics'),
 	player_and_lyrics: document.getElementById('player_art_and_lyrics'),
-	art: document.getElementById('player_art')
+	art: document.getElementById('player_art'),
 };
 video_player = {
 	container: document.getElementById('video_container'),
@@ -2545,6 +2570,10 @@ globalPlayer.controls.playButton.addEventListener('click', function() {
 });
 globalPlayer.controls.loopButton.addEventListener('click', setLoop);
 globalPlayer.controls.shuffleButton.addEventListener('click', setShuffle);
+
+globalPlayer.controls.mobileLoopButton.addEventListener('click',setLoop);
+globalPlayer.controls.mobileShuffleButton.addEventListener('click',setShuffle);
+
 globalPlayer.controls.volumeSlider.addEventListener('input',function(){ 
 	globalPlayer.storeVolume = this.value;
 	volumeAdjust(this.value);
@@ -2571,6 +2600,12 @@ globalPlayer.controls.optionsButton.addEventListener('click', function() {
 	}
 });
 audio_player.html.addEventListener('ended', nextMedia);
+audio_player.lyrics.parentNode.addEventListener('click',function() {
+	audio_player.lyrics.parentNode.classList.remove('opened');
+})
+audio_player.art.addEventListener('click',function() {
+	audio_player.lyrics.parentNode.classList.add('opened');
+})
 video_player.html.addEventListener('ended', nextMedia);
 video_player.container.addEventListener('mouseover',function(e) {
 	clearTimeout(globalPlayer.mouseTimeout);
