@@ -1,8 +1,23 @@
-block header
-	header.header
-		nav.navigation
-			a(class="navigationLink" href="/") Song List
-		div.player_container
-			div.controls_container.player_subcontainer
-			div.details_container.player_subcontainer
-			div.settings_container.player_subcontainer
+header.header
+	canvas#player_background.player_background
+	div.player_container
+		div.player_main
+			div.player_details
+				div.player_art
+					img(id="player_art_el" class='player_art_el' src="assets/transparent.png" alt="Album Art")
+				div.player_text
+					h1#title.title
+					p#artist.artist
+			div.player_timeline
+				input(class="player_range" id="player_range" type="range" min="0")
+				p#player_times.player_times
+					span#player_current_time --:--
+					|  /  
+					span#player_duration --:--
+			div.player_controls
+				span#prev.prev Previous
+				span#back5.back5 Back 5
+				span#playpause.playpause Pause
+				span#for5.for5 Forward 5
+				span#next.next Next
+		div.player_lyrics

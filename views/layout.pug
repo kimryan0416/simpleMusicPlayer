@@ -4,7 +4,8 @@ html
 		title= title
 		link(rel="stylesheet" href="/stylesheets/all.css")
 	body
-		include partials/header.pug
+		block header
+			include partials/header
 
 		block content
 		script(src='/javascripts/global.js')

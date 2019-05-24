@@ -1,12 +1,22 @@
 const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+
 const path = require('path');
 
 const app = express();
+
+// Make our db accessible to our router
+app.use(function(req,res,next){
+	const db = new sqlite3.Database('./data/database.sqlite', sqlite3.OPEN_READWRITE);
+    req.db = db;
+    next();
+});
 const indexRouter = require('./routes/index');
 
 app.set('view engine','pug');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use(express.json());
 app.use(express.static(__dirname + '/public'));
 app.use('/',indexRouter);
 

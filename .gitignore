@@ -1,12 +1,10 @@
 **/.DS_Store
 
 **/*-ignore
-node_modules/
-artBackup/
-mediaBackup/
+**/node_modules/
 SAMPLE/
 upload_directory/
-media/
-art/
+**/media/
+**/art/
 **/*.xlsx
 **/*.sqlite
