@@ -1,0 +1,26 @@
+{
+  "name": "simple_music_player",
+  "version": "0.0.1",
+  "description": "A Node.JS version of the Simple Music Player, which was originally developed with a PHP back-end\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimryan0416/simpleMusicPlayer.git"
+  },
+  "keywords": [
+    "music"
+  ],
+  "author": "Ryan Kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kimryan0416/simpleMusicPlayer/issues"
+  },
+  "homepage": "https://github.com/kimryan0416/simpleMusicPlayer#readme",
+  "dependencies": {
+    "express": "^4.17.0",
+    "pug": "^2.0.3"
+  }
+}
