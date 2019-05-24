@@ -4,9 +4,9 @@ html
 		title= title
 		link(rel="stylesheet" href="/stylesheets/all.css")
 	body
-		block header
-			header.header
-				h1 Simple Music Player
+		include partials/header.pug
 
 		block content
 		script(src='/javascripts/global.js')
+
+		block footer
