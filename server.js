@@ -1,5 +1,7 @@
 const express = require('express');
+const http = require('http');
 const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
 
 const path = require('path');
 
@@ -17,6 +19,7 @@ app.set('view engine','pug');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public'));
 app.use('/',indexRouter);
 

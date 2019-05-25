@@ -1,12 +1,11 @@
 body {
-  font-size: 15px;
+  font-size: 12px;
   font-family: Avenir, serif;
   background-color: white;
   position: relative;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 h2 {
@@ -16,16 +15,75 @@ h2 {
   margin-bottom: 25px;
 }
 
+.dropdown {
+  position: relative;
+  width: auto;
+  overflow: hidden;
+  height: 30px;
+  background-color: white;
+}
+.dropdown .dropdownItem, .dropdown .dropdownPlaceholder {
+  box-sizing: border-box;
+  padding: 3px 6px 3px 6px;
+}
+.dropdown .dropdownItem.selected {
+  background-color: #e6e6e6;
+}
+
+.dropdown:hover {
+  cursor: pointer;
+  height: auto;
+}
+
+.dropdownItem:hover {
+  text-decoration: underline;
+  background-color: #e6e6e6;
+}
+
+.toggle {
+  position: relative;
+  width: auto;
+  height: 30px;
+  background-color: white;
+}
+.toggle span {
+  box-sizing: border-box;
+  padding: 3px 6px 3px 6px;
+}
+
+.toggle:hover {
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+
+.toggle.selected {
+  background-color: #e6e6e6;
+}
+
 header {
-  flex: 1 0 auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: block;
+  height: 220px;
+  width: 100%;
+  background-color: white;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+header .header_contents {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
   box-sizing: border-box;
   padding: 15px;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
 }
-header .player_background {
+header .header_contents .player_background {
   position: absolute;
   z-index: 1;
   top: 50%;
@@ -33,117 +91,199 @@ header .player_background {
   left: 0;
   width: 100%;
 }
-header .player_container {
+header .header_contents .player_container {
   flex: 0 1 auto;
   box-sizing: border-box;
   display: flex;
   position: relative;
   z-index: 2;
-  /*
-  .player_subcontainer {
-  	flex-grow: 0;
-  	flex-shrink: 1;
-  }
-  .player_subcontainer.controls_container {
-  	order:1;
-  }
-  .player_subcontainer.details_container {
-  	order:2;
-  }
-  player_subcontainer.settings_container {
-  	order:3;
-  }
-  */
 }
-header .player_container .player_main {
+header .header_contents .player_container .player_main {
   flex: 1 0 70%;
   display: flex;
   flex-direction: column;
   margin-right: 10px;
 }
-header .player_container .player_main .player_details {
+header .header_contents .player_container .player_main .player_details {
   flex: 0 1 30px;
   width: 100%;
   display: flex;
   align-items: flex-end;
   margin-bottom: 10px;
 }
-header .player_container .player_main .player_details .player_art {
+header .header_contents .player_container .player_main .player_details .player_art {
   flex: 0 1 100px;
   order: 1;
   position: relative;
+  z-index: 1;
   display: block;
   height: 100px;
   margin-right: 10px;
   background-color: gray;
 }
-header .player_container .player_main .player_details .player_art .player_art_el {
+header .header_contents .player_container .player_main .player_details .player_art .player_art_el {
   height: 100%;
 }
-header .player_container .player_main .player_details .player_text {
+header .header_contents .player_container .player_main .player_details .player_art:hover .playpause {
+  cursor: pointer;
+  background: url("../assets/playerSprites.png") -300px 0;
+}
+header .header_contents .player_container .player_main .player_details .player_art:hover .playpause.paused {
+  background: url("../assets/playerSprites.png") -100px 0;
+}
+header .header_contents .player_container .player_main .player_details .player_text {
   flex: 1 0 auto;
   order: 2;
   position: relative;
   color: white;
-  text-shadow: 2px 2px 5px black;
+  text-shadow: 1px 1px 3px black;
 }
-header .player_container .player_main .player_details .player_text .title {
+header .header_contents .player_container .player_main .player_details .player_text .title {
   margin-bottom: 5px;
 }
-header .player_container .player_main .player_details .player_text .artist {
+header .header_contents .player_container .player_main .player_details .player_text .artist {
   margin: 0;
 }
-header .player_container .player_main .player_timeline {
-  flex: 0 0 30px;
-  display: block;
-  width: 100%;
-  color: white;
-  text-shadow: 2px 2px 5px black;
-  margin-bottom: 10px;
-}
-header .player_container .player_main .player_timeline .player_times {
+header .header_contents .player_container .player_main .player_details .player_text .player_times {
   font-size: 10px;
   margin: 0;
 }
-header .player_container .player_main .player_timeline .player_range {
+header .header_contents .player_container .player_main .player_timeline {
+  flex: 0 0 20px;
+  display: block;
+  width: 100%;
+  color: white;
+  text-shadow: 1px 1px 3px black;
+  margin-bottom: 5px;
+}
+header .header_contents .player_container .player_main .player_timeline .player_range {
   width: 100%;
   margin: 0;
 }
-header .player_container .player_main .player_controls {
+header .header_contents .player_container .player_main .player_controls {
   flex: 0 0 30px;
-  display: block;
-  width: 100%;
-  background-color: yellow;
+  width: auto;
   box-sizing: border-box;
   padding-left: 5px;
   padding-right: 5px;
+  display: flex;
+  /* PLAYPAUSE IMAGE */
 }
-header .player_container .player_lyrics {
+header .header_contents .player_container .player_main .player_controls .control {
+  margin-right: 15px;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+header .header_contents .player_container .player_main .player_controls .control .controlContents {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+header .header_contents .player_container .player_main .player_controls .control:hover {
+  cursor: pointer;
+  box-shadow: 0px 0px 4px 4px rgba(0, 0, 0, 0.8);
+}
+header .header_contents .player_container .player_main .player_controls .control.playpause {
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: red;
+}
+header .header_contents .player_container .player_main .player_controls .control.playpause .controlContents {
+  background: url("../assets/playerSprites.png") 0 0;
+}
+header .header_contents .player_container .player_main .player_controls .control.playpause.paused .controlContents {
+  background: url("../assets/playerSprites.png") -60px 0;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls {
+  flex: 1 0 auto;
+  /* BACK5 IMAGE */
+  /* FOR5 IMAGE */
+  /* PREV Image */
+  /* NEXT Image */
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .control {
+  display: inline-block;
+  vertical-align: middle;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: white;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .control.back5 .controlContents {
+  background: url("../assets/playerSprites.png") -200px 0;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .control.for5 .controlContents {
+  background: url("../assets/playerSprites.png") -240px 0;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .control.prev .controlContents {
+  background: url("../assets/playerSprites.png") -120px 0;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .control.next .controlContents {
+  background: url("../assets/playerSprites.png") -160px 0;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlDropdown {
+  display: inline-block;
+  vertical-align: top;
+  height: 20px;
+  border-radius: 10px;
+  line-height: 14px;
+  margin-right: 10px;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlDropdown:hover {
+  height: auto;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlDropdown:hover .dropdownPlaceholder {
+  display: none;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlDropdown:hover .dropdownItem:hover {
+  text-decoration: underline;
+  background-color: #e6e6e6;
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlToggle {
+  display: inline-block;
+  vertical-align: top;
+  height: 20px;
+  border-radius: 10px;
+  line-height: 20px;
+  margin-right: 10px;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+header .header_contents .player_container .player_main .player_controls .additionalControls .controlToggle.selected {
+  background-color: green;
+  color: white;
+}
+header .header_contents .player_container .player_lyrics {
   display: block;
   height: 50px;
   background-color: green;
   flex: 0 1 30%;
 }
+header .header_contents .player_container .player_lyrics.hide {
+  display: none;
+}
 
 .main {
   flex: 1 0 auto;
+  z-index: 1;
   box-sizing: border-box;
-  padding: 50px;
+  padding-top: 270px;
   position: relative;
 }
 .main .navigation {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
   background-color: white;
   box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   padding: 5px;
   line-height: 20px;
+  margin-bottom: 50px;
 }
 .main .song_list {
-  width: 100%;
+  width: 80%;
+  margin: auto;
 }
 .main .song_list .album_artist {
   box-sizing: border-box;
@@ -182,7 +322,7 @@ header .player_container .player_lyrics {
   transform: translateY(-50%);
   margin-left: auto;
   margin-right: auto;
-  box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
 }
 .main .song_list .album_artist .album .album_content {
   order: 1;

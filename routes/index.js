@@ -43,35 +43,10 @@ router.get('/initialize', (req,res)=>{
 		LEFT JOIN albums AS T5 ON T4.album_id = T5.id
 		LEFT JOIN albumToalbum_artist AS T6 ON T5.id = T6.album_id
 		LEFT JOIN album_artists AS T7 ON T6.album_artist_id = T7.id
+		WHERE medium = 0
 		ORDER BY T1.id`;
 	db.all(query, [], (err, rows) => {
-		var toReturn = rows.reduce((filtered,row)=>{
-			filtered[row.album_artist_id] = filtered[row.album_artist_id] || {
-				id : row.album_artist_id,
-				name : row.album_artist_name,
-				albums : {}
-			}
-			filtered[row.album_artist_id]['albums'][row.album_id] = filtered[row.album_artist_id]['albums'][row.album_id] || {
-				id : row.album_id,
-				name : row.album_name,
-				songs : []
-			}
-			filtered[row.album_artist_id]['albums'][row.album_id]['songs'].push(row);
-
-			function compare(a,b) {
-				if ( a.title < b.title ){
-					return -1;
-				}
-				if ( a.title > b.title ){
-					return 1;
-				}
-				return 0;
-			}
-
-			filtered[row.album_artist_id]['albums'][row.album_id]['songs'].sort(compare);
-			return filtered;
-		},{});
-		res.json(toReturn);
+		res.json(rows);
 	});
 });
 
@@ -79,6 +54,18 @@ router.get('/initialize', (req,res)=>{
 router.get('/settings', (req,res)=>{
 	var sets = fs.readFileSync(path.resolve(__dirname,"../data/settings.json"));
 	res.send(sets);
+});
+
+router.post('/setsave',(req,res)=>{
+	var newSettings = req.body;
+	var tmpDataPath = path.resolve(__dirname, "../data/settings.json");
+	fs.writeFile(tmpDataPath, JSON.stringify(newSettings),function(err){
+		if (err)
+			res.json({success:false,message:'Error involving writing to file',error:err})
+		else {
+			res.json({success:true});
+		}
+	})
 });
 
 module.exports = router;

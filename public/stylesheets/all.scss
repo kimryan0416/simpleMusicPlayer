@@ -1,11 +1,14 @@
+$background-sprites: url('../assets/playerSprites.png');
 $background_default: rgb(255,255,255);
+$background_selected: rgb(230,230,230);
 $border-color: rgb(200,200,200);
 $border-radius-value: 15px;
 $box-shadow-value:0px 0px 2px 2px rgba(0,0,0,0.5);
-$text-shadow-value:2px 2px 5px rgb(0,0,0,1);
+$box-shadow-value-hover:0px 0px 4px 4px rgba(0,0,0,0.8);
+$text-shadow-value:1px 1px 3px rgba(0,0,0,1);
 
 body {
-	font-size: 15px;
+	font-size: 12px;
 	font-family: Avenir, serif;
 
 	background-color:$background_default;
@@ -13,8 +16,7 @@ body {
 	margin:0;
 	padding:0;
 
-	display:flex;
-	flex-direction: column;
+	position:relative;
 }
 
 h2 {
@@ -24,144 +26,298 @@ h2 {
 	margin-bottom:25px;
 }
 
-header {
-	flex: 1 0 auto;
-
-	box-sizing: border-box;
-	padding:15px;
-
-	display:flex;
-	flex-direction: column;
-
+.dropdown {
 	position:relative;
+	width:auto;
 	overflow:hidden;
+	height:30px;
+	background-color: $background_default;
 
-	.player_background {
-		position:absolute;
-		z-index: 1;
-		top:50%;
-		transform:translateY(-50%);
-		left:0;
-		width:100%;
+	.dropdownItem, .dropdownPlaceholder {
+		box-sizing:border-box;
+		padding:3px 6px 3px 6px;
 	}
 
-	.player_container {
-		flex: 0 1 auto;
+	.dropdownItem.selected {
+		background-color:$background_selected;
+	}
+}
+.dropdown:hover {
+	cursor:pointer;
+	height:auto;
+}
+.dropdownItem:hover {
+	text-decoration: underline;
+	background-color:$background_selected;
+}
+
+.toggle {
+	position:relative;
+	width:auto;
+	height:30px;
+	background-color: $background_default;
+
+	span {
 		box-sizing:border-box;
-		display:flex;
+		padding:3px 6px 3px 6px;
+	}
+}
+.toggle:hover {
+	cursor:pointer;
+	background-color:$background_selected;
+}
+.toggle.selected {
+	background-color:$background_selected;
+}
+
+header {
+	position:fixed;
+	top:0;
+	left:0;
+	right:0;
+	z-index: 2;
+
+	display:block;
+	height:220px;
+	width:100%;
+
+	background-color: $background_default;
+	box-shadow:$box-shadow-value;
+
+	.header_contents {
+		display:block;
+		width:100%;
+		height:100%;
 		position:relative;
-		z-index: 2;
+		overflow:hidden;
 
-		.player_main {
-			flex: 1 0 70%;
+		box-sizing: border-box;
+		padding:15px;
+
+		display:flex;
+		flex-direction: column;
+
+		.player_background {
+			position:absolute;
+			z-index: 1;
+			top:50%;
+			transform:translateY(-50%);
+			left:0;
+			width:100%;
+		}
+
+		.player_container {
+			flex: 0 1 auto;
+			box-sizing:border-box;
 			display:flex;
-			flex-direction: column;
+			position:relative;
+			z-index: 2;
 
-			margin-right:10px;
-
-			.player_details {
-				flex:0 1 30px;
-				width:100%;
-
+			.player_main {
+				flex: 1 0 70%;
 				display:flex;
-				align-items: flex-end;
+				flex-direction: column;
 
-				margin-bottom:10px;
+				margin-right:10px;
 
-				.player_art {
-					flex: 0 1 100px;
-					order:1;
-					position:relative;
-					display:block;
-					height: 100px;
-					margin-right:10px;
-					background-color: gray;
+				.player_details {
+					flex:0 1 30px;
+					width:100%;
 
-					.player_art_el {
-						height: 100%;
+					display:flex;
+					align-items: flex-end;
+
+					margin-bottom:10px;
+
+					.player_art {
+						flex: 0 1 100px;
+						order:1;
+						position:relative;
+						z-index: 1;
+						display:block;
+						height: 100px;
+						margin-right:10px;
+						background-color: gray;
+
+						.player_art_el {
+							height: 100%;
+						}
+
 					}
+					.player_art:hover .playpause{
+						cursor:pointer;
+						background: $background-sprites -300px 0;
+					}
+					.player_art:hover .playpause.paused {
+						background: $background-sprites -100px 0;
+					}
+
+					.player_text {
+						flex: 1 0 auto;
+						order:2;
+						position:relative;
+						color:white;
+						text-shadow: $text-shadow-value;
+
+						.title {
+							margin-bottom:5px;
+						}
+						.artist {
+							margin:0;
+						}
+
+						.player_times {
+							font-size:10px;
+							margin:0;
+						}
+					}
+
 				}
-				.player_text {
-					flex: 1 0 auto;
-					order:2;
-					position:relative;
+				.player_timeline {
+					flex:0 0 20px;
+					display:block;
+					width:100%;
 					color:white;
 					text-shadow: $text-shadow-value;
+					margin-bottom:5px;
 
-					.title {
-						margin-bottom:5px;
-					}
-					.artist {
+					.player_range {
+						width:100%;
 						margin:0;
 					}
 				}
+				.player_controls {
+					flex: 0 0 30px;
+					width:auto;
+					box-sizing:border-box;
+					padding-left:5px;
+					padding-right:5px;
 
-			}
-			.player_timeline {
-				flex:0 0 30px;
-				display:block;
-				width:100%;
-				color:white;
-				text-shadow: $text-shadow-value;
-				margin-bottom:10px;
+					display:flex;
 
-				.player_times {
-					font-size:10px;
-					margin:0;
+					.control {
+						margin-right:15px;
+						box-shadow: $box-shadow-value;
+
+						.controlContents {
+							display:block;
+							width:100%;
+							height:100%;
+						}
+					}
+					.control:hover {
+						cursor:pointer;
+						box-shadow: $box-shadow-value-hover;
+					}
+
+					/* PLAYPAUSE IMAGE */
+					.control.playpause {
+						flex:0 0 60px;
+						width:60px;
+						height:60px;
+						border-radius:30px;
+						background-color: red;
+
+						.controlContents {
+							background: $background-sprites 0 0;
+						}
+					}
+					.control.playpause.paused .controlContents {
+						background: $background-sprites -60px 0;
+					}
+
+					.additionalControls {
+						flex: 1 0 auto;
+
+						.control {
+							display:inline-block;
+							vertical-align: middle;
+							width:40px;
+							height:40px;
+							border-radius:20px;
+							background-color:$background-default;
+						}
+
+						/* BACK5 IMAGE */
+						.control.back5 .controlContents {
+							background: $background-sprites -200px 0;
+						}
+
+						/* FOR5 IMAGE */
+						.control.for5 .controlContents {
+							background: $background-sprites -240px 0;
+						}
+
+						/* PREV Image */
+						.control.prev .controlContents {
+							background: $background-sprites -120px 0;
+						}
+
+						/* NEXT Image */
+						.control.next .controlContents {
+							background: $background-sprites -160px 0;
+						}
+
+						.controlDropdown {
+							display:inline-block;
+							vertical-align: top;
+							height:20px;
+							border-radius:10px;
+							line-height: 14px;
+							margin-right:10px;
+							box-shadow: $box-shadow-value;
+						}
+						.controlDropdown:hover {
+							height:auto;
+
+							.dropdownPlaceholder {
+								display:none;
+							}
+
+							.dropdownItem:hover {
+								text-decoration: underline;
+								background-color:$background_selected;
+							}
+						}
+
+						.controlToggle {
+							display:inline-block;
+							vertical-align: top;
+							height:20px;
+							border-radius:10px;
+							line-height: 20px;
+							margin-right:10px;
+							box-shadow: $box-shadow-value;
+						}
+						.controlToggle.selected {
+							background-color:green;
+							color:white;
+						}
+					}
 				}
-
-				.player_range {
-					width:100%;
-					margin:0;
-				}
 			}
-			.player_controls {
-				flex: 0 0 30px;
+			.player_lyrics {
 				display:block;
-				width:100%;
-				background-color:yellow;
-				box-sizing:border-box;
-				padding-left:5px;
-				padding-right:5px;
+				height:50px;
+				background-color:green;
+				flex: 0 1 30%;
+			}
+			.player_lyrics.hide {
+				display:none;
 			}
 		}
-		.player_lyrics {
-			display:block;
-			height:50px;
-			background-color:green;
-			flex: 0 1 30%;
-		}
-
-		/*
-		.player_subcontainer {
-			flex-grow: 0;
-			flex-shrink: 1;
-		}
-		.player_subcontainer.controls_container {
-			order:1;
-		}
-		.player_subcontainer.details_container {
-			order:2;
-		}
-		player_subcontainer.settings_container {
-			order:3;
-		}
-		*/
 	}
-
 }
 
 .main {
 	flex: 1 0 auto;
+	z-index: 1;
 	box-sizing:border-box;
-	padding:50px;
+	padding-top:270px;
 	position:relative;
 
 	.navigation {
-
-		position:absolute;
-		top:0;
-		left:0;
+		position:relative;
 		width:100%;
 
 		background-color:$background_default;
@@ -170,10 +326,13 @@ header {
 		box-sizing:border-box;
 		padding:5px;
 		line-height: 20px;
+
+		margin-bottom:50px;
 	}
 
 	.song_list {
-		width:100%;
+		width:80%;
+		margin:auto;
 
 		.album_artist {
 			box-sizing:border-box;
@@ -213,7 +372,7 @@ header {
 						transform: translateY(-50%);
 						margin-left:auto;
 						margin-right:auto;
-						box-shadow: 0px 0px 5px 2px rgba(0,0,0,0.5);
+						box-shadow: $box-shadow-value;
 					}
 				}
 
