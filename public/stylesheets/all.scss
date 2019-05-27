@@ -26,6 +26,55 @@ h2 {
 	margin-bottom:25px;
 }
 
+form {
+
+	input[type="text"] {
+		width:100%;
+		box-sizing:border-box;
+		padding:10px;
+	}
+
+	input[type="file"] {
+		display:none;
+	}
+
+	.required {
+		color:red;
+	}
+
+	.form_segment {
+		margin-top:10px;
+		margin-bottom:10px;
+	}
+
+	.submitButton {
+		padding:10px;
+		font-size:1.5em;
+	}
+
+}
+
+button, .button {
+	display:inline-block;
+	background-color:$background_default;
+	box-shadow: $box-shadow-value;
+	border:none;
+}
+button:hover, .button:hover {
+	cursor:pointer;
+	background-color: $background_selected;
+	box-shadow: $box-shadow-value;
+}
+
+button, .labelButton {
+	width:auto;
+	box-sizing:border-box;
+	padding:5px;
+}
+.cancel {
+	text-align: center;
+}
+
 .dropdown {
 	position:relative;
 	width:auto;
@@ -81,8 +130,37 @@ header {
 	height:220px;
 	width:100%;
 
+	box-shadow: $box-shadow-value;
 	background-color: $background_default;
-	box-shadow:$box-shadow-value;
+
+	.header_navigation {
+		position:relative;
+		height:50px;
+		width:100%;
+		box-sizing:border-box;
+		padding-left: 20px;
+		padding-right:20px;
+		padding-top:20px;
+
+		.navigation_item {
+			display:inline-block;
+			width:100px;
+			margin-right:20px;
+			box-sizing:border-box;
+			padding:5px 10px 5px 10px;
+			background-color: $background_default;
+			border-radius: $border-radius-value;
+			box-shadow: $box-shadow-value;
+		}
+		.navigation_item:hover {
+			cursor:pointer;
+			background-color: $background_selected;
+		}
+		.navigation_item.selected {
+			background-color: red;
+			color:white;
+		}
+	}
 
 	.header_contents {
 		display:block;
@@ -153,17 +231,25 @@ header {
 					}
 
 					.player_text {
-						flex: 1 0 auto;
+						flex: 0 1 auto;
 						order:2;
 						position:relative;
 						color:white;
 						text-shadow: $text-shadow-value;
+						word-wrap: break-word;
+						overflow-wrap: break-word;
 
 						.title {
+							margin-top:0;
 							margin-bottom:5px;
+							width:100%;
+						}
+						.title.smaller {
+							font-size:1.5em;
 						}
 						.artist {
 							margin:0;
+							width:100%;
 						}
 
 						.player_times {
@@ -196,8 +282,7 @@ header {
 					display:flex;
 
 					.control {
-						margin-right:15px;
-						box-shadow: $box-shadow-value;
+						margin-right:10px;
 
 						.controlContents {
 							display:block;
@@ -217,6 +302,7 @@ header {
 						height:60px;
 						border-radius:30px;
 						background-color: red;
+						box-shadow: $box-shadow-value;
 
 						.controlContents {
 							background: $background-sprites 0 0;
@@ -313,7 +399,7 @@ header {
 	flex: 1 0 auto;
 	z-index: 1;
 	box-sizing:border-box;
-	padding-top:270px;
+	padding-top:300px;
 	position:relative;
 
 	.navigation {
@@ -330,9 +416,18 @@ header {
 		margin-bottom:50px;
 	}
 
-	.song_list {
+	.main_screen {
+		position:relative;
 		width:80%;
 		margin:auto;
+		padding-bottom:50px;
+		display:none;
+	}
+	.main_screen.active {
+		display:block;
+	}
+
+	.song_list {
 
 		.album_artist {
 			box-sizing:border-box;
@@ -427,6 +522,101 @@ header {
 					.song:hover {
 						cursor:pointer;
 					}
+				}
+			}
+		}
+	}
+
+	.add_media {
+		display:none;
+
+		.fileUploadList {
+			background-color: $background_selected;
+			width:100%;
+			height:auto;
+			min-height: 300px;
+			box-shadow: $box-shadow-value inset;
+			margin-bottom:20px;
+			box-sizing:border-box;
+			padding:20px;
+
+			.addMediaItem {
+				display:flex;
+				flex-direction: row;
+				align-items:center;
+
+				width:100%;
+				height:auto;
+				min-height: 50px;
+				background-color: $background_default;
+				box-sizing:border-box;
+				padding:10px;
+
+				margin-bottom:5px;
+
+				.addMediaArt {
+					flex: 0 0 30px;
+					width:30px;
+					height: 30px;
+					margin-right:10px;
+
+					.addMediaArtIcon {
+						width:30px;
+						height:30px;
+						background: $background-sprites -280px 0;
+					}
+				}
+
+				.addMediaText {
+					flex: 1 0 200px;
+					height:auto;
+
+					span {
+						display:block;
+						width:100%;
+					}
+
+					.addMediaTitle {
+						font-weight:bold;
+					}
+
+					.addMediaError {
+						font-style: italic;
+						font-size:0.8em;
+					}
+				}
+
+				.addMediaItemCancel {
+					flex: 0 0 60px;
+					width:60px;
+					height:auto;
+				}
+			}
+
+			.addMediaItem.loading .addMediaArtIcon {
+				background: $background-sprites -310px 0;
+			}
+
+			.addMediaItem.failed {
+				background-color:red;
+				color:white;
+
+				.addMediaArtIcon {
+					background: $background-sprites -340px 0;
+				}
+				.addMediaItemCancel {
+					color:black;
+				}
+			}
+			.addMediaItem.success {
+				background-color: green;
+				color:white;
+
+				.addMediaArtIcon {
+					background: $background-sprites -340px 0;
+				}
+				.addMediaItemCancel {
+					display:none;
 				}
 			}
 		}

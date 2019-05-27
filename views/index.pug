@@ -1,5 +1,9 @@
 extends layout
 
 block content
-	div.main
-		div#song_list.song_list
+	div#main.main
+		div#add_media_toggle.add_media_toggle
+			div#add_media_toggle_icon.add_media_toggle_icon
+		div#song_list.song_list.main_screen.active
+		div#add_media.add_media.main_screen
+			include partials/add_media.pug

@@ -1,7 +1,7 @@
-header.header
-	div.header_contents
+header#header.header
+	div#header_contents.header_contents
 		canvas#player_background.player_background
-		div.player_container
+		div#player_container.player_container
 			div.player_main
 				div.player_details
 					div.player_art
@@ -19,13 +19,13 @@ header.header
 					div#playpause.control.playpause.paused
 						div.controlContents
 					div.additionalControls
-						div#back5.control.back5
+						div#back5.control.button.back5
 							div.controlContents
-						div#for5.control.for5
+						div#for5.control.button.for5
 							div.controlContents
-						div#prev.control.prev
+						div#prev.control.button.prev
 							div.controlContents
-						div#next.control.next
+						div#next.control.button.next
 							div.controlContents
 						div#loopDropdown.dropdown.controlDropdown
 							div.dropdownPlaceholder.text
@@ -49,5 +49,9 @@ header.header
 									span.dropdownItemText Repeat Queue
 						div#shuffleToggle.toggle.controlToggle.shuffleToggle
 							span Shuffle
-
 			div#player_lyrics.player_lyrics
+	div#header_navigation.header_navigation
+		div#song_list_toggle.navigation_item.selected
+			span Song List
+		div#upload_toggle.navigation_item
+			span Add Songs

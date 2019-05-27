@@ -1,0 +1,10 @@
+form(id="add_media_form" class="add_media_form" method="post" action="/upload" enctype='multipart/form-data')
+	h2.form_header Add Media
+	p Drag any media files into the box below. Only audio files can be imported.
+	p Alternatively, import files by clicking the button "Select Files"
+	label(id="manualFileSelectButton" class="button labelButton" for="manualFileSelect") Select Files
+	input(id="manualFileSelect" class='inputFile' type="file" name="uploads" multiple="multiple")
+	h3 Files To Upload: 
+		span#numFilesUpload 0
+	div#fileUploadList.fileUploadList
+	button(id="submitFileUpload" class='button labelButton submitButton') Upload Files

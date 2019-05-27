@@ -15,6 +15,49 @@ h2 {
   margin-bottom: 25px;
 }
 
+form input[type=text] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+}
+form input[type=file] {
+  display: none;
+}
+form .required {
+  color: red;
+}
+form .form_segment {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+form .submitButton {
+  padding: 10px;
+  font-size: 1.5em;
+}
+
+button, .button {
+  display: inline-block;
+  background-color: white;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+  border: none;
+}
+
+button:hover, .button:hover {
+  cursor: pointer;
+  background-color: #e6e6e6;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+button, .labelButton {
+  width: auto;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+.cancel {
+  text-align: center;
+}
+
 .dropdown {
   position: relative;
   width: auto;
@@ -69,8 +112,35 @@ header {
   display: block;
   height: 220px;
   width: 100%;
-  background-color: white;
   box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+  background-color: white;
+}
+header .header_navigation {
+  position: relative;
+  height: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 20px;
+}
+header .header_navigation .navigation_item {
+  display: inline-block;
+  width: 100px;
+  margin-right: 20px;
+  box-sizing: border-box;
+  padding: 5px 10px 5px 10px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+header .header_navigation .navigation_item:hover {
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+header .header_navigation .navigation_item.selected {
+  background-color: red;
+  color: white;
 }
 header .header_contents {
   display: block;
@@ -132,17 +202,25 @@ header .header_contents .player_container .player_main .player_details .player_a
   background: url("../assets/playerSprites.png") -100px 0;
 }
 header .header_contents .player_container .player_main .player_details .player_text {
-  flex: 1 0 auto;
+  flex: 0 1 auto;
   order: 2;
   position: relative;
   color: white;
   text-shadow: 1px 1px 3px black;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 header .header_contents .player_container .player_main .player_details .player_text .title {
+  margin-top: 0;
   margin-bottom: 5px;
+  width: 100%;
+}
+header .header_contents .player_container .player_main .player_details .player_text .title.smaller {
+  font-size: 1.5em;
 }
 header .header_contents .player_container .player_main .player_details .player_text .artist {
   margin: 0;
+  width: 100%;
 }
 header .header_contents .player_container .player_main .player_details .player_text .player_times {
   font-size: 10px;
@@ -170,8 +248,7 @@ header .header_contents .player_container .player_main .player_controls {
   /* PLAYPAUSE IMAGE */
 }
 header .header_contents .player_container .player_main .player_controls .control {
-  margin-right: 15px;
-  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
+  margin-right: 10px;
 }
 header .header_contents .player_container .player_main .player_controls .control .controlContents {
   display: block;
@@ -188,6 +265,7 @@ header .header_contents .player_container .player_main .player_controls .control
   height: 60px;
   border-radius: 30px;
   background-color: red;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5);
 }
 header .header_contents .player_container .player_main .player_controls .control.playpause .controlContents {
   background: url("../assets/playerSprites.png") 0 0;
@@ -268,7 +346,7 @@ header .header_contents .player_container .player_lyrics.hide {
   flex: 1 0 auto;
   z-index: 1;
   box-sizing: border-box;
-  padding-top: 270px;
+  padding-top: 300px;
   position: relative;
 }
 .main .navigation {
@@ -281,9 +359,15 @@ header .header_contents .player_container .player_lyrics.hide {
   line-height: 20px;
   margin-bottom: 50px;
 }
-.main .song_list {
+.main .main_screen {
+  position: relative;
   width: 80%;
   margin: auto;
+  padding-bottom: 50px;
+  display: none;
+}
+.main .main_screen.active {
+  display: block;
 }
 .main .song_list .album_artist {
   box-sizing: border-box;
@@ -370,6 +454,85 @@ header .header_contents .player_container .player_lyrics.hide {
 }
 .main .song_list .album_artist .album .songs .song:hover {
   cursor: pointer;
+}
+.main .add_media {
+  display: none;
+}
+.main .add_media .fileUploadList {
+  background-color: #e6e6e6;
+  width: 100%;
+  height: auto;
+  min-height: 300px;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.5) inset;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  padding: 20px;
+}
+.main .add_media .fileUploadList .addMediaItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  min-height: 50px;
+  background-color: white;
+  box-sizing: border-box;
+  padding: 10px;
+  margin-bottom: 5px;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaArt {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaArt .addMediaArtIcon {
+  width: 30px;
+  height: 30px;
+  background: url("../assets/playerSprites.png") -280px 0;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaText {
+  flex: 1 0 200px;
+  height: auto;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaText span {
+  display: block;
+  width: 100%;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaText .addMediaTitle {
+  font-weight: bold;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaText .addMediaError {
+  font-style: italic;
+  font-size: 0.8em;
+}
+.main .add_media .fileUploadList .addMediaItem .addMediaItemCancel {
+  flex: 0 0 60px;
+  width: 60px;
+  height: auto;
+}
+.main .add_media .fileUploadList .addMediaItem.loading .addMediaArtIcon {
+  background: url("../assets/playerSprites.png") -310px 0;
+}
+.main .add_media .fileUploadList .addMediaItem.failed {
+  background-color: red;
+  color: white;
+}
+.main .add_media .fileUploadList .addMediaItem.failed .addMediaArtIcon {
+  background: url("../assets/playerSprites.png") -340px 0;
+}
+.main .add_media .fileUploadList .addMediaItem.failed .addMediaItemCancel {
+  color: black;
+}
+.main .add_media .fileUploadList .addMediaItem.success {
+  background-color: green;
+  color: white;
+}
+.main .add_media .fileUploadList .addMediaItem.success .addMediaArtIcon {
+  background: url("../assets/playerSprites.png") -340px 0;
+}
+.main .add_media .fileUploadList .addMediaItem.success .addMediaItemCancel {
+  display: none;
 }
 
 /*# sourceMappingURL=all.css.map */

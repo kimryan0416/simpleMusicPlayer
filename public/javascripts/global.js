@@ -1,12 +1,19 @@
 var data, domElements, queue;
 
+function preventDefaults (e) {
+	e.preventDefault();
+	e.stopPropagation();
+}
+
 function sendHTTPRequest(type, url, content = null, contenttype, next) {
 	var xhr = new XMLHttpRequest();
 	xhr.open(type, url);
+	/*
 	if (type.toLowerCase() == "post") {
 		var cType = (contenttype != null) ? contenttype : 'application/json';
 		xhr.setRequestHeader('Content-Type',cType);
 	}
+	*/
 	xhr.onload = function() {	next(xhr);	}
 	xhr.send(content);
 }
@@ -100,6 +107,30 @@ function setArt(img,targetElement=null) {
 function setText(title,artist) {
 	domElements.title.innerHTML = title;
 	domElements.artist.innerHTML = artist;
+	if (domElements.title.offsetHeight > 40) {
+		domElements.title.classList.add('smaller');
+	} else {
+		domElements.title.classList.remove('smaller');
+	}
+}
+
+function adjustHeaderHeight() {
+	var intendedHeight = domElements.playerContainer.clientHeight + 30;
+	domElements.header.style.height = intendedHeight + 'px';
+	domElements.main.style.paddingTop = intendedHeight + 80 + 'px';
+}
+
+function setActiveScreen(target, toggleTarget) {
+	var screens = document.getElementsByClassName('main_screen');
+	var toggles = document.getElementsByClassName('navigation_item');
+	for(let i = 0; i < screens.length; i++) {
+		screens[i].classList.remove('active');
+	}
+	for (let j = 0; j < toggles.length; j++) {
+		toggles[j].classList.remove('selected');
+	}
+	target.classList.add('active');
+	toggleTarget.classList.add('selected');
 }
 
 function setTimeMaximum(t=0) {
@@ -116,8 +147,8 @@ function setCurTime(cur=0) {
 	domElements.timeline.value = cur;
 }
 
-function setLyrics(content = "",toggle) {
-	if (content == "") domElements.lyrics.classList.add('hide');
+function setLyrics(content = null,toggle) {
+	if (content == "" || content == null) domElements.lyrics.classList.add('hide');
 	else domElements.lyrics.classList.remove('hide');
 }
 
@@ -142,6 +173,7 @@ function backwardMedia(amount = 5.0) {
 }
 
 function nextMedia() {
+	console.log(queue);
 	if (isArray(queue) && queue.length >= 1) {
 		var theNextMediaID, initialTime;
 		switch(data.settings.repeat) {
@@ -201,10 +233,6 @@ function previousMedia() {
 	}
 }
 
-function toggleRepeat() {
-
-}
-
 function createQueue(random = false, type = "album") {
 	var filtered = [];
 	if (data.current == null) {
@@ -256,7 +284,6 @@ function createQueue(random = false, type = "album") {
 		console.log("QUEUE:");
 		console.log(queue);
 	}
-	return;
 }
 
 function initializeMedia(id,med=0,playOnStart=true){
@@ -265,8 +292,6 @@ function initializeMedia(id,med=0,playOnStart=true){
 		return s.id == id;
 	});
 	if (song != null) {
-		console.log(song);
-
 		var createNewQueue = true;
 		switch(data.settings.loop) {
 			case "album":
@@ -299,6 +324,7 @@ function initializeMedia(id,med=0,playOnStart=true){
 		setTimeMinimum(starting);
 		setTimeMaximum(duration);
 		setLyrics(lyrics, lyricsToggle);
+		adjustHeaderHeight();
 
 		domElements.audio.src = `/media/${id}.${extension}`;
 		domElements.audio.currentTime = revertFromMilliseconds(starting);
@@ -432,6 +458,10 @@ function initializeSMP(next) {
 		current: null
 	};
 	domElements = {
+		header: document.getElementById('header'),
+		headerContents: document.getElementById('header_contents'),
+		playerContainer: document.getElementById('player_container'),
+		canvas: document.getElementById('player_background'),
 		title: document.getElementById('title'),
 		artist: document.getElementById('artist'),
 		art: document.getElementById('player_art_el'),
@@ -453,24 +483,33 @@ function initializeSMP(next) {
 		repeatNo: document.getElementById('repeatOff'),
 		repeatSong: document.getElementById('repeatSong'),
 		repeatQueue: document.getElementById('repeatQueue'),
-		shuffleToggle: document.getElementById('shuffleToggle')
+		shuffleToggle: document.getElementById('shuffleToggle'),
+		main: document.getElementById('main'),
+		songListScreen: document.getElementById('song_list'),
+		uploadScreen: document.getElementById('add_media'),
+		songListToggle: document.getElementById('song_list_toggle'),
+		uploadToggle: document.getElementById('upload_toggle')
 	}
 
 	var promiseInitialize = new Promise((resolve,reject)=>{
 		sendHTTPRequest("GET","/initialize",null,null,(res)=>{
-			if (res.status === 200) 
+			if (res.status === 200) {
 				resolve({type:"Database",content:JSON.parse(res.responseText)});
-			else
+			}
+			else {
 				reject({type:"Database Retrieval",status:res.status});
+			}
 		});
 	});
 
 	var promiseSettings = new Promise((resolve,reject)=>{
 		sendHTTPRequest("GET", "/settings",null,null,(res)=>{
-			if (res.status === 200)
+			if (res.status === 200) {
 				resolve({type:"Settings",content:JSON.parse(res.responseText)});
-			else
+			}
+			else {
 				reject({type:"Settings Retrieval",status:res.status});
+			}
 		});
 	});
 
@@ -493,11 +532,13 @@ function saveSettings() {
 	data.settings.current_time = (domElements.audio.duration > 0) ? milliseconds(parseFloat(domElements.audio.currentTime)) : 0;
 	data.settings.current_queue = queue;
 
-	console.log(data.settings);
-
-	var settings = JSON.stringify(data.settings);
+	var settingsForm = new FormData();
+	for (var key in data.settings) {
+		settingsForm.append(key, data.settings[key]);
+	}
+	//var settings = JSON.stringify(data.settings);
 	var promiseSaveSettings = new Promise((resolve,reject)=>{
-		sendHTTPRequest("POST","/setsave",settings,'application/json',(res)=>{
+		sendHTTPRequest("POST","/setsave",settingsForm,'application/json',(res)=>{
 			if (res.status === 200) {
 				resolve();
 			}
@@ -549,20 +590,22 @@ initializeSMP(()=>{
 		}
 		
 		/* Set any shuffle stuff third */
-		if (data.settings.shuffle = true) {
+		if (data.settings.shuffle == true) {
 			domElements.shuffleToggle.classList.add('selected');
 		} else {
 			domElements.shuffleToggle.classList.remove('selected');
 		}
 
 		/* Set up any currently-playing media and queues*/
+		queue = data.settings.current_queue
 		if (data.settings.current_id != -1) {
 			initializeMedia(data.settings.current_id,0,false);
 			domElements.audio.currentTime = revertFromMilliseconds(data.settings.current_time);
 			setCurTime(data.settings.current_time);
 		}
-		queue = data.settings.current_queue
 	}
+
+
 
 	// Now listening for clicks and actions from user
 	domElements.audio.ontimeupdate = function() { updateTimes() };
@@ -642,6 +685,7 @@ initializeSMP(()=>{
 
 	domElements.shuffleToggle.addEventListener('click',function() {
 		data.settings.shuffle = !data.settings.shuffle;
+		createQueue(data.settings.shuffle, data.settings.loop);
 		if (data.settings.shuffle == true) {
 			domElements.shuffleToggle.classList.add('selected');
 		} else {
@@ -649,9 +693,20 @@ initializeSMP(()=>{
 		}
 	});
 
+	window.onresize = adjustHeaderHeight;
+
+	domElements.songListToggle.addEventListener('click',()=>{
+		setActiveScreen(domElements.songListScreen, domElements.songListToggle);
+	});
+	domElements.uploadToggle.addEventListener('click',()=>{
+		setActiveScreen(domElements.uploadScreen,domElements.uploadToggle);
+	})
+
+	/*
 	setInterval(()=>{
 		saveSettings();
-	},5000);
+	},10000);
+	*/
 });
 
 
